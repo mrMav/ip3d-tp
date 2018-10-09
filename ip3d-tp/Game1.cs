@@ -10,7 +10,7 @@ namespace ip3d_tp
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        
+        Plane plane;
 
         public Game1()
         {
@@ -20,6 +20,10 @@ namespace ip3d_tp
 
         protected override void Initialize()
         {
+
+            plane = new Plane(this);
+            Components.Add(plane);
+
             base.Initialize();
         }
 

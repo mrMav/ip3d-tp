@@ -1,11 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ip3d_tp
 {
@@ -30,7 +24,7 @@ namespace ip3d_tp
         // space to world space
         Matrix WorldTransform;
 
-        VertexPositionTexture[] VertexList;
+        VertexPositionColor[] VertexList;
         short[] IndicesList;
 
         VertexBuffer VertexBuffer;
@@ -66,14 +60,44 @@ namespace ip3d_tp
 
         }
 
+        public void Draw(GameTime gameTime)
+        {
+
+            Game.GraphicsDevice.Indices = IndexBuffer;
+            Game.GraphicsDevice.SetVertexBuffer(VertexBuffer);
+
+            // render the geometry using a triangle list
+            // we only use one pass of the shader, but we could have more.
+            ColorShaderEffect.VertexColorEnabled = true;
+            ColorShaderEffect.CurrentTechnique.Passes[0].Apply();
+
+            Game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, IndicesList.Length / 3); 
+
+            if (ShowWireframe)
+            {
+                // the color of the wireframe is white by default
+                // it is stored in the DiffuseColor porperty of the effect
+
+                ColorShaderEffect.VertexColorEnabled = false;  // deactivate the color channel
+                ColorShaderEffect.CurrentTechnique.Passes[0].Apply();
+
+                Game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.LineStrip, 0, 0, VertexList.Length - 1); // here we connect all vertices width a line strip
+
+            }
+
+        }
+
         private void CreateGeometry()
         {
 
-            // first, the array of vertices is created
-            int verticesCount = (XSubs + 1) * (ZSubs + 1);
+            int nVerticesWidth = XSubs + 1;
+            int nVerticesDepth = ZSubs + 1;
+
+            int verticesCount = nVerticesWidth * nVerticesDepth;
             int indicesCount = (XSubs * 2) * (ZSubs * 2);
 
-            VertexList = new VertexPositionTexture[verticesCount];
+            // first, the array of vertices is created
+            VertexList = new VertexPositionColor[verticesCount];
             IndicesList = new short[indicesCount];
 
             // the size of each subdivision
@@ -83,9 +107,9 @@ namespace ip3d_tp
             int currentVertice = 0;
 
             // create the vertices
-            for(int z = 0; z < ZSubs; z++)
+            for(int z = 0; z <= ZSubs; z++)
             {
-                for(int x = 0; x < XSubs; x++)
+                for(int x = 0; x <= XSubs; x++)
                 {
 
                     // we will put the 0, 0 on the center of the plane
@@ -98,11 +122,55 @@ namespace ip3d_tp
                     float u = x / XSubs;
                     float v = z / ZSubs;
 
-                    VertexList[currentVertice++] = new VertexPositionTexture(new Vector3(xx, 0, zz), new Vector2(u, v));
+                    //VertexList[currentVertice++] = new VertexPositionTexture(new Vector3(xx, 0, zz), new Vector2(u, v));
+                    VertexList[currentVertice++] = new VertexPositionColor(new Vector3(xx, 0, zz), Color.LightGray);
 
                 }
             }
+
+            // create indices
+            int currentIndice = 0;
+            for (int z = 0; z < ZSubs; z++)
+            {
+                for (int x = 0; x < XSubs; x++)
+                {
+                    /* calculate positions in the array
+                     * 
+                     *  1---2
+                     *  | / |
+                     *  4---3
+                     *  
+                     */
+
+                    int vert1 = x;
+                    int vert2 = x + 1;
+                    int vert3 = vert2 + nVerticesWidth;
+                    int vert4 = vert3 - 1;
+
+                    // first tri
+                    IndicesList[currentIndice++] = (short)vert1;
+                    IndicesList[currentIndice++] = (short)vert2;
+                    IndicesList[currentIndice++] = (short)vert4;
+
+                    // secon tri
+                    IndicesList[currentIndice++] = (short)vert4;
+                    IndicesList[currentIndice++] = (short)vert2;
+                    IndicesList[currentIndice++] = (short)vert3;
+
+                }
+
+            }
+
+            //VertexBuffer = new VertexBuffer(Game.GraphicsDevice, VertexPositionTexture.VertexDeclaration, VertexList.Length, BufferUsage.WriteOnly);
+            //VertexBuffer.SetData<VertexPositionTexture>(VertexList);
+            VertexBuffer = new VertexBuffer(Game.GraphicsDevice, VertexPositionColor.VertexDeclaration, VertexList.Length, BufferUsage.WriteOnly);
+            VertexBuffer.SetData<VertexPositionColor>(VertexList);
+            
+            IndexBuffer = new IndexBuffer(Game.GraphicsDevice, typeof(short), IndicesList.Length, BufferUsage.WriteOnly);
+            IndexBuffer.SetData<short>(IndicesList);
+
         }
+
     }
 
 }
