@@ -5,35 +5,24 @@ using System;
 namespace ip3d_tp
 {
     /*
-     * Camera will extend the base GameComponent class
+     * Basic Camera
      */
-    class BasicCamera : GameComponent
+    class BasicCamera : Camera
     {
-        // create variables to hold the current camera position and target
-        public Vector3 Position;
-        public Vector3 Target;
-
-        // these are the matrices to be used when this camera is active
-        public Matrix ViewTransform;
-        public Matrix ProjectionTransform;
-
-        // the camera field of view
-        float FieldOfView;
-
+        
         // the camera sphere constrain, for when rotating animation is activated
-        float SphereRadius;
+        public float SphereRadius;
 
         // trigger to toogle between animated camera or not
         public bool RotateCamera;
 
         // used to detect 'just' pressed keys
-        KeyboardState OldKeyboardState;
+        private KeyboardState OldKeyboardState;
 
         // class constructor
-        public BasicCamera(Game game, float fieldOfView = 45f, float sphereRadius = 10f) : base(game)
+        public BasicCamera(Game game, float fieldOfView, float sphereRadius = 10f) : base(game, fieldOfView)
         {
-            // basic initializations 
-            FieldOfView = fieldOfView;
+            // basic initializations
             SphereRadius = sphereRadius;
             RotateCamera = true;
 
@@ -43,10 +32,6 @@ namespace ip3d_tp
             // view matrix is calculated with a LookAt method. It allows
             // to create a view matrix based on a position and target
             ViewTransform = Matrix.CreateLookAt(Position, Target, Vector3.Up);
-
-            // the projection matrix is responsible for defining a frustum view.
-            // this is the eye emulation
-            ProjectionTransform = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(FieldOfView), game.GraphicsDevice.DisplayMode.AspectRatio, 0.1f, 1000f);
 
             OldKeyboardState = Keyboard.GetState();
         }
@@ -75,6 +60,8 @@ namespace ip3d_tp
                 ViewTransform = Matrix.CreateLookAt(Position, Target, Vector3.Up);
 
             }
+
+            OldKeyboardState = ks;
 
             base.Update(gameTime);
         }

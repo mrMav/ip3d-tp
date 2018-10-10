@@ -11,7 +11,7 @@ namespace ip3d_tp
         SpriteBatch spriteBatch;
 
         Plane plane;
-        BasicCamera camera;
+        SurfaceFollowCamera camera;
         Texture2D terrainHeightMap;
 
         public Game1()
@@ -54,10 +54,8 @@ namespace ip3d_tp
             plane.ShowWireframe = true;
             Components.Add(plane);
 
-            camera = new BasicCamera(this, 45f, 50);
-            camera.Position.Y = 25;
-            camera.Target.Y = 0;
-            camera.RotateCamera = true;
+            camera = new SurfaceFollowCamera(this, 45f, plane);
+            camera.Position.Y = 20;
             Components.Add(camera);
 
         }
