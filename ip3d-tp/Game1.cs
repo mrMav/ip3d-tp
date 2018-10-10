@@ -37,7 +37,7 @@ namespace ip3d_tp
 
         protected override void Initialize()
         {
-            Window.Title = "EP3D-TP - JORGE NORO - 15705";
+            Window.Title = $"EP3D-TP - JORGE NORO - 15705 {graphics.GraphicsProfile}, Sampling: {graphics.PreferMultiSampling}, Samples: {GraphicsDevice.PresentationParameters.MultiSampleCount}";
             IsMouseVisible = true;
 
             base.Initialize();
