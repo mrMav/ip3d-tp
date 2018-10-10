@@ -69,6 +69,7 @@ namespace ip3d_tp
             // render the geometry using a triangle list
             // we only use one pass of the shader, but we could have more.
             ColorShaderEffect.VertexColorEnabled = true;
+            ColorShaderEffect.DiffuseColor = new Vector3(1, 1, 1);
             ColorShaderEffect.CurrentTechnique.Passes[0].Apply();
 
             Game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, IndicesList.Length / 3); 
@@ -79,12 +80,21 @@ namespace ip3d_tp
                 // it is stored in the DiffuseColor porperty of the effect
 
                 ColorShaderEffect.VertexColorEnabled = false;  // deactivate the color channel
+                ColorShaderEffect.DiffuseColor = new Vector3(1, 0, 0);
                 ColorShaderEffect.CurrentTechnique.Passes[0].Apply();
 
-                Game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.LineStrip, 0, 0, VertexList.Length - 1); // here we connect all vertices width a line strip
+                Game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.LineStrip, 0, 0, IndicesList.Length - 1 ); // here we connect all vertices width a line strip
 
             }
 
+        }
+
+        // updates the effect matrices
+        public void UpdateShaderMatrices(Matrix viewTransform, Matrix projectionTransform)
+        {
+            ColorShaderEffect.Projection = projectionTransform;
+            ColorShaderEffect.View = viewTransform;
+            ColorShaderEffect.World = WorldTransform;
         }
 
         private void CreateGeometry()
@@ -94,7 +104,7 @@ namespace ip3d_tp
             int nVerticesDepth = ZSubs + 1;
 
             int verticesCount = nVerticesWidth * nVerticesDepth;
-            int indicesCount = (XSubs * 2) * (ZSubs * 2);
+            int indicesCount = XSubs * ZSubs * 6;
 
             // first, the array of vertices is created
             VertexList = new VertexPositionColor[verticesCount];
@@ -130,6 +140,7 @@ namespace ip3d_tp
 
             // create indices
             int currentIndice = 0;
+            int currentSubDivison = 0;
             for (int z = 0; z < ZSubs; z++)
             {
                 for (int x = 0; x < XSubs; x++)
@@ -142,8 +153,8 @@ namespace ip3d_tp
                      *  
                      */
 
-                    int vert1 = x;
-                    int vert2 = x + 1;
+                    int vert1 = currentSubDivison + z;
+                    int vert2 = vert1 + 1;
                     int vert3 = vert2 + nVerticesWidth;
                     int vert4 = vert3 - 1;
 
@@ -156,6 +167,8 @@ namespace ip3d_tp
                     IndicesList[currentIndice++] = (short)vert4;
                     IndicesList[currentIndice++] = (short)vert2;
                     IndicesList[currentIndice++] = (short)vert3;
+
+                    currentSubDivison++;
 
                 }
 

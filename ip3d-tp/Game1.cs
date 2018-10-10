@@ -11,6 +11,7 @@ namespace ip3d_tp
         SpriteBatch spriteBatch;
 
         Plane plane;
+        BasicCamera camera;
 
         public Game1()
         {
@@ -21,8 +22,13 @@ namespace ip3d_tp
         protected override void Initialize()
         {
 
-            plane = new Plane(this);
+            plane = new Plane(this, 10, 10, 2, 2);
             Components.Add(plane);
+
+            camera = new BasicCamera(this, 45f, 20f);
+            camera.Target.Y = 0;
+            camera.RotateCamera = true;
+            Components.Add(camera);
 
             base.Initialize();
         }
@@ -44,12 +50,17 @@ namespace ip3d_tp
 
 
             base.Update(gameTime);
+
+            // here we update the object shader(effect) matrices
+            // so it can perform the space calculations on the vertices
+            plane.UpdateShaderMatrices(camera.ViewTransform, camera.ProjectionTransform);
         }
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(new Color(0.15f, 0.15f, 0.15f));
 
+            plane.Draw(gameTime);
 
             base.Draw(gameTime);
         }
