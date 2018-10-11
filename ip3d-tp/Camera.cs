@@ -10,7 +10,7 @@ namespace ip3d_tp
         // create variables to hold the current camera position and target
         public Vector3 Position;
         public Vector3 Target;
-
+                
         // these are the matrices to be used when this camera is active
         public Matrix ViewTransform;
         public Matrix ProjectionTransform;
@@ -29,9 +29,10 @@ namespace ip3d_tp
 
             ViewTransform = Matrix.Identity;
 
-            // the projection matrix is responsible for defining a frustum view.
-            // this is the eye emulation
-            ProjectionTransform = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(FieldOfView), game.GraphicsDevice.DisplayMode.AspectRatio, 0.1f, 1000f);
+            // because we change the zoom, we need to refresh teh perspective
+            // the calculation of the ration must be done with the float cast
+            // otherwise we lose precision and the result gets weird
+            ProjectionTransform = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(FieldOfView), (float)Game.GraphicsDevice.Viewport.Width / (float)Game.GraphicsDevice.Viewport.Height, 0.1f, 1000f);
 
         }
         
