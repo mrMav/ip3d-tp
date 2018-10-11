@@ -19,7 +19,7 @@ namespace ip3d_tp
         float Pitch = -35;
 
         float MouseSensitivity = 0.1f;
-        float Zoom = 45f;
+        protected float Zoom = 45f;
 
         float AccelerationValue = 0.2f;
         float MaxVelocity = 4f;
@@ -28,23 +28,13 @@ namespace ip3d_tp
         public Vector3 Rotation;
 
         public float Drag = 0.95f;
-                
-        // the surface
-        Plane Surface;
-
-        // the offset from the surface
-        public float OffsetHeight;
-
+                        
         // used to detect 'just' pressed keys
         private KeyboardState OldKeyboardState;
         private MouseState OldMouseState;
 
-        public FreeCamera(Game game, float fieldOfView, Plane surface, float offset = 0) : base(game, fieldOfView)
+        public FreeCamera(Game game, float fieldOfView) : base(game, fieldOfView)
         {
-
-            OffsetHeight = offset;
-
-            Surface = surface ?? throw new Exception("ERROR::SurfaceFollowCamera::surface argument cannot be null.");
 
             Acceleration = new Vector3(AccelerationValue, 0.0f, AccelerationValue);
             Velocity = Vector3.Zero;

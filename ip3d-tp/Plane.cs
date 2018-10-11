@@ -13,6 +13,9 @@ namespace ip3d_tp
         public int XSubs { get; private set; }
         public int ZSubs { get; private set; }
 
+        public float SubWidth { get; private set; }
+        public float SubHeight { get; private set; }
+
         // if true, a geometry update is needed
         public bool DirtyGeometry;
 
@@ -25,7 +28,7 @@ namespace ip3d_tp
         // space to world space
         Matrix WorldTransform;
 
-        VertexPositionColor[] VertexList;
+        public VertexPositionColor[] VertexList;
         short[] IndicesList;
 
         VertexBuffer VertexBuffer;
@@ -57,6 +60,7 @@ namespace ip3d_tp
             ColorShaderEffect = new BasicEffect(game.GraphicsDevice);
             ColorShaderEffect.LightingEnabled = false;  // we won't be using light. we would need normals for that
             ColorShaderEffect.VertexColorEnabled = true;  // we do want color though
+            ColorShaderEffect.PreferPerPixelLighting = true;
             ShowWireframe = true;  // enable out of the box wireframe
 
             SolidRasterizerState = new RasterizerState();
@@ -125,8 +129,8 @@ namespace ip3d_tp
             IndicesList = new short[indicesCount];
 
             // the size of each subdivision
-            float subWidth = Width / XSubs;
-            float subDepth = Depth / ZSubs;
+            SubWidth  = Width / XSubs;
+            SubHeight = Depth / ZSubs;
 
             int currentVertice = 0;
 
@@ -139,8 +143,8 @@ namespace ip3d_tp
                     // we will put the 0, 0 on the center of the plane
                     // because of that we will translate every vertice halfwidth and halfdepth
 
-                    float xx = x * subWidth - Width / 2;
-                    float zz = z * subDepth - Depth / 2;
+                    float xx = x * SubWidth  - Width / 2;
+                    float zz = z * SubHeight - Depth / 2;
 
                     // texture coordinates, must be normalized
                     float u = x / XSubs;
@@ -227,6 +231,14 @@ namespace ip3d_tp
             Game.GraphicsDevice.SetVertexBuffer(null);
             VertexBuffer.SetData<VertexPositionColor>(VertexList);
 
+        }
+
+        public void SetVerticeColor(int index, Color color)
+        {
+            VertexList[index].Color = color;
+
+            Game.GraphicsDevice.SetVertexBuffer(null);
+            VertexBuffer.SetData<VertexPositionColor>(VertexList);
         }
 
 

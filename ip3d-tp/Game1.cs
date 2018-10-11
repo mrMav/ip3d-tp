@@ -61,7 +61,7 @@ namespace ip3d_tp
             plane.ShowWireframe = true;
             Components.Add(plane);
 
-            camera = new FreeCamera(this, 45f, plane);
+            camera = new SurfaceFollowCamera(this, 45f, plane);
             camera.Position.Y = 20;
             Components.Add(camera);
 
