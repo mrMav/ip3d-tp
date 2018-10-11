@@ -11,9 +11,11 @@ namespace ip3d_tp
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
+        Axis3D worldAxis;
         Plane plane;
         FreeCamera camera;
         Texture2D terrainHeightMap;
+
 
         public Game1()
         {
@@ -56,12 +58,16 @@ namespace ip3d_tp
 
             terrainHeightMap = Content.Load<Texture2D>("lh3d1");
 
+            worldAxis = new Axis3D(this, camera, Vector3.Zero, 200f);
+            Components.Add(worldAxis);
+
             plane = new Plane(this, 128, 128, terrainHeightMap.Width - 1, terrainHeightMap.Height - 1);
             plane.SetHeightFromTexture(terrainHeightMap);
             plane.ShowWireframe = true;
             Components.Add(plane);
 
-            camera = new SurfaceFollowCamera(this, 45f, plane);
+            //camera = new SurfaceFollowCamera(this, 45f, plane);
+            camera = new FreeCamera(this, 45f);
             camera.Position.Y = 20;
             Components.Add(camera);
 
@@ -82,12 +88,11 @@ namespace ip3d_tp
 
             // locking the mouse
             Mouse.SetPosition(Window.Position.X + (graphics.PreferredBackBufferWidth / 2), Window.Position.Y + (graphics.PreferredBackBufferHeight / 2));
-            Console.WriteLine("game update");
-
 
             // here we update the object shader(effect) matrices
             // so it can perform the space calculations on the vertices
             plane.UpdateShaderMatrices(camera.ViewTransform, camera.ProjectionTransform);
+            worldAxis.UpdateShaderMatrices(camera.ViewTransform, camera.ProjectionTransform);
         }
 
         protected override void Draw(GameTime gameTime)

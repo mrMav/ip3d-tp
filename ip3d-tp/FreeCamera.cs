@@ -120,7 +120,7 @@ namespace ip3d_tp
             // (reset position "shim")            
             float midWidth  = Game.GraphicsDevice.Viewport.Width / 2;
             float midHeight = Game.GraphicsDevice.Viewport.Height / 2;
-            Console.WriteLine(Game.GraphicsDevice.Viewport.Width + ", " + Game.GraphicsDevice.Viewport.Width);
+
             ProcessMouseMovement((ms.Position.X - midWidth),
                                  (ms.Position.Y - midHeight));
             ProcessMouseScroll(ms);

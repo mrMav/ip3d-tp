@@ -41,6 +41,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Asix3D.cs" />
     <Compile Include="BasicCamera.cs" />
     <Compile Include="Camera.cs" />
     <Compile Include="Controls.cs" />

@@ -32,6 +32,10 @@ namespace ip3d_tp
 
             float dt = (float)gameTime.ElapsedGameTime.TotalMilliseconds;
 
+            // constrain to bounds
+            if(Position.X < -Surface.Width / 2) { }
+
+
             // get the nearest vertice from the plane
             // will need to offset 
             int x = (int)Math.Floor((Position.X + Surface.Width / 2) / Surface.SubWidth);
