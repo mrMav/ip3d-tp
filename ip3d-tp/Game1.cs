@@ -99,7 +99,8 @@ namespace ip3d_tp
         {
             GraphicsDevice.Clear(new Color(0.20f, 0.20f, 0.20f));
 
-            plane.Draw(gameTime);
+            //plane.Draw(gameTime);
+            plane.DrawCustomShader(gameTime, camera);
 
             base.Draw(gameTime);
         }

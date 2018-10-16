@@ -11,7 +11,7 @@ struct VertexShaderInput {
 
 };
 
-struct VertexSahderOutput {
+struct VertexShaderOutput {
 
 	float4 Position : POSITION0;
 
@@ -38,9 +38,9 @@ technique Ambient {
 
 	pass Pass1 {
 
-		VertexShader = compile vs_2_0 VertexSahderFunction();
-		PixelShader = compile ps_2_0 PixelShaderFunction();
+		VertexShader = compile vs_4_0 VertexShaderFunction();
+		PixelShader = compile ps_4_0 PixelShaderFunction();
 
-	};
+	}
 
 };

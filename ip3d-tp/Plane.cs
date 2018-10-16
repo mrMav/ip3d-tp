@@ -38,6 +38,9 @@ namespace ip3d_tp
         // we will use Monogame built in BasicEffect for the purpose
         BasicEffect ColorShaderEffect;
 
+        // our custom effect experiences
+        Effect CustomEffect;
+
         RasterizerState SolidRasterizerState;
         RasterizerState WireframeRasterizerState;
 
@@ -63,6 +66,9 @@ namespace ip3d_tp
             ColorShaderEffect.PreferPerPixelLighting = true;
             ShowWireframe = true;  // enable out of the box wireframe
 
+            // load our custom effect from the content
+            CustomEffect = Game.Content.Load<Effect>("Effects/Ambient");
+
             SolidRasterizerState = new RasterizerState();
             WireframeRasterizerState = new RasterizerState();
 
@@ -71,6 +77,24 @@ namespace ip3d_tp
 
             // create the geometry
             CreateGeometry();
+
+        }
+
+        public void DrawCustomShader(GameTime gameTime, Camera camera)
+        {
+
+            Game.GraphicsDevice.Indices = IndexBuffer;
+            Game.GraphicsDevice.SetVertexBuffer(VertexBuffer);
+
+            Game.GraphicsDevice.RasterizerState = SolidRasterizerState;
+
+            CustomEffect.Parameters["World"].SetValue(WorldTransform);
+            CustomEffect.Parameters["View"].SetValue(camera.ViewTransform);
+            CustomEffect.Parameters["Projection"].SetValue(camera.ProjectionTransform);
+
+            CustomEffect.CurrentTechnique.Passes[0].Apply();
+
+            Game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, IndicesList.Length / 3);
 
         }
 

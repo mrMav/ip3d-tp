@@ -25,3 +25,9 @@
 /processorParam:TextureFormat=Color
 /build:lh3d1.jpg
 
+#begin Effects/Ambient.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:DebugMode=Auto
+/build:Effects/Ambient.fx
+
