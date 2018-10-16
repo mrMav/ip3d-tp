@@ -23,7 +23,7 @@ namespace ip3d_tp
         Vector3 ModelRotation;
         // TODO: add some scale and position for some fun
 
-        // world transform or matrix is the matrix we will multiply 
+        // world transform or matrix is the matrix we will multiply
         // our vertices for. this transforms the vertices from local
         // space to world space
         Matrix WorldTransform;
@@ -239,6 +239,17 @@ namespace ip3d_tp
 
             Game.GraphicsDevice.SetVertexBuffer(null);
             VertexBuffer.SetData<VertexPositionColor>(VertexList);
+        }
+
+        public Vector3 GetVerticeAt(int x, int y)
+        {
+
+            Vector3 result = Vector3.Zero;
+
+
+
+            return result;
+
         }
 
 

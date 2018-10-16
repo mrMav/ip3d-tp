@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 
@@ -33,8 +34,30 @@ namespace ip3d_tp
             float dt = (float)gameTime.ElapsedGameTime.TotalMilliseconds;
 
             // constrain to bounds
-            if(Position.X < -Surface.Width / 2) { }
+            // inset one subdivision
+            if(Position.X < -Surface.Width / 2 + Surface.SubWidth) {
 
+                Position.X = -Surface.Width / 2 + Surface.SubWidth;
+
+            }
+            if (Position.X > Surface.Width / 2 - Surface.SubWidth)
+            {
+
+                Position.X = Surface.Width / 2 - Surface.SubWidth;
+
+            }
+            if (Position.Z < -Surface.Depth / 2 + Surface.SubHeight)
+            {
+
+                Position.Z = -Surface.Depth / 2 + Surface.SubHeight;
+
+            }
+            if (Position.Z > Surface.Depth / 2 - Surface.SubHeight)
+            {
+
+                Position.Z = Surface.Depth / 2 - Surface.SubHeight;
+
+            }
 
             // get the nearest vertice from the plane
             // will need to offset 
@@ -42,13 +65,50 @@ namespace ip3d_tp
             int z = (int)Math.Floor((Position.Z + Surface.Depth / 2) / Surface.SubHeight);
 
             // NUM_COLS * x + y
-            int verticeIndex = (Surface.XSubs + 1) * z + x;
-            float height = Surface.VertexList[verticeIndex].Position.Y;
-            Surface.SetVerticeColor(verticeIndex, Color.Red);
+            int verticeIndex0 = (Surface.XSubs + 1) * z + x;
+            int verticeIndex1 = verticeIndex0 + 1;
+            int verticeIndex2 = verticeIndex0 + Surface.XSubs + 1;
+            int verticeIndex3 = verticeIndex2 + 1;
 
-            Console.WriteLine($"pos: {Position}, col: {x}, {z}: index: {verticeIndex}: height: {height.ToString("###0.#########")}");
+            /*
+             * 0---1
+             * | / |
+             * 2---3
+             */
 
-            Position.Y = height + 4f;
+
+            // interpolate heights
+            // based on https://en.wikipedia.org/wiki/Bilinear_interpolation
+            // the function of the vertice, is the return of the Y value.
+
+            VertexPositionColor v0 = Surface.VertexList[verticeIndex0];
+            VertexPositionColor v1 = Surface.VertexList[verticeIndex1];
+            VertexPositionColor v2 = Surface.VertexList[verticeIndex2];
+            VertexPositionColor v3 = Surface.VertexList[verticeIndex3];
+
+            float camPosX = Position.X;
+            float camPosZ = Position.Z;
+
+            float x0 = Surface.VertexList[verticeIndex0].Position.X;
+            float x1 = Surface.VertexList[verticeIndex1].Position.X;
+            float z0 = Surface.VertexList[verticeIndex0].Position.Z;
+            float z1 = Surface.VertexList[verticeIndex2].Position.Z;
+
+            // interpolate the x's
+            float x0Lerp = (x1 - camPosX) / (x1 - x0) * v0.Position.Y + (camPosX - x0) / (x1 - x0) * v1.Position.Y;
+            float x1Lerp = (x1 - camPosX) / (x1 - x0) * v2.Position.Y + (camPosX - x0) / (x1 - x0) * v3.Position.Y;
+
+            float zLerp = (z1 - camPosZ) / (z1 - z0) * x0Lerp + (camPosZ - z0) / (z1 - z0) * x1Lerp;
+
+            //Surface.SetVerticeColor(verticeIndex0, Color.Red);
+            //Surface.SetVerticeColor(verticeIndex1, Color.Green);
+            //Surface.SetVerticeColor(verticeIndex2, Color.Blue);
+            //Surface.SetVerticeColor(verticeIndex3, Color.HotPink);
+            
+            float height = Surface.VertexList[verticeIndex0].Position.Y;
+            Position.Y = zLerp + 4f;
+
+            Console.WriteLine($"pos: {Position}, col: {x}, {z}: index: {verticeIndex0}: height: {height.ToString("###0.#########")}, zlerp: {zLerp.ToString("###0.#########")}, x0lerp: {x0Lerp.ToString("###0.#########")}, x1lerp: {x1Lerp.ToString("###0.#########")}");
 
             ViewTransform = GetViewMatrix();
 
