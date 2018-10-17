@@ -67,8 +67,9 @@ namespace ip3d_tp
             Components.Add(plane);
 
             camera = new SurfaceFollowCamera(this, 45f, plane);
-            //camera = new FreeCamera(this, 45f);
-            camera.Position.Y = 20;
+            camera.MaxVelocity = 0.5f;
+            camera.Acceleration = new Vector3(0.01f);
+            
             Components.Add(camera);
 
         }

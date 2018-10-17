@@ -17,7 +17,7 @@ namespace ip3d_tp
         // the offset from the surface
         public float OffsetHeight;
         
-        public SurfaceFollowCamera(Game game, float fieldOfView, Plane surface, float offset = 0) : base(game, fieldOfView)
+        public SurfaceFollowCamera(Game game, float fieldOfView, Plane surface, float offset = 1) : base(game, fieldOfView)
         {
 
             OffsetHeight = offset;
@@ -85,30 +85,32 @@ namespace ip3d_tp
             VertexPositionColor v1 = Surface.VertexList[verticeIndex1];
             VertexPositionColor v2 = Surface.VertexList[verticeIndex2];
             VertexPositionColor v3 = Surface.VertexList[verticeIndex3];
+                        
+            Position.Y = Utils.HeightBilinearInterpolation(Position, v0.Position, v1.Position, v2.Position, v3.Position) + OffsetHeight;
 
-            float camPosX = Position.X;
-            float camPosZ = Position.Z;
+            //float camPosX = Position.X;
+            //float camPosZ = Position.Z;
 
-            float x0 = Surface.VertexList[verticeIndex0].Position.X;
-            float x1 = Surface.VertexList[verticeIndex1].Position.X;
-            float z0 = Surface.VertexList[verticeIndex0].Position.Z;
-            float z1 = Surface.VertexList[verticeIndex2].Position.Z;
+            //float x0 = Surface.VertexList[verticeIndex0].Position.X;
+            //float x1 = Surface.VertexList[verticeIndex1].Position.X;
+            //float z0 = Surface.VertexList[verticeIndex0].Position.Z;
+            //float z1 = Surface.VertexList[verticeIndex2].Position.Z;
 
-            // interpolate the x's
-            float x0Lerp = (x1 - camPosX) / (x1 - x0) * v0.Position.Y + (camPosX - x0) / (x1 - x0) * v1.Position.Y;
-            float x1Lerp = (x1 - camPosX) / (x1 - x0) * v2.Position.Y + (camPosX - x0) / (x1 - x0) * v3.Position.Y;
+            //// interpolate the x's
+            //float x0Lerp = (x1 - camPosX) / (x1 - x0) * v0.Position.Y + (camPosX - x0) / (x1 - x0) * v1.Position.Y;
+            //float x1Lerp = (x1 - camPosX) / (x1 - x0) * v2.Position.Y + (camPosX - x0) / (x1 - x0) * v3.Position.Y;
 
-            float zLerp = (z1 - camPosZ) / (z1 - z0) * x0Lerp + (camPosZ - z0) / (z1 - z0) * x1Lerp;
+            //float zLerp = (z1 - camPosZ) / (z1 - z0) * x0Lerp + (camPosZ - z0) / (z1 - z0) * x1Lerp;
 
-            //Surface.SetVerticeColor(verticeIndex0, Color.Red);
-            //Surface.SetVerticeColor(verticeIndex1, Color.Green);
-            //Surface.SetVerticeColor(verticeIndex2, Color.Blue);
-            //Surface.SetVerticeColor(verticeIndex3, Color.HotPink);
+            ////Surface.SetVerticeColor(verticeIndex0, Color.Red);
+            ////Surface.SetVerticeColor(verticeIndex1, Color.Green);
+            ////Surface.SetVerticeColor(verticeIndex2, Color.Blue);
+            ////Surface.SetVerticeColor(verticeIndex3, Color.HotPink);
             
-            float height = Surface.VertexList[verticeIndex0].Position.Y;
-            Position.Y = zLerp + 4f;
+            //float height = Surface.VertexList[verticeIndex0].Position.Y;
+            //Position.Y = zLerp + 4f;
 
-            Console.WriteLine($"pos: {Position}, col: {x}, {z}: index: {verticeIndex0}: height: {height.ToString("###0.#########")}, zlerp: {zLerp.ToString("###0.#########")}, x0lerp: {x0Lerp.ToString("###0.#########")}, x1lerp: {x1Lerp.ToString("###0.#########")}");
+            //Console.WriteLine($"pos: {Position}, col: {x}, {z}: index: {verticeIndex0}: height: {height.ToString("###0.#########")}, zlerp: {zLerp.ToString("###0.#########")}, x0lerp: {x0Lerp.ToString("###0.#########")}, x1lerp: {x1Lerp.ToString("###0.#########")}");
 
             ViewTransform = GetViewMatrix();
 
@@ -118,7 +120,7 @@ namespace ip3d_tp
             ProjectionTransform = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(Zoom), (float)Game.GraphicsDevice.Viewport.Width / (float)Game.GraphicsDevice.Viewport.Height, 0.1f, 1000f);
 
         }
-
+        
     }
 
 }

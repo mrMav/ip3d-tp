@@ -22,7 +22,7 @@ namespace ip3d_tp
         protected float Zoom = 45f;
 
         float AccelerationValue = 0.2f;
-        float MaxVelocity = 4f;
+        public float MaxVelocity = 4f;
         public Vector3 Acceleration;
         public Vector3 Velocity;
         public Vector3 Rotation;
