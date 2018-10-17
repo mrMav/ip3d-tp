@@ -81,10 +81,10 @@ namespace ip3d_tp
             // based on https://en.wikipedia.org/wiki/Bilinear_interpolation
             // the function of the vertice, is the return of the Y value.
 
-            VertexPositionColor v0 = Surface.VertexList[verticeIndex0];
-            VertexPositionColor v1 = Surface.VertexList[verticeIndex1];
-            VertexPositionColor v2 = Surface.VertexList[verticeIndex2];
-            VertexPositionColor v3 = Surface.VertexList[verticeIndex3];
+            VertexPositionTexture v0 = Surface.VertexList[verticeIndex0];
+            VertexPositionTexture v1 = Surface.VertexList[verticeIndex1];
+            VertexPositionTexture v2 = Surface.VertexList[verticeIndex2];
+            VertexPositionTexture v3 = Surface.VertexList[verticeIndex3];
                         
             Position.Y = Utils.HeightBilinearInterpolation(Position, v0.Position, v1.Position, v2.Position, v3.Position) + OffsetHeight;
 
