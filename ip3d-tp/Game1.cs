@@ -32,8 +32,8 @@ namespace ip3d_tp
             graphics.PreferredBackBufferHeight = 720;
             //graphics.IsFullScreen = true;
 
-            //graphics.GraphicsProfile = GraphicsProfile.HiDef;
-            //graphics.PreparingDeviceSettings += Graphics_PreparingDeviceSettings;
+            graphics.GraphicsProfile = GraphicsProfile.HiDef;
+            graphics.PreparingDeviceSettings += Graphics_PreparingDeviceSettings;
             graphics.ApplyChanges();
         }
 
@@ -61,16 +61,16 @@ namespace ip3d_tp
             worldAxis = new Axis3D(this, camera, Vector3.Zero, 200f);
             Components.Add(worldAxis);
 
-            //plane = new Plane(this, "ground_texture", 20, 20, 2, 2);
-            plane = new Plane(this, "ground_texture", 128, 128, terrainHeightMap.Width - 1, terrainHeightMap.Height - 1);
+            plane = new Plane(this, "ground_texture", 128*2, 128*2, terrainHeightMap.Width - 1, terrainHeightMap.Height - 1);
             plane.SetHeightFromTexture(terrainHeightMap);
             plane.ShowWireframe = true;
             Components.Add(plane);
 
             camera = new FreeCamera(this, 45f);
-            camera.Position.Y = 20;
+            //camera = new SurfaceFollowCamera(this, 45f, plane, 1.76f); // my height
+            //camera.Position.Y = 20;
             //camera.MaxVelocity = 0.5f;
-            //camera.Acceleration = new Vector3(0.01f);
+            //camera.Acceleration = new Vector3(0.01f);            
             
             Components.Add(camera);
 
