@@ -39,6 +39,10 @@ namespace ip3d_tp
         // follows the surface, at an offset from the ground
         SurfaceFollowCamera surfaceFollowCamera;
 
+        // put the cameras in an array for easy cycling
+        Camera[] camerasArray;
+        int currCam;
+
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -95,11 +99,11 @@ namespace ip3d_tp
             Components.Add(worldAxis);
 
             // initialize the plane with the prefered settings
-            plane = new Plane(this, "ground_texture", 128*2, 128*2, terrainHeightMap.Width - 1, terrainHeightMap.Height - 1);
+            plane = new Plane(this, "ground_texture", 128*2, 128*2, terrainHeightMap.Width - 1, terrainHeightMap.Height - 1, 0.5f);
             Components.Add(plane);
 
-            // dispace the vertices of the plane, based on the given heightmap
-            plane.SetHeightFromTexture(terrainHeightMap);
+            // dispace the vertices of the plane, based on the given heightmap, and adjust by a scale
+            plane.SetHeightFromTexture(terrainHeightMap, 0.09f);
 
             // toogle wireframe out of the box
             plane.ShowWireframe = true;
@@ -114,10 +118,19 @@ namespace ip3d_tp
             surfaceFollowCamera.MaxVelocity = 0.5f;
             surfaceFollowCamera.Acceleration = new Vector3(0.01f);
 
+            // initialize the array of cameras
+            camerasArray = new Camera[3];
+            camerasArray[0] = surfaceFollowCamera;
+            camerasArray[1] = freeCamera;
+            camerasArray[2] = basicCamera;
+            currCam = 0;
+
             // set the default camera
-            currentCamera = surfaceFollowCamera;
-            Components.Add(currentCamera);
-            
+            currentCamera = camerasArray[currCam];
+
+            // init controls
+            Controls.Initilalize();
+
         }
 
         protected override void UnloadContent()
@@ -127,27 +140,67 @@ namespace ip3d_tp
 
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
+            // set the current keyboard state
+            Controls.UpdateCurrentStates();
 
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Controls.IsKeyDown(Keys.Escape))
+                Exit();
+            
+            // switch between cameras
+            if(Controls.IsKeyPressed(Keys.Space))
+            {
+                currCam = (currCam + 1) % 3;
+
+                Console.WriteLine(currCam);
+
+                currentCamera = camerasArray[currCam];
+            }
+
+            // toggle wireframe
+            if (Controls.IsKeyPressed(Keys.F))
+            {
+                plane.ShowWireframe = !plane.ShowWireframe;
+            }
+
+            currentCamera.Update(gameTime);
 
             // every component will be updated after base update
             base.Update(gameTime);
             
-            // locking the mouse
+            // locking the mouse only after the components are updated
             Mouse.SetPosition(Window.Position.X + (graphics.PreferredBackBufferWidth / 2), Window.Position.Y + (graphics.PreferredBackBufferHeight / 2));
             
             // here we update the object shader(effect) matrices
             // so it can perform the space calculations on the vertices
             plane.UpdateShaderMatrices(currentCamera.ViewTransform, currentCamera.ProjectionTransform);
             worldAxis.UpdateShaderMatrices(currentCamera.ViewTransform, currentCamera.ProjectionTransform);
+
+            // update the last keyboard state
+            Controls.UpdateLastStates();
         }
 
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(new Color(0.20f, 0.20f, 0.20f));
 
+            // we need to call the draw manually for the plane
+            // it extends component, and not drawable
             plane.Draw(gameTime);
+            
+            // render the gui text
+            // notive the DepthStencilState, without default set in, depth will not 
+            // be calculated when drawing wireframes.
+            // more investigation needs to be done in order to understand why Monogame
+            // is doing it this way.
+            //
+            // update 18/10/2018:
+            // so we know that the graphics card is a state machine. so when we dont specify the stencil or sampler states
+            // the spritebatch will use some defaults of his. because in the plane class we never change them back,
+            // we get strange results. so, for now, the solution is to just maintain the same ones in the spritebatch.
+            // in the future, we must create stencil and sampler states for the meshs render.
+            spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.LinearWrap, DepthStencilState.Default, null, null, null);
+            spriteBatch.DrawString(font, $"Camera: {camerasArray[currCam].GetType().Name} (press space to cycle).\nWireframe: {plane.ShowWireframe}", new Vector2(10f, 10f), new Color(0f, 1f, 0f));
+            spriteBatch.End();
 
             base.Draw(gameTime);
         }

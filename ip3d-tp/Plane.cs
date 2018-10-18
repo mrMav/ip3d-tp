@@ -4,10 +4,14 @@ using System;
 
 namespace ip3d_tp
 {
+    /// <summary>
+    /// The plane class creates a plane primitive in the XZ plane.
+    /// There are options to define the size and number of subdivisions.
+    /// </summary>
     class Plane : GameComponent
     {
 
-        // the prism dimensions
+        // basic dimensions
         public float Width { get; private set; }
         public float Depth { get; private set; }
         public int XSubs { get; private set; }
@@ -18,19 +22,17 @@ namespace ip3d_tp
 
         // if true, a geometry update is needed
         public bool DirtyGeometry;
-
-        // the current model rotation        
-        Vector3 ModelRotation;
-        // TODO: add some scale and position for some fun
-
+        
         // world transform or matrix is the matrix we will multiply
         // our vertices for. this transforms the vertices from local
         // space to world space
         Matrix WorldTransform;
 
+        // list of vertices and indices
         public VertexPositionTexture[] VertexList;
         short[] IndicesList;
 
+        // gpu buffers
         VertexBuffer VertexBuffer;
         IndexBuffer IndexBuffer;
 
@@ -38,16 +40,26 @@ namespace ip3d_tp
         // we will use Monogame built in BasicEffect for the purpose
         BasicEffect ColorShaderEffect;
         BasicEffect TextureShaderEffect;
+
+        // reference to the textures
         Texture2D DiffuseMap;
 
+        // uv scale, for defining the texture scale
+        // when updated, there is a need to flag the dirty geometry flag
+        float UVScale;
+
+        // rasterizeres for solid and wireframe modes
         RasterizerState SolidRasterizerState;
         RasterizerState WireframeRasterizerState;
 
         // wireframe rendering toogle
         public bool ShowWireframe;
         
-        public Plane(Game game, string textureKey, float width = 10, float depth = 10, int xSubs = 1, int zSubs = 1) : base(game)
+        // constructor 
+        public Plane(Game game, string textureKey, float width = 10f, float depth = 10f, int xSubs = 1, int zSubs = 1, float uvscale = 1f) : base(game)
         {
+
+            // some basic assigning is done here
 
             Width = width;
             Depth = depth;
@@ -56,74 +68,43 @@ namespace ip3d_tp
 
             DirtyGeometry = false;
 
-            ModelRotation = Vector3.Zero;
             WorldTransform = Matrix.Identity;
 
             DiffuseMap = Game.Content.Load<Texture2D>(textureKey);
-            
+            UVScale = uvscale;
+
+            // in this phase, I want to stop everything if the texture is null
             if (DiffuseMap == null)
             {
                 throw new Exception($"diffuseMap is null. key {textureKey} not found in content.");
             }
 
+            // properties for the texture shader
             TextureShaderEffect = new BasicEffect(game.GraphicsDevice);
-            TextureShaderEffect.LightingEnabled = false;
-            TextureShaderEffect.VertexColorEnabled = false;
-            TextureShaderEffect.TextureEnabled = true;
-            TextureShaderEffect.Texture = DiffuseMap;
-            TextureShaderEffect.PreferPerPixelLighting = true;
-
+            TextureShaderEffect.LightingEnabled = false;  // still not using lighting
+            TextureShaderEffect.VertexColorEnabled = false;  // turn off the color 
+            TextureShaderEffect.TextureEnabled = true;  // but do turn up the texture channel
+            TextureShaderEffect.Texture = DiffuseMap;  // assign out texture        
+            
+            // this is the shader for the wireframe
             ColorShaderEffect = new BasicEffect(game.GraphicsDevice);
+            ColorShaderEffect.VertexColorEnabled = false;
+            ColorShaderEffect.DiffuseColor = new Vector3(0, 0, 0);
             ColorShaderEffect.LightingEnabled = false;  // we won't be using light. we would need normals for that
-            ColorShaderEffect.VertexColorEnabled = true;  // we do want color though
-            ColorShaderEffect.PreferPerPixelLighting = true;
             
             ShowWireframe = true;  // enable out of the box wireframe
-
+            
+            // setup the rasterizers
             SolidRasterizerState = new RasterizerState();
             WireframeRasterizerState = new RasterizerState();
 
             SolidRasterizerState.FillMode = FillMode.Solid;
             WireframeRasterizerState.FillMode = FillMode.WireFrame;
-
-
+            
             // create the geometry
             CreateGeometry();
 
         }
-
-        //public void Draw(GameTime gameTime)
-        //{
-
-        //    Game.GraphicsDevice.Indices = IndexBuffer;
-        //    Game.GraphicsDevice.SetVertexBuffer(VertexBuffer);
-
-        //    Game.GraphicsDevice.RasterizerState = SolidRasterizerState;
-
-        //    // render the geometry using a triangle list
-        //    // we only use one pass of the shader, but we could have more.
-        //    ColorShaderEffect.VertexColorEnabled = true;
-        //    ColorShaderEffect.DiffuseColor = new Vector3(1, 1, 1);
-        //    ColorShaderEffect.CurrentTechnique.Passes[0].Apply();
-
-        //    Game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, IndicesList.Length / 3); 
-
-        //    if (ShowWireframe)
-        //    {
-        //        // the color of the wireframe is white by default
-        //        // it is stored in the DiffuseColor porperty of the effect
-
-        //        ColorShaderEffect.VertexColorEnabled = false;  // deactivate the color channel
-        //        ColorShaderEffect.DiffuseColor = new Vector3(0, 0, 0);
-        //        ColorShaderEffect.CurrentTechnique.Passes[0].Apply();
-
-        //        Game.GraphicsDevice.RasterizerState = WireframeRasterizerState;
-
-        //        Game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, IndicesList.Length / 3);
-
-        //    }
-
-        //}
 
         public void Draw(GameTime gameTime)
         {
@@ -131,52 +112,29 @@ namespace ip3d_tp
             Game.GraphicsDevice.Indices = IndexBuffer;
             Game.GraphicsDevice.SetVertexBuffer(VertexBuffer);
 
-            Game.GraphicsDevice.RasterizerState = SolidRasterizerState;
-
             // render the geometry using a triangle list
             // we only use one pass of the shader, but we could have more.
-            //TextureShaderEffect.VertexColorEnabled = false;
-            //TextureShaderEffect.LightingEnabled = false;
-            TextureShaderEffect.TextureEnabled = true;
-            TextureShaderEffect.Texture = DiffuseMap;
-            
-            //TextureShaderEffect.DiffuseColor = Color.Black.ToVector3();
-            //TextureShaderEffect.DiffuseColor = new Vector3(1, 1, 1);
+            Game.GraphicsDevice.RasterizerState = SolidRasterizerState;
             TextureShaderEffect.CurrentTechnique.Passes[0].Apply();
 
+            // send a draw call to the gpu, using a triangle list as a primitive. 
+            // I could be using a triangle strip, but nowadays computers have tons of memory
+            // and I'd rather keep the draw calls at a minimum and save the cpu the struggle
             Game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, IndicesList.Length / 3);
-
-            //foreach (EffectPass pass in TextureShaderEffect.CurrentTechnique.Passes)
-            //{
-            //    pass.Apply();
-            //    Game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, IndicesList.Length / 3);
-
-            //}
-
-            //for (int i = 0; i < 16 - 1; i++)
-            //{
-            //    Game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleStrip, 0, i * 16 * 2, 16 * 2 - 2);
-            //}
-
+            
             if (ShowWireframe)
             {
-                // the color of the wireframe is white by default
-                // it is stored in the DiffuseColor porperty of the effect
-
-                ColorShaderEffect.VertexColorEnabled = false;  // deactivate the color channel
-                ColorShaderEffect.DiffuseColor = new Vector3(0, 0, 0);
+                // same as before but in wireframe rasterizer
 
                 ColorShaderEffect.CurrentTechnique.Passes[0].Apply();
-
                 Game.GraphicsDevice.RasterizerState = WireframeRasterizerState;
-
                 Game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, IndicesList.Length / 3);
 
             }
 
         }
 
-        // updates the effect matrices
+        // updates the effects matrices
         public void UpdateShaderMatrices(Matrix viewTransform, Matrix projectionTransform)
         {
             ColorShaderEffect.Projection = projectionTransform;
@@ -192,13 +150,19 @@ namespace ip3d_tp
         private void CreateGeometry()
         {
 
+            // creates the geometry, whithout taking into account any heightmap!
+            // if we want that, next, we call the setheight function
+
+
+            // calculate the number of vertices we will have in each side
             int nVerticesWidth = XSubs + 1;
             int nVerticesDepth = ZSubs + 1;
 
+            // total vertices and total indices
             int verticesCount = nVerticesWidth * nVerticesDepth;
-            int indicesCount = XSubs * ZSubs * 6;
+            int indicesCount = XSubs * ZSubs * 6;  // 6 because a subdivision is made of 2 triagnles, each one with 3 vertices(indexed)
 
-            // first, the array of vertices is created
+            // the array of vertices and indices are created
             VertexList = new VertexPositionTexture[verticesCount];
             IndicesList = new short[indicesCount];
 
@@ -215,17 +179,18 @@ namespace ip3d_tp
                 {
 
                     // we will put the 0, 0 on the center of the plane
-                    // because of that we will translate every vertice halfwidth and halfdepth
+                    // because of that we will translate every vertex halfwidth and halfdepth
+                    // this ensures our plane has the origin in the middle
 
                     float xx = x * SubWidth  - Width / 2;
                     float zz = z * SubHeight - Depth / 2;
 
                     // texture coordinates, must be normalized
-                    float u = (float)x / (float)XSubs;
-                    float v = (float)z / (float)ZSubs;
+                    float u = (float)x / ((float)XSubs * UVScale);
+                    float v = (float)z / ((float)ZSubs * UVScale);
 
+                    // create the vertice, and increment to the next one
                     VertexList[currentVertice++] = new VertexPositionTexture(new Vector3(xx, 0, zz), new Vector2(u, v));
-                    //VertexList[currentVertice++] = new VertexPositionColor(new Vector3(xx, 0, zz), Color.LightGray);
 
                 }
             }
@@ -266,24 +231,27 @@ namespace ip3d_tp
 
             }
 
+            // create the buffers, and attach the corresponding data:
+
             VertexBuffer = new VertexBuffer(Game.GraphicsDevice, VertexPositionTexture.VertexDeclaration, VertexList.Length, BufferUsage.WriteOnly);
             VertexBuffer.SetData<VertexPositionTexture>(VertexList);
-            //VertexBuffer = new VertexBuffer(Game.GraphicsDevice, VertexPositionColor.VertexDeclaration, VertexList.Length, BufferUsage.None);
-            //VertexBuffer.SetData<VertexPositionColor>(VertexList);
             
             IndexBuffer = new IndexBuffer(Game.GraphicsDevice, typeof(short), IndicesList.Length, BufferUsage.WriteOnly);
             IndexBuffer.SetData<short>(IndicesList);
 
         }
 
-        public void SetHeightFromTexture(Texture2D texture)
+        public void SetHeightFromTexture(Texture2D texture, float scaler = 1f)
         {
 
+            // extract the color data from the texture
             Color[] colorData = new Color[texture.Width * texture.Height];
             texture.GetData<Color>(colorData);
 
             int currentVertice = 0;
 
+            // cycle through every subdivision, assigning the height
+            // corresponding to the texture
             for (int z = 0; z <= ZSubs; z++)
             {
                 for (int x = 0; x <= XSubs; x++)
@@ -293,27 +261,19 @@ namespace ip3d_tp
                     int textureY = z;
 
                     Color currentColor = colorData[z * texture.Width + x];
-
-                    float scaler = 0.05f;
-
-                    //VertexList[currentVertice].Color = currentColor;
+                    
                     VertexList[currentVertice++].Position.Y = currentColor.R * scaler;
 
                 }
             }
 
+            // unbound the buffer, so we can change it
             Game.GraphicsDevice.SetVertexBuffer(null);
+
+            // set the new data in
             VertexBuffer.SetData<VertexPositionTexture>(VertexList);
 
         }
-
-        //public void SetVerticeColor(int index, Color color)
-        //{
-        //    VertexList[index].Color = color;
-
-        //    Game.GraphicsDevice.SetVertexBuffer(null);
-        //    VertexBuffer.SetData<VertexPositionColor>(VertexList);
-        //}        
 
     }
 

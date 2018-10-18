@@ -4,7 +4,15 @@ namespace ip3d_tp
 {
     public static class Utils
     {
-
+        /// <summary>
+        /// Interpolates the height of the given four vertices, and return a new one on the given position.
+        /// </summary>
+        /// <param name="position">The position inseid the four vertices</param>
+        /// <param name="vertex0"></param>
+        /// <param name="vertex1"></param>
+        /// <param name="vertex2"></param>
+        /// <param name="vertex3"></param>
+        /// <returns>The new height</returns>
         public static float HeightBilinearInterpolation(Vector3 position, Vector3 vertex0, Vector3 vertex1, Vector3 vertex2, Vector3 vertex3)
         {
 

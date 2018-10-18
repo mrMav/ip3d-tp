@@ -1,10 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ip3d_tp
 {
@@ -39,15 +34,15 @@ namespace ip3d_tp
 
             vertices = new VertexPositionColor[vertexCount];
 
-            // Linha sobre o eixo X
+            // x axis
             this.vertices[0] = new VertexPositionColor(new Vector3(Position.X, Position.Y, Position.Z), Color.Red);
             this.vertices[1] = new VertexPositionColor(new Vector3(Position.X + Size, Position.Y, Position.Z), Color.Red);
 
-            // Linha sobre o eixo Y
+            // y axis
             this.vertices[2] = new VertexPositionColor(new Vector3(Position.X, Position.Y, Position.Z), Color.Green);
             this.vertices[3] = new VertexPositionColor(new Vector3(Position.X, Position.Y + Size, Position.Z), Color.Green);
 
-            // Linha sobre o eixo Z
+            // z axis
             this.vertices[4] = new VertexPositionColor(new Vector3(Position.X, Position.Y, Position.Z), Color.Blue);
             this.vertices[5] = new VertexPositionColor(new Vector3(Position.X, Position.Y, Position.Z + Size), Color.Blue);
         }
