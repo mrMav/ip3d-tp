@@ -47,6 +47,11 @@ namespace ip3d_tp
         {
 
         }
+
+        public virtual string About()
+        {
+            return "Camera";
+        }
         
     }
 

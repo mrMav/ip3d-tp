@@ -199,7 +199,8 @@ namespace ip3d_tp
             // we get strange results. so, for now, the solution is to just maintain the same ones in the spritebatch.
             // in the future, we must create stencil and sampler states for the meshs render.
             spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.LinearWrap, DepthStencilState.Default, null, null, null);
-            spriteBatch.DrawString(font, $"Camera: {camerasArray[currCam].GetType().Name} (press space to cycle).\nWireframe: {plane.ShowWireframe}", new Vector2(10f, 10f), new Color(0f, 1f, 0f));
+            spriteBatch.DrawString(font, $"Camera (SPACE, Cycle): {camerasArray[currCam].GetType().Name}\nWireframe (F, Toogle): {plane.ShowWireframe}", new Vector2(10f, 10f), new Color(0f, 1f, 0f));
+            spriteBatch.DrawString(font, $"{camerasArray[currCam].About()}", new Vector2(graphics.PreferredBackBufferWidth / 2, 10f), new Color(0f, 1f, 0f));
             spriteBatch.End();
 
             base.Draw(gameTime);

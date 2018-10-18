@@ -73,8 +73,7 @@ namespace ip3d_tp
             // will need to offset 
             int x = (int)Math.Floor((Position.X + Surface.Width / 2) / Surface.SubWidth);
             int z = (int)Math.Floor((Position.Z + Surface.Depth / 2) / Surface.SubHeight);
-
-
+            
             /* 
              * get the neighbour vertices
              * 
@@ -99,7 +98,12 @@ namespace ip3d_tp
             ViewTransform = GetViewMatrix();
 
         }
-        
+
+        public override string About()
+        {
+            return "Use WASD to move around.\nLook around with the mouse.\nScroll zooms in and out.\nYou will be snapped and constrained to the terrain.";
+        }
+
     }
 
 }

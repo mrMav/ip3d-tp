@@ -40,9 +40,8 @@ namespace ip3d_tp
                 // it allows for continuous animation. We multiply the sin or cos for the sphereRadius
                 Position.X = (float)Math.Sin(gameTime.TotalGameTime.TotalMilliseconds * 0.0001f) * SphereRadius;
                 Position.Z = (float)Math.Cos(gameTime.TotalGameTime.TotalMilliseconds * 0.0001f) * SphereRadius;
-
-                //Position.Y = (float)Math.Cos(gameTime.TotalGameTime.TotalMilliseconds * 0.00025f) * SphereRadius;
-                //Position.Y = SphereRadius;
+                Position.Y = (float)Math.Abs(Math.Cos(gameTime.TotalGameTime.TotalMilliseconds * 0.00005f) * SphereRadius) + 20f;
+                
 
                 // finnaly, update the view matrix
                 ViewTransform = Matrix.CreateLookAt(Position, Target, Vector3.Up);
@@ -50,6 +49,11 @@ namespace ip3d_tp
             }
 
             base.Update(gameTime);
+        }
+
+        public override string About()
+        {
+            return "Endless aerial view.";
         }
 
     }

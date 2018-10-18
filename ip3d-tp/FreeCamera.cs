@@ -178,6 +178,11 @@ namespace ip3d_tp
             base.Update(gameTime);
         }
 
+        public override string About()
+        {
+            return "Use WASD to move around.\nLook around with the mouse.\nScroll zooms in and out.\nYou are free in the world, enjoy it.";
+        }
+
     }
 
 }
