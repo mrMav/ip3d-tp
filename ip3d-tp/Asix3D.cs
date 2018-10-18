@@ -13,17 +13,14 @@ namespace ip3d_tp
         VertexPositionColor[] vertices;
         BasicEffect effect;
         Matrix worldMatrix;
-
-        Camera Camera;
-
+        
         Vector3 Position;
         float Size;
 
-        public Axis3D(Game game, Camera camera, Vector3 position, float size = 1f) : base(game)
+        public Axis3D(Game game, Vector3 position, float size = 1f) : base(game)
         {
 
             Size = size;
-            Camera = camera;
             Position = position;
 
             worldMatrix = Matrix.Identity;
