@@ -104,7 +104,7 @@ namespace ip3d_tp
             Components.Add(plane);
 
             // dispace the vertices of the plane, based on the given heightmap, and adjust by a scale
-            plane.SetHeightFromTexture(terrainHeightMap, 0.09f);
+            plane.SetHeightFromTexture(terrainHeightMap, 0.2f);
 
             // toogle wireframe out of the box
             plane.ShowWireframe = true;
@@ -164,6 +164,12 @@ namespace ip3d_tp
                 plane.ShowWireframe = !plane.ShowWireframe;
             }
 
+            // toggle normals
+            if (Controls.IsKeyPressed(Keys.N))
+            {
+                plane.ShowNormals = !plane.ShowNormals;
+            }
+
             currentCamera.Update(gameTime);
 
             // every component will be updated after base update
@@ -205,9 +211,9 @@ namespace ip3d_tp
             // the blendstate messes up with custom shader.
             // render targets might be the solution
             //
-            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Opaque, SamplerState.LinearWrap, DepthStencilState.Default, null, null, null);
-            spriteBatch.DrawString(font, $"Camera (SPACE, Cycle): {camerasArray[currCam].GetType().Name}\nWireframe (F, Toogle): {plane.ShowWireframe}", new Vector2(10f, 10f), new Color(0f, 1f, 0f));
-            spriteBatch.DrawString(font, $"{camerasArray[currCam].About()}", new Vector2(graphics.PreferredBackBufferWidth / 2, 10f), new Color(0f, 1f, 0f));
+            spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.LinearWrap, DepthStencilState.Default, null, null, null);
+            spriteBatch.DrawString(font, $"Camera (SPACE, Cycle): {camerasArray[currCam].GetType().Name}\nWireframe (F, Toogle): {plane.ShowWireframe}\nNormals (N, Toogle): {plane.ShowNormals}", new Vector2(10f, 10f), new Color(0f, 1f, 0f));
+            //spriteBatch.DrawString(font, $"{camerasArray[currCam].About()}", new Vector2(graphics.PreferredBackBufferWidth / 2, 10f), new Color(0f, 1f, 0f));
             spriteBatch.End();
 
             base.Draw(gameTime);

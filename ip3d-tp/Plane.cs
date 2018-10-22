@@ -57,6 +57,9 @@ namespace ip3d_tp
         RasterizerState SolidRasterizerState;
         RasterizerState WireframeRasterizerState;
 
+        // needed wile we have spritebatch messing around
+        BlendState BlendState;
+
         // wireframe rendering toogle
         public bool ShowWireframe;
         public bool ShowNormals;
@@ -65,7 +68,7 @@ namespace ip3d_tp
         // direction light properties
         Vector4 LightDirection = new Vector4(10, 5, 0, 0);
         Vector4 LightColor = Color.White.ToVector4();
-        float LightIntensity = 0.01f;
+        float LightIntensity = 0.08f;
 
         
         // constructor 
@@ -117,7 +120,10 @@ namespace ip3d_tp
 
             SolidRasterizerState.FillMode = FillMode.Solid;
             WireframeRasterizerState.FillMode = FillMode.WireFrame;
-            
+
+            this.BlendState = new BlendState();
+            this.BlendState.AlphaBlendFunction = BlendFunction.Add;
+
             // create the geometry
             CreateGeometry();
 
@@ -127,12 +133,19 @@ namespace ip3d_tp
         {
             base.Update(gameTime);
 
+            // some fun
+            float dt = (float)gameTime.TotalGameTime.TotalSeconds;
 
+            LightDirection.X = (float)Math.Sin(dt);  // is a direction light, so the size doesnt matter
+            LightDirection.Z = (float)Math.Cos(dt);  // is a direction light, so the size doesnt matter
 
         }
 
         public void DrawCustomShader(GameTime gameTime, Camera camera)
         {
+
+            Game.GraphicsDevice.RasterizerState = this.SolidRasterizerState;
+            Game.GraphicsDevice.BlendState = this.BlendState;
 
             Game.GraphicsDevice.Indices = IndexBuffer;
             Game.GraphicsDevice.SetVertexBuffer(VertexBuffer);
@@ -150,9 +163,36 @@ namespace ip3d_tp
             CustomEffect.Parameters["DiffuseColor"].SetValue(LightColor);
             CustomEffect.Parameters["DiffuseIntensity"].SetValue(LightIntensity);
 
+            CustomEffect.Parameters["ModelTexture"].SetValue(DiffuseMap);
+
             CustomEffect.CurrentTechnique.Passes[0].Apply();
 
             Game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, IndicesList.Length / 3);
+
+
+            if (ShowWireframe)
+            {
+                // same as before but in wireframe rasterizer
+
+                ColorShaderEffect.DiffuseColor = Color.Black.ToVector3();
+                ColorShaderEffect.CurrentTechnique.Passes[0].Apply();
+                Game.GraphicsDevice.RasterizerState = WireframeRasterizerState;
+                Game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, IndicesList.Length / 3);
+
+            }
+
+            if (ShowNormals)
+            {
+
+                // same as before but in wireframe rasterizer
+
+                ColorShaderEffect.DiffuseColor = Color.MonoGameOrange.ToVector3();
+                ColorShaderEffect.CurrentTechnique.Passes[0].Apply();
+                Game.GraphicsDevice.RasterizerState = WireframeRasterizerState;
+                //Game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, IndicesList.Length / 3);
+                Game.GraphicsDevice.DrawUserPrimitives<VertexPosition>(PrimitiveType.LineList, NormalList, 0, NormalList.Length / 2);
+
+            }
 
         }
 

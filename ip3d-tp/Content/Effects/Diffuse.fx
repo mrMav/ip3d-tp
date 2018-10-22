@@ -10,24 +10,37 @@ float4x4 Projection;
 float4x4 WorldInverseTranspose;
 
 float4 AmbientColor = float4(1, 1, 1, 1);
-float AmbientIntensity = 0.1;
+float AmbientIntensity = 0.0001;
 
-float4 DiffuseLightDirection = float4(100, 100, 0, 0);
-float4 DiffuseColor = float4(1.0, 1.0, 1.0, 1.0);
-float DiffuseIntensity = 0.001;
+float4 DiffuseLightDirection; // = float4(100, 100, 0, 0);
+float4 DiffuseColor;  //= float4(1.0, 1.0, 1.0, 1.0);
+float DiffuseIntensity;  // = 0.001;
 
+texture ModelTexture;
+sampler2D textureSampler = sampler_state {
 
+	Texture = (ModelTexture);
+	MagFilter = Linear;
+	MinFilter = Linear;
+	AddressU = Wrap;
+	AddressV = Wrap;
+
+};
+
+// this is the struct for our VertexPositionNormalTexture
 struct VertexShaderInput {
 
 	float4 Position : POSITION0;
 	float4 Normal : NORMAL0;
+	float2 TextureCoord : TEXCOORD0;
 
 };
 
 struct VertexShaderOutput {
 
 	float4 Position : POSITION0;
-	float4 Color : COLOR0;
+	float4 Normal : NORMAL0;
+	float2 TextureCoord : TEXCOORD0;
 
 };
 
@@ -38,23 +51,29 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input) {
 	// calculate the vertice position
 	float4 worldPosition = mul(input.Position, World);
 	float4 viewPosition = mul(worldPosition, View);
-	output.Position = mul(viewPosition, Projection);
 
-	// calculate the normal
-	float4 normal = mul(input.Normal, WorldInverseTranspose);
-	float lightIntensity = dot(normal, DiffuseLightDirection); // calculate angle between surface normal
-	output.Color = saturate(DiffuseColor * DiffuseIntensity * lightIntensity);
-	
+	output.Position = mul(viewPosition, Projection);
+	output.Normal = input.Normal;
+	output.TextureCoord = input.TextureCoord;
+		
 	return output;
 }
 
 float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0{
+	
+	// calculate the normal for diffuse
+	float4 normal = mul(input.Normal, WorldInverseTranspose);
+	float lightIntensity = dot(normal, DiffuseLightDirection); // calculate angle between surface normal
+	float diffuse = saturate(DiffuseColor * DiffuseIntensity * lightIntensity);
 
-	return saturate(input.Color + AmbientColor * AmbientIntensity);
+	float4 textureColor = tex2D(textureSampler, input.TextureCoord);
+	textureColor.a = 1;
+
+	return saturate(textureColor * diffuse + AmbientColor * AmbientIntensity);
 
 }
 
-technique Diffuse {
+technique Textured {
 
 	pass Pass1 {
 
