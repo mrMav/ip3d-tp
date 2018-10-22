@@ -60,6 +60,13 @@ namespace ip3d_tp
         // wireframe rendering toogle
         public bool ShowWireframe;
         public bool ShowNormals;
+
+        // lets play (usually, this doesn't come here)
+        // direction light properties
+        Vector4 LightDirection = new Vector4(10, 5, 0, 0);
+        Vector4 LightColor = Color.White.ToVector4();
+        float LightIntensity = 0.01f;
+
         
         // constructor 
         public Plane(Game game, string textureKey, float width = 10f, float depth = 10f, int xSubs = 1, int zSubs = 1, float uvscale = 1f) : base(game)
@@ -97,13 +104,13 @@ namespace ip3d_tp
             ColorShaderEffect.VertexColorEnabled = false;
             ColorShaderEffect.DiffuseColor = new Vector3(0, 0, 0);
             ColorShaderEffect.LightingEnabled = false;  // we won't be using light. we would need normals for that
-            
-            ShowWireframe = true;  // enable out of the box wireframe
-            ShowNormals = true;
 
             // load our custom effect from the content
-            CustomEffect = Game.Content.Load<Effect>("Effects/Ambient");
+            CustomEffect = Game.Content.Load<Effect>("Effects/Diffuse");
 
+            ShowWireframe = true;  // enable out of the box wireframe
+            ShowNormals = true;
+            
             // setup the rasterizers
             SolidRasterizerState = new RasterizerState();
             WireframeRasterizerState = new RasterizerState();
@@ -116,6 +123,14 @@ namespace ip3d_tp
 
         }
 
+        public override void Update(GameTime gameTime)
+        {
+            base.Update(gameTime);
+
+
+
+        }
+
         public void DrawCustomShader(GameTime gameTime, Camera camera)
         {
 
@@ -124,9 +139,16 @@ namespace ip3d_tp
 
             Game.GraphicsDevice.RasterizerState = SolidRasterizerState;
 
+            Matrix worldInverseTranspose = Matrix.Transpose(Matrix.Invert(WorldTransform));
+
             CustomEffect.Parameters["World"].SetValue(WorldTransform);
             CustomEffect.Parameters["View"].SetValue(camera.ViewTransform);
             CustomEffect.Parameters["Projection"].SetValue(camera.ProjectionTransform);
+            CustomEffect.Parameters["WorldInverseTranspose"].SetValue(worldInverseTranspose);
+
+            CustomEffect.Parameters["DiffuseLightDirection"].SetValue(LightDirection);
+            CustomEffect.Parameters["DiffuseColor"].SetValue(LightColor);
+            CustomEffect.Parameters["DiffuseIntensity"].SetValue(LightIntensity);
 
             CustomEffect.CurrentTechnique.Passes[0].Apply();
 
@@ -136,7 +158,7 @@ namespace ip3d_tp
 
         public void Draw(GameTime gameTime)
         {
-
+            
             Game.GraphicsDevice.Indices = IndexBuffer;
             Game.GraphicsDevice.SetVertexBuffer(VertexBuffer);
 
