@@ -100,6 +100,7 @@ namespace ip3d_tp
 
             // initialize the plane with the prefered settings
             plane = new Plane(this, "ground_texture", 128*2, 128*2, terrainHeightMap.Width - 1, terrainHeightMap.Height - 1, 0.5f);
+            //plane = new Plane(this, "grey", 20, 30, 4, 10);
             Components.Add(plane);
 
             // dispace the vertices of the plane, based on the given heightmap, and adjust by a scale
@@ -112,7 +113,8 @@ namespace ip3d_tp
             basicCamera = new BasicCamera(this, 45f, 128);
 
             freeCamera = new FreeCamera(this, 45f);
-            freeCamera.Position.Y = 20;
+            freeCamera.Position.Y = 10;
+            freeCamera.Position.Z = 10;
 
             surfaceFollowCamera = new SurfaceFollowCamera(this, 45f, plane, 1.76f); // my height 
             surfaceFollowCamera.MaxVelocity = 0.5f;
@@ -123,7 +125,7 @@ namespace ip3d_tp
             camerasArray[0] = surfaceFollowCamera;
             camerasArray[1] = freeCamera;
             camerasArray[2] = basicCamera;
-            currCam = 0;
+            currCam = 1;
 
             // set the default camera
             currentCamera = camerasArray[currCam];

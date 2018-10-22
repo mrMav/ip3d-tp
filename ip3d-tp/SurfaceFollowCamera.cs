@@ -86,10 +86,10 @@ namespace ip3d_tp
             int verticeIndex2 = verticeIndex0 + Surface.XSubs + 1;
             int verticeIndex3 = verticeIndex2 + 1;
             
-            VertexPositionTexture v0 = Surface.VertexList[verticeIndex0];
-            VertexPositionTexture v1 = Surface.VertexList[verticeIndex1];
-            VertexPositionTexture v2 = Surface.VertexList[verticeIndex2];
-            VertexPositionTexture v3 = Surface.VertexList[verticeIndex3];
+            VertexPositionNormalTexture v0 = Surface.VertexList[verticeIndex0];
+            VertexPositionNormalTexture v1 = Surface.VertexList[verticeIndex1];
+            VertexPositionNormalTexture v2 = Surface.VertexList[verticeIndex2];
+            VertexPositionNormalTexture v3 = Surface.VertexList[verticeIndex3];
             
             // use interpolation to calculate the height at this point in space
             Position.Y = Utils.HeightBilinearInterpolation(Position, v0.Position, v1.Position, v2.Position, v3.Position) + OffsetHeight;
