@@ -3,10 +3,14 @@
 namespace ip3d_tp
 {
     /*
-     * Camera will extend the base GameComponent class
+     * Cameras Base Class
      */
-    class Camera : GameComponent
+    class Camera
     {
+
+        // game reference
+        protected Game Game;
+
         // create variables to hold the current camera position and target
         public Vector3 Position;
         public Vector3 Target;
@@ -16,11 +20,14 @@ namespace ip3d_tp
         public Matrix ProjectionTransform;
 
         // the camera field of view
-        public float FieldOfView;   
+        public float FieldOfView; 
 
         // class constructor
-        public Camera(Game game, float fieldOfView = 45f) : base(game)
+        public Camera(Game game, float fieldOfView = 45f)
         {
+
+            Game = game;
+
             // basic initializations 
             FieldOfView = fieldOfView;
 
@@ -29,11 +36,21 @@ namespace ip3d_tp
 
             ViewTransform = Matrix.Identity;
 
-            // because we change the zoom, we need to refresh teh perspective
+            // because we change the zoom, we need to refresh the perspective
             // the calculation of the ration must be done with the float cast
             // otherwise we lose precision and the result gets weird
             ProjectionTransform = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(FieldOfView), (float)Game.GraphicsDevice.Viewport.Width / (float)Game.GraphicsDevice.Viewport.Height, 0.1f, 1000f);
 
+        }
+
+        public virtual void Update(GameTime gameTime)
+        {
+
+        }
+
+        public virtual string About()
+        {
+            return "Camera";
         }
         
     }
