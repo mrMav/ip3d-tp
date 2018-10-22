@@ -100,7 +100,7 @@ namespace ip3d_tp
 
             // initialize the plane with the prefered settings
             plane = new Plane(this, "ground_texture", 128*2, 128*2, terrainHeightMap.Width - 1, terrainHeightMap.Height - 1, 0.5f);
-            //plane = new Plane(this, "grey", 10, 10, 4, 4);
+            //plane = new Plane(this, "grey", 20, 30, 4, 10);
             Components.Add(plane);
 
             // dispace the vertices of the plane, based on the given heightmap, and adjust by a scale

@@ -300,7 +300,7 @@ namespace ip3d_tp
         private void CalculateNormals()
         {
 
-            NormalList = new VertexPosition[((XSubs + 1) * (ZSubs + 1)) * 2];
+            NormalList = new VertexPosition[((XSubs + 1) * (ZSubs + 1)) * 2];  // this list will hold line list so we can visualize normals
 
             /* in order to calculte the normals we need to understand that we won't be able to just loop through all the vertices
              * the normals calculation will be based on the vertices neighbours, so, it won't be equal to calculate a corner and a middle vertice.
