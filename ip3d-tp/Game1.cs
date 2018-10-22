@@ -117,8 +117,8 @@ namespace ip3d_tp
             freeCamera.Position.Z = 10;
 
             surfaceFollowCamera = new SurfaceFollowCamera(this, 45f, plane, 1.76f); // my height 
-            surfaceFollowCamera.MaxVelocity = 0.5f;
-            surfaceFollowCamera.Acceleration = new Vector3(0.01f);
+            surfaceFollowCamera.MaxVelocity = 2.0f;
+            surfaceFollowCamera.Acceleration = new Vector3(0.1f);
 
             // initialize the array of cameras
             camerasArray = new Camera[3];
