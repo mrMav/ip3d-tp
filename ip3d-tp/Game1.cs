@@ -104,7 +104,7 @@ namespace ip3d_tp
             Components.Add(plane);
 
             // dispace the vertices of the plane, based on the given heightmap, and adjust by a scale
-            plane.SetHeightFromTexture(terrainHeightMap, 0.2f);
+            plane.SetHeightFromTexture(terrainHeightMap, 0.08f);
 
             // toogle wireframe out of the box
             plane.ShowWireframe = true;

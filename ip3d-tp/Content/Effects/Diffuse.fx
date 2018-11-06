@@ -10,7 +10,7 @@ float4x4 Projection;
 float4x4 WorldInverseTranspose;
 
 float4 AmbientColor = float4(1, 1, 1, 1);
-float AmbientIntensity = 0.0001;
+float AmbientIntensity = 0.1;
 
 float4 DiffuseLightDirection; // = float4(100, 100, 0, 0);
 float4 DiffuseColor;  //= float4(1.0, 1.0, 1.0, 1.0);
@@ -63,7 +63,7 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0{
 	
 	// calculate the normal for diffuse
 	float4 normal = mul(input.Normal, WorldInverseTranspose);
-	float lightIntensity = dot(normal, DiffuseLightDirection); // calculate angle between surface normal
+	float lightIntensity = dot(normal, normalize(DiffuseLightDirection)); // calculate angle between surface normal
 	float diffuse = saturate(DiffuseColor * DiffuseIntensity * lightIntensity);
 
 	float4 textureColor = tex2D(textureSampler, input.TextureCoord);

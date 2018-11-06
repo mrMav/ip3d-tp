@@ -68,7 +68,7 @@ namespace ip3d_tp
         // direction light properties
         Vector4 LightDirection = new Vector4(10, 5, 0, 0);
         Vector4 LightColor = Color.White.ToVector4();
-        float LightIntensity = 0.08f;
+        float LightIntensity = 1.0f;
 
         
         // constructor 
@@ -136,8 +136,9 @@ namespace ip3d_tp
             // some fun
             float dt = (float)gameTime.TotalGameTime.TotalSeconds;
 
-            LightDirection.X = (float)Math.Sin(dt);  // is a direction light, so the size doesnt matter
-            LightDirection.Z = (float)Math.Cos(dt);  // is a direction light, so the size doesnt matter
+            LightDirection.X = (float)Math.Sin(dt);  // is a direction light 
+            LightDirection.Y = 1.0f;  // is a direction light
+            LightDirection.Z = (float)Math.Cos(dt);  // is a direction light
 
         }
 
