@@ -43,6 +43,9 @@ namespace ip3d_tp
         BasicEffect ColorShaderEffect;
         BasicEffect TextureShaderEffect;
 
+        // our custom effect experiences
+        Effect CustomEffect;
+
         // reference to the textures
         Texture2D DiffuseMap;
 
@@ -54,9 +57,19 @@ namespace ip3d_tp
         RasterizerState SolidRasterizerState;
         RasterizerState WireframeRasterizerState;
 
+        // needed wile we have spritebatch messing around
+        BlendState BlendState;
+
         // wireframe rendering toogle
         public bool ShowWireframe;
         public bool ShowNormals;
+
+        // lets play (usually, this doesn't come here)
+        // direction light properties
+        Vector4 LightDirection = new Vector4(10, 5, 0, 0);
+        Vector4 LightColor = Color.White.ToVector4();
+        float LightIntensity = 1.0f;
+
         
         // constructor 
         public Plane(Game game, string textureKey, float width = 10f, float depth = 10f, int xSubs = 1, int zSubs = 1, float uvscale = 1f) : base(game)
@@ -94,25 +107,99 @@ namespace ip3d_tp
             ColorShaderEffect.VertexColorEnabled = false;
             ColorShaderEffect.DiffuseColor = new Vector3(0, 0, 0);
             ColorShaderEffect.LightingEnabled = false;  // we won't be using light. we would need normals for that
-            
+
+            // load our custom effect from the content
+            CustomEffect = Game.Content.Load<Effect>("Effects/Diffuse");
+
             ShowWireframe = true;  // enable out of the box wireframe
             ShowNormals = true;
-
+            
             // setup the rasterizers
             SolidRasterizerState = new RasterizerState();
             WireframeRasterizerState = new RasterizerState();
 
             SolidRasterizerState.FillMode = FillMode.Solid;
             WireframeRasterizerState.FillMode = FillMode.WireFrame;
-            
+
+            this.BlendState = new BlendState();
+            this.BlendState.AlphaBlendFunction = BlendFunction.Add;
+
             // create the geometry
             CreateGeometry();
 
         }
 
-        public void Draw(GameTime gameTime)
+        public override void Update(GameTime gameTime)
+        {
+            base.Update(gameTime);
+
+            // some fun
+            float dt = (float)gameTime.TotalGameTime.TotalSeconds;
+
+            LightDirection.X = (float)Math.Sin(dt);  // is a direction light 
+            LightDirection.Y = 1.0f;  // is a direction light
+            LightDirection.Z = (float)Math.Cos(dt);  // is a direction light
+
+        }
+
+        public void DrawCustomShader(GameTime gameTime, Camera camera)
         {
 
+            Game.GraphicsDevice.RasterizerState = this.SolidRasterizerState;
+            Game.GraphicsDevice.BlendState = this.BlendState;
+
+            Game.GraphicsDevice.Indices = IndexBuffer;
+            Game.GraphicsDevice.SetVertexBuffer(VertexBuffer);
+
+            Game.GraphicsDevice.RasterizerState = SolidRasterizerState;
+
+            Matrix worldInverseTranspose = Matrix.Transpose(Matrix.Invert(WorldTransform));
+
+            CustomEffect.Parameters["World"].SetValue(WorldTransform);
+            CustomEffect.Parameters["View"].SetValue(camera.ViewTransform);
+            CustomEffect.Parameters["Projection"].SetValue(camera.ProjectionTransform);
+            CustomEffect.Parameters["WorldInverseTranspose"].SetValue(worldInverseTranspose);
+
+            CustomEffect.Parameters["DiffuseLightDirection"].SetValue(LightDirection);
+            CustomEffect.Parameters["DiffuseColor"].SetValue(LightColor);
+            CustomEffect.Parameters["DiffuseIntensity"].SetValue(LightIntensity);
+
+            CustomEffect.Parameters["ModelTexture"].SetValue(DiffuseMap);
+
+            CustomEffect.CurrentTechnique.Passes[0].Apply();
+
+            Game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, IndicesList.Length / 3);
+
+
+            if (ShowWireframe)
+            {
+                // same as before but in wireframe rasterizer
+
+                ColorShaderEffect.DiffuseColor = Color.Black.ToVector3();
+                ColorShaderEffect.CurrentTechnique.Passes[0].Apply();
+                Game.GraphicsDevice.RasterizerState = WireframeRasterizerState;
+                Game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, IndicesList.Length / 3);
+
+            }
+
+            if (ShowNormals)
+            {
+
+                // same as before but in wireframe rasterizer
+
+                ColorShaderEffect.DiffuseColor = Color.MonoGameOrange.ToVector3();
+                ColorShaderEffect.CurrentTechnique.Passes[0].Apply();
+                Game.GraphicsDevice.RasterizerState = WireframeRasterizerState;
+                //Game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, IndicesList.Length / 3);
+                Game.GraphicsDevice.DrawUserPrimitives<VertexPosition>(PrimitiveType.LineList, NormalList, 0, NormalList.Length / 2);
+
+            }
+
+        }
+
+        public void Draw(GameTime gameTime)
+        {
+            
             Game.GraphicsDevice.Indices = IndexBuffer;
             Game.GraphicsDevice.SetVertexBuffer(VertexBuffer);
 

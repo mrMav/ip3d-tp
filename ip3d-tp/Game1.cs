@@ -164,6 +164,12 @@ namespace ip3d_tp
                 plane.ShowWireframe = !plane.ShowWireframe;
             }
 
+            // toggle normals
+            if (Controls.IsKeyPressed(Keys.N))
+            {
+                plane.ShowNormals = !plane.ShowNormals;
+            }
+
             currentCamera.Update(gameTime);
 
             // every component will be updated after base update
@@ -187,7 +193,7 @@ namespace ip3d_tp
 
             // we need to call the draw manually for the plane
             // it extends component, and not drawable
-            plane.Draw(gameTime);
+            plane.DrawCustomShader(gameTime, currentCamera);
             
             // render the gui text
             // notive the DepthStencilState, without default set in, depth will not 
@@ -200,9 +206,14 @@ namespace ip3d_tp
             // the spritebatch will use some defaults of his. because in the plane class we never change them back,
             // we get strange results. so, for now, the solution is to just maintain the same ones in the spritebatch.
             // in the future, we must create stencil and sampler states for the meshs render.
+            //
+            // update 22/10/2018
+            // the blendstate messes up with custom shader.
+            // render targets might be the solution
+            //
             spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.LinearWrap, DepthStencilState.Default, null, null, null);
-            spriteBatch.DrawString(font, $"Camera (SPACE, Cycle): {camerasArray[currCam].GetType().Name}\nWireframe (F, Toogle): {plane.ShowWireframe}", new Vector2(10f, 10f), new Color(0f, 1f, 0f));
-            spriteBatch.DrawString(font, $"{camerasArray[currCam].About()}", new Vector2(graphics.PreferredBackBufferWidth / 2, 10f), new Color(0f, 1f, 0f));
+            spriteBatch.DrawString(font, $"Camera (SPACE, Cycle): {camerasArray[currCam].GetType().Name}\nWireframe (F, Toogle): {plane.ShowWireframe}\nNormals (N, Toogle): {plane.ShowNormals}", new Vector2(10f, 10f), new Color(0f, 1f, 0f));
+            //spriteBatch.DrawString(font, $"{camerasArray[currCam].About()}", new Vector2(graphics.PreferredBackBufferWidth / 2, 10f), new Color(0f, 1f, 0f));
             spriteBatch.End();
 
             base.Draw(gameTime);
