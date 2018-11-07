@@ -26,6 +26,12 @@ namespace ip3d_tp
         // texture to be applied to the terrain
         Texture2D terrainHeightMap;
 
+        // a test cube object
+        Model cube;
+
+        // the cube shader
+        Effect cubeShader;
+
         // cameras:
         // holds the current active camera
         Camera currentCamera;
@@ -42,6 +48,8 @@ namespace ip3d_tp
         // put the cameras in an array for easy cycling
         Camera[] camerasArray;
         int currCam;
+
+        bool captureMouse = true;
 
         public Game1()
         {
@@ -109,6 +117,68 @@ namespace ip3d_tp
             // toogle wireframe out of the box
             plane.ShowWireframe = true;
 
+            // load cube
+            cube = Content.Load<Model>("my_cube");
+
+
+            int count = cube.Meshes[0].MeshParts[0].VertexBuffer.VertexCount * (cube.Meshes[0].MeshParts[0].VertexBuffer.VertexDeclaration.VertexStride / sizeof(float));
+
+            for (int i = 0; i < count; i++)
+            {
+                float[] value = new float[1];
+
+                cube.Meshes[0].MeshParts[0].VertexBuffer.GetData<float>(i * sizeof(float), value, 0, 1);
+
+                if (i % 8 == 0)
+                {
+                    Console.Write("\n");
+                    Console.Write("Vertex " + (int)Math.Floor(i / 8f) + ": ");
+
+                }
+
+                Console.Write(value[0]);
+
+                if (i % 8 != 7)
+                    Console.Write(", ");
+                
+
+                // for each vertex
+
+                //string str = "";
+
+                //int floatsCount = cube.Meshes[0].MeshParts[0].VertexBuffer.VertexDeclaration.VertexStride / sizeof(float);
+
+                //for(int j = 0; j < floatsCount; j++)
+                //{
+
+                //    // for each float in the vertex
+
+                //    float[] value = new float[1];
+
+                //    cube.Meshes[0].MeshParts[0].VertexBuffer.GetData<float>((i + 1) * j * sizeof(float), value, 0, 1);
+
+                //    str += value[0].ToString();
+                //    str += ", ";
+                //    /*
+                //    0                       1
+                //    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0... 
+                //    */
+
+                //    Console.WriteLine()
+
+                //}
+
+                //Console.WriteLine($"Vertex {i}: {str}");
+
+            }
+
+
+
+            Console.WriteLine("IndexBuffer indexcount: " + cube.Meshes[0].MeshParts[0].VertexBuffer.VertexDeclaration);
+            Console.WriteLine("VertexBuffer element size:  " + cube.Meshes[0].MeshParts[0].IndexBuffer.IndexElementSize);
+
+            cubeShader = Content.Load<Effect>("Effects/Diffuse");
+
             // create the various cameras
             basicCamera = new BasicCamera(this, 45f, 128);
 
@@ -170,13 +240,21 @@ namespace ip3d_tp
                 plane.ShowNormals = !plane.ShowNormals;
             }
 
+            // toogle mouse capture
+            if(Controls.IsKeyPressed(Keys.M))
+            {
+                IsMouseVisible = captureMouse;
+                captureMouse = !captureMouse;
+            }
+
             currentCamera.Update(gameTime);
 
             // every component will be updated after base update
             base.Update(gameTime);
-            
+
             // locking the mouse only after the components are updated
-            Mouse.SetPosition(Window.Position.X + (graphics.PreferredBackBufferWidth / 2), Window.Position.Y + (graphics.PreferredBackBufferHeight / 2));
+            if(captureMouse)
+                Mouse.SetPosition(Window.Position.X + (graphics.PreferredBackBufferWidth / 2), Window.Position.Y + (graphics.PreferredBackBufferHeight / 2));
             
             // here we update the object shader(effect) matrices
             // so it can perform the space calculations on the vertices
@@ -195,6 +273,44 @@ namespace ip3d_tp
             // it extends component, and not drawable
             plane.DrawCustomShader(gameTime, currentCamera);
             
+            // draw the cube with it's shader
+            foreach(ModelMesh mesh in cube.Meshes)
+            {
+                //foreach (BasicEffect effect in mesh.Effects)
+                //{
+                //    effect.World = Matrix.Identity;
+                //    effect.View = currentCamera.ViewTransform;
+                //    effect.Projection = currentCamera.ProjectionTransform;
+
+                //    effect.EnableDefaultLighting();
+
+                //}
+
+                // draw the cube with the custom shader
+
+                cubeShader.Parameters["World"].SetValue(Matrix.Identity);
+                cubeShader.Parameters["View"].SetValue(currentCamera.ViewTransform);
+                cubeShader.Parameters["Projection"].SetValue(currentCamera.ProjectionTransform);
+                cubeShader.Parameters["WorldInverseTranspose"].SetValue(Matrix.Identity);  // well, no need to invert. thanks algebra!
+
+                cubeShader.Parameters["DiffuseLightDirection"].SetValue(plane.LightDirection);
+                cubeShader.Parameters["DiffuseColor"].SetValue(plane.LightColor);
+                cubeShader.Parameters["DiffuseIntensity"].SetValue(plane.LightIntensity);
+
+                cubeShader.Parameters["ModelTexture"].SetValue(terrainHeightMap);
+
+                cubeShader.CurrentTechnique.Passes[0].Apply();
+
+                GraphicsDevice.Indices = mesh.MeshParts[0].IndexBuffer;
+                GraphicsDevice.SetVertexBuffer(mesh.MeshParts[0].VertexBuffer);
+
+                GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, mesh.MeshParts[0].IndexBuffer.IndexCount / 3);
+
+                //mesh.Draw();
+
+            }
+
+
             // render the gui text
             // notive the DepthStencilState, without default set in, depth will not 
             // be calculated when drawing wireframes.
