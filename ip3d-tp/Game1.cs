@@ -32,6 +32,9 @@ namespace ip3d_tp
         // the cube shader
         Effect cubeShader;
 
+        // the tank
+        Tank tank;
+
         // cameras:
         // holds the current active camera
         Camera currentCamera;
@@ -118,7 +121,7 @@ namespace ip3d_tp
             plane.ShowWireframe = true;
 
             // load cube
-            cube = Content.Load<Model>("my_cube");
+            cube = Content.Load<Model>("my_cube_no_uv");
 
 
             int count = cube.Meshes[0].MeshParts[0].VertexBuffer.VertexCount * (cube.Meshes[0].MeshParts[0].VertexBuffer.VertexDeclaration.VertexStride / sizeof(float));
@@ -178,6 +181,9 @@ namespace ip3d_tp
             Console.WriteLine("VertexBuffer element size:  " + cube.Meshes[0].MeshParts[0].IndexBuffer.IndexElementSize);
 
             cubeShader = Content.Load<Effect>("Effects/Diffuse");
+
+            tank = new Tank(this);
+
 
             // create the various cameras
             basicCamera = new BasicCamera(this, 45f, 128);
@@ -261,6 +267,8 @@ namespace ip3d_tp
             plane.UpdateShaderMatrices(currentCamera.ViewTransform, currentCamera.ProjectionTransform);
             worldAxis.UpdateShaderMatrices(currentCamera.ViewTransform, currentCamera.ProjectionTransform);
 
+            tank.Update(gameTime, currentCamera, plane);
+
             // update the last keyboard state
             Controls.UpdateLastStates();
         }
@@ -272,43 +280,45 @@ namespace ip3d_tp
             // we need to call the draw manually for the plane
             // it extends component, and not drawable
             plane.DrawCustomShader(gameTime, currentCamera);
-            
+
+            tank.Draw(gameTime, currentCamera);
+
             // draw the cube with it's shader
-            foreach(ModelMesh mesh in cube.Meshes)
-            {
-                //foreach (BasicEffect effect in mesh.Effects)
-                //{
-                //    effect.World = Matrix.Identity;
-                //    effect.View = currentCamera.ViewTransform;
-                //    effect.Projection = currentCamera.ProjectionTransform;
+            //foreach(ModelMesh mesh in cube.Meshes)
+            //{
+            //    //foreach (BasicEffect effect in mesh.Effects)
+            //    //{
+            //    //    effect.World = Matrix.Identity;
+            //    //    effect.View = currentCamera.ViewTransform;
+            //    //    effect.Projection = currentCamera.ProjectionTransform;
 
-                //    effect.EnableDefaultLighting();
+            //    //    effect.EnableDefaultLighting();
 
-                //}
+            //    //}
 
-                // draw the cube with the custom shader
+            //    // draw the cube with the custom shader
 
-                cubeShader.Parameters["World"].SetValue(Matrix.Identity);
-                cubeShader.Parameters["View"].SetValue(currentCamera.ViewTransform);
-                cubeShader.Parameters["Projection"].SetValue(currentCamera.ProjectionTransform);
-                cubeShader.Parameters["WorldInverseTranspose"].SetValue(Matrix.Identity);  // well, no need to invert. thanks algebra!
+            //    cubeShader.Parameters["World"].SetValue(Matrix.Identity);
+            //    cubeShader.Parameters["View"].SetValue(currentCamera.ViewTransform);
+            //    cubeShader.Parameters["Projection"].SetValue(currentCamera.ProjectionTransform);
+            //    cubeShader.Parameters["WorldInverseTranspose"].SetValue(Matrix.Identity);  // well, no need to invert. thanks algebra!
 
-                cubeShader.Parameters["DiffuseLightDirection"].SetValue(plane.LightDirection);
-                cubeShader.Parameters["DiffuseColor"].SetValue(plane.LightColor);
-                cubeShader.Parameters["DiffuseIntensity"].SetValue(plane.LightIntensity);
+            //    cubeShader.Parameters["DiffuseLightDirection"].SetValue(plane.LightDirection);
+            //    cubeShader.Parameters["DiffuseColor"].SetValue(plane.LightColor);
+            //    cubeShader.Parameters["DiffuseIntensity"].SetValue(plane.LightIntensity);
 
-                cubeShader.Parameters["ModelTexture"].SetValue(terrainHeightMap);
+            //    cubeShader.Parameters["ModelTexture"].SetValue(terrainHeightMap);
 
-                cubeShader.CurrentTechnique.Passes[0].Apply();
+            //    cubeShader.CurrentTechnique.Passes[0].Apply();
 
-                GraphicsDevice.Indices = mesh.MeshParts[0].IndexBuffer;
-                GraphicsDevice.SetVertexBuffer(mesh.MeshParts[0].VertexBuffer);
+            //    GraphicsDevice.Indices = mesh.MeshParts[0].IndexBuffer;
+            //    GraphicsDevice.SetVertexBuffer(mesh.MeshParts[0].VertexBuffer);
 
-                GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, mesh.MeshParts[0].IndexBuffer.IndexCount / 3);
+            //    GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, mesh.MeshParts[0].IndexBuffer.IndexCount / 3);
 
-                //mesh.Draw();
+            //    //mesh.Draw();
 
-            }
+            //}
 
 
             // render the gui text

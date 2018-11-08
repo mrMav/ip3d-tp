@@ -150,9 +150,7 @@ namespace ip3d_tp
 
             Game.GraphicsDevice.Indices = IndexBuffer;
             Game.GraphicsDevice.SetVertexBuffer(VertexBuffer);
-
-            Game.GraphicsDevice.RasterizerState = SolidRasterizerState;
-
+            
             Matrix worldInverseTranspose = Matrix.Transpose(Matrix.Invert(WorldTransform));
 
             CustomEffect.Parameters["World"].SetValue(WorldTransform);
