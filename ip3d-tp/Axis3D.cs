@@ -7,7 +7,7 @@ namespace ip3d_tp
     {
         VertexPositionColor[] vertices;
         BasicEffect effect;
-        Matrix worldMatrix;
+        public Matrix worldMatrix;
         
         Vector3 Position;
         float Size;
