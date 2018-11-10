@@ -15,6 +15,8 @@ namespace ip3d_tp
 
         Model Model;
 
+        public Matrix WorldTransform;
+
         Axis3D Axis;
 
         // the model direction vectors
@@ -22,9 +24,9 @@ namespace ip3d_tp
         public Vector3 Up;
         public Vector3 Right;
 
-        Vector3 Position;
-        Vector3 Rotation;
-        Vector3 Scale;
+        public Vector3 Position;
+        public Vector3 Rotation;
+        public Vector3 Scale;
 
         float YawStep = 90f;  // in degrees
 
@@ -182,7 +184,9 @@ namespace ip3d_tp
 
             Matrix scale = Matrix.CreateScale(Scale);
 
-            Model.Root.Transform = scale * world;
+            WorldTransform = scale * world;
+
+            Model.Root.Transform = WorldTransform;
 
             Model.CopyAbsoluteBoneTransformsTo(BoneTransforms);
 

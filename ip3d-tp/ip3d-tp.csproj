@@ -44,6 +44,7 @@
     <Compile Include="Axis3D.cs" />
     <Compile Include="BasicCamera.cs" />
     <Compile Include="Camera.cs" />
+    <Compile Include="ThirdPersonCamera.cs" />
     <Compile Include="FrameRate.cs" />
     <Compile Include="Controls.cs" />
     <Compile Include="Game1.cs" />
