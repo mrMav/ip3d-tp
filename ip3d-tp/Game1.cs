@@ -54,6 +54,8 @@ namespace ip3d_tp
 
         bool captureMouse = true;
 
+        FrameRate FrameRate = new FrameRate();
+
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -218,6 +220,9 @@ namespace ip3d_tp
 
         protected override void Update(GameTime gameTime)
         {
+
+            FrameRate.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
+
             // set the current keyboard state
             Controls.UpdateCurrentStates();
 
@@ -340,7 +345,8 @@ namespace ip3d_tp
             spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.LinearWrap, DepthStencilState.Default, null, null, null);
             //spriteBatch.DrawString(font, $"Camera (SPACE, Cycle): {camerasArray[currCam].GetType().Name}\nWireframe (F, Toogle): {plane.ShowWireframe}\nNormals (N, Toogle): {plane.ShowNormals}", new Vector2(10f, 10f), new Color(0f, 1f, 0f));
             //spriteBatch.DrawString(font, $"{camerasArray[currCam].About()}", new Vector2(graphics.PreferredBackBufferWidth / 2, 10f), new Color(0f, 1f, 0f));
-            spriteBatch.DrawString(font, tank.GetDebugInfo(), new Vector2(10f, 10f), new Color(0f, 1f, 0f));
+            spriteBatch.DrawString(font, $"{FrameRate.AverageFramesPerSecond}", new Vector2(10f, 10f), new Color(0f, 1f, 0f));
+            spriteBatch.DrawString(font, tank.GetDebugInfo(), new Vector2(10f, 26f), new Color(0f, 1f, 0f));
             spriteBatch.End();
 
             base.Draw(gameTime);

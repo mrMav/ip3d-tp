@@ -26,13 +26,14 @@ namespace ip3d_tp
         Vector3 Rotation;
         Vector3 Scale;
 
-        float YawStep = MathHelper.ToRadians(5f);  // in degrees
+        float YawStep = 90f;  // in degrees
 
         // increase in acceleration
-        public float AccelerationValue = 0.1f;
+        public float Speed = 0f;
+        public float AccelerationValue = 0.5f;
 
         // velocity will be caped to this maximum
-        public float MaxVelocity = 2.5f;
+        public float MaxVelocity = 1.0f;
 
         // the velocity vector
         public Vector3 Velocity = Vector3.Zero;
@@ -82,7 +83,9 @@ namespace ip3d_tp
         public void Update(GameTime gameTime, Camera camera, Plane surface)
         {
 
-            float dt = (float)gameTime.TotalGameTime.TotalSeconds;
+            float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            Console.WriteLine(dt);
 
             // controls rotation
             if (Controls.IsKeyDown(Controls.TankRotateLeft))
@@ -101,23 +104,32 @@ namespace ip3d_tp
             // update the model position, based on the updated vectors
             if (Controls.IsKeyDown(Controls.TankMoveForward))
             {
-                Velocity -= Front * AccelerationValue;
+                Speed -= (AccelerationValue * dt);
 
             }
             else if (Controls.IsKeyDown(Controls.TankMoveBackward))
             {
-                Velocity += Front * AccelerationValue;
+                Speed += (AccelerationValue * dt);
+                
+            } else
+            {
+                Speed = 0f;
             }
 
+            Velocity += Front * Speed;
+            
             // cap the velocity so we don't move faster diagonally
             if (Velocity.Length() > MaxVelocity)
             {
                 Velocity.Normalize();
                 Velocity *= MaxVelocity;
+
+                Console.WriteLine("capped velocity");
+
             }
-            
+
             // apply the velocity to the position, based on the delta time between frames
-            Position += Velocity * dt;
+            Position += Velocity;
 
             // add some sexy drag
             Velocity *= Drag;
@@ -131,7 +143,7 @@ namespace ip3d_tp
             // update the bones matrices
             UpdateMatrices();
 
-            Axis.worldMatrix = Matrix.CreateScale(Vector3.Zero / Scale) * Model.Root.Transform;
+            Axis.worldMatrix = Matrix.CreateScale(new Vector3(50f) / Scale) * Model.Root.Transform;
             Axis.UpdateShaderMatrices(camera.ViewTransform, camera.ProjectionTransform);
 
 
@@ -296,7 +308,8 @@ namespace ip3d_tp
 
             return $"Position: {Position}\n" +
                    $"Rotation: {Rotation}\n" +
-                   $"Velocity: {Velocity.Length()}";
+                   $"Velocity: {Velocity.Length()}\n" +
+                   $"Speed: {Speed}";
 
         }
 
