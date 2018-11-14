@@ -64,13 +64,6 @@ namespace ip3d_tp
         public bool ShowWireframe;
         public bool ShowNormals;
 
-        // lets play (usually, this doesn't come here)
-        // direction light properties
-        public Vector4 LightDirection = Vector4.Normalize(new Vector4(10, 5, 0, 0));
-        public Vector4 LightColor = Color.White.ToVector4();
-        public float LightIntensity = 1.0f;
-
-        
         // constructor 
         public Plane(Game game, string textureKey, float width = 10f, float depth = 10f, int xSubs = 1, int zSubs = 1, float uvscale = 1f) : base(game)
         {
@@ -133,16 +126,12 @@ namespace ip3d_tp
         {
             base.Update(gameTime);
 
-            // some fun
-            float dt = (float)gameTime.TotalGameTime.TotalSeconds;
+            //float dt = (float)gameTime.TotalGameTime.TotalSeconds;
 
-            //LightDirection.X = (float)Math.Sin(dt);  // is a direction light 
-            //LightDirection.Y = 1.0f;  // is a direction light
-            //LightDirection.Z = (float)Math.Cos(dt);  // is a direction light
 
         }
 
-        public void DrawCustomShader(GameTime gameTime, Camera camera)
+        public void DrawCustomShader(GameTime gameTime, Camera camera, Vector4 lightDirection, Vector4 lightColor, float lightIntensity)
         {
 
             Game.GraphicsDevice.RasterizerState = this.SolidRasterizerState;
@@ -158,9 +147,9 @@ namespace ip3d_tp
             CustomEffect.Parameters["Projection"].SetValue(camera.ProjectionTransform);
             CustomEffect.Parameters["WorldInverseTranspose"].SetValue(worldInverseTranspose);
 
-            CustomEffect.Parameters["DiffuseLightDirection"].SetValue(LightDirection);
-            CustomEffect.Parameters["DiffuseColor"].SetValue(LightColor);
-            CustomEffect.Parameters["DiffuseIntensity"].SetValue(LightIntensity);
+            CustomEffect.Parameters["DiffuseLightDirection"].SetValue(lightDirection);
+            CustomEffect.Parameters["DiffuseColor"].SetValue(lightColor);
+            CustomEffect.Parameters["DiffuseIntensity"].SetValue(lightIntensity);
 
             CustomEffect.Parameters["ModelTexture"].SetValue(DiffuseMap);
 

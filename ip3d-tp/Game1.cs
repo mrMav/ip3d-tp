@@ -61,6 +61,13 @@ namespace ip3d_tp
 
         FrameRate FrameRate = new FrameRate();
 
+
+        // lets play (usually, this doesn't come here)
+        // direction light properties
+        public Vector4 LightDirection = Vector4.Normalize(new Vector4(10, 5, 0, 0));
+        public Vector4 LightColor = Color.White.ToVector4();
+        public float LightIntensity = 1.0f;
+
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -225,6 +232,7 @@ namespace ip3d_tp
         protected override void Update(GameTime gameTime)
         {
 
+            float dt = (float)gameTime.TotalGameTime.TotalSeconds;
             FrameRate.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
 
             // set the current keyboard state
@@ -232,9 +240,13 @@ namespace ip3d_tp
 
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Controls.IsKeyDown(Keys.Escape))
                 Exit();
-            
+
+            LightDirection.X = (float)Math.Sin(dt);  // is a direction light 
+            LightDirection.Y = 1.0f;  // is a direction light
+            LightDirection.Z = (float)Math.Cos(dt);  // is a direction light
+
             // switch between cameras
-            if(Controls.IsKeyPressed(Keys.Space))
+            if (Controls.IsKeyPressed(Keys.Space))
             {
                 currCam = (currCam + 1) % 4;
 
@@ -292,9 +304,9 @@ namespace ip3d_tp
 
             // we need to call the draw manually for the plane
             // it extends component, and not drawable
-            plane.DrawCustomShader(gameTime, currentCamera);
+            plane.DrawCustomShader(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
 
-            tank.Draw(gameTime, currentCamera);
+            tank.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
 
             // draw the cube with it's shader
             //foreach(ModelMesh mesh in cube.Meshes)

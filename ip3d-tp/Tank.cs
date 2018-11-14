@@ -53,6 +53,9 @@ namespace ip3d_tp
 
         Matrix[] BoneTransforms;
 
+        // an array containing the needed textures
+        Texture2D[] Textures;
+
         public Tank(Game game)
         {
 
@@ -63,6 +66,19 @@ namespace ip3d_tp
             Shader = Game.Content.Load<Effect>("Effects/Diffuse");
 
             BoneTransforms = new Matrix[Model.Bones.Count];
+
+            Textures = new Texture2D[Model.Meshes.Count];
+
+            // this texture indexing will work. for now.
+            int count = 0;
+            foreach(ModelMesh mesh in Model.Meshes)
+            {
+
+                Textures[count] = ((BasicEffect)mesh.Effects[0]).Texture;
+
+                count++;
+
+            }
 
             // setup the rasterizers
             SolidRasterizerState = new RasterizerState();
@@ -146,27 +162,41 @@ namespace ip3d_tp
 
         }
 
-        public void Draw(GameTime gameTime, Camera camera)
+        public void Draw(GameTime gameTime, Camera camera, Vector4 lightDirection, Vector4 lightColor, float lightIntensity)
         {
 
             Game.GraphicsDevice.RasterizerState = this.SolidRasterizerState;
             Game.GraphicsDevice.BlendState = this.BlendState;
 
+            int count = 0;
             foreach (ModelMesh mesh in Model.Meshes)
             {
-
-                foreach(BasicEffect fx in mesh.Effects)
+                
+                foreach (ModelMeshPart part in mesh.MeshParts)
                 {
 
-                    fx.World = BoneTransforms[mesh.ParentBone.Index];
-                    fx.View  = camera.ViewTransform;
-                    fx.Projection = camera.ProjectionTransform;
+                    part.Effect = Shader;
+               
+                    // set the shader properties
 
-                    fx.EnableDefaultLighting();
+                    Matrix world = BoneTransforms[mesh.ParentBone.Index];
+                    Matrix worldInverseTranspose = Matrix.Transpose(Matrix.Invert(mesh.ParentBone.Transform * world));
 
+                    Shader.Parameters["World"].SetValue(world);
+                    Shader.Parameters["View"].SetValue(camera.ViewTransform);
+                    Shader.Parameters["Projection"].SetValue(camera.ProjectionTransform);
+                    Shader.Parameters["WorldInverseTranspose"].SetValue(worldInverseTranspose);
+
+                    Shader.Parameters["DiffuseLightDirection"].SetValue(lightDirection);
+                    Shader.Parameters["DiffuseColor"].SetValue(lightColor);
+                    Shader.Parameters["DiffuseIntensity"].SetValue(lightIntensity);
+                    
+                    Shader.Parameters["ModelTexture"].SetValue(Textures[count]);
+                                        
                 }
 
                 mesh.Draw();
+                count++;
 
             }
 
