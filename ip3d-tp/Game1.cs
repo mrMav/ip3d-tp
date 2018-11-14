@@ -125,66 +125,66 @@ namespace ip3d_tp
             plane.SetHeightFromTexture(terrainHeightMap, 0.08f);
             
             // load cube
-            cube = Content.Load<Model>("my_cube_no_uv");
+            //cube = Content.Load<Model>("my_cube_no_uv");
 
 
-            int count = cube.Meshes[0].MeshParts[0].VertexBuffer.VertexCount * (cube.Meshes[0].MeshParts[0].VertexBuffer.VertexDeclaration.VertexStride / sizeof(float));
+            //int count = cube.Meshes[0].MeshParts[0].VertexBuffer.VertexCount * (cube.Meshes[0].MeshParts[0].VertexBuffer.VertexDeclaration.VertexStride / sizeof(float));
 
-            for (int i = 0; i < count; i++)
-            {
-                float[] value = new float[1];
+            //for (int i = 0; i < count; i++)
+            //{
+            //    float[] value = new float[1];
 
-                cube.Meshes[0].MeshParts[0].VertexBuffer.GetData<float>(i * sizeof(float), value, 0, 1);
+            //    cube.Meshes[0].MeshParts[0].VertexBuffer.GetData<float>(i * sizeof(float), value, 0, 1);
 
-                if (i % 8 == 0)
-                {
-                    Console.Write("\n");
-                    Console.Write("Vertex " + (int)Math.Floor(i / 8f) + ": ");
+            //    if (i % 8 == 0)
+            //    {
+            //        Console.Write("\n");
+            //        Console.Write("Vertex " + (int)Math.Floor(i / 8f) + ": ");
 
-                }
+            //    }
 
-                Console.Write(value[0]);
+            //    Console.Write(value[0]);
 
-                if (i % 8 != 7)
-                    Console.Write(", ");
+            //    if (i % 8 != 7)
+            //        Console.Write(", ");
                 
 
-                // for each vertex
+            //    // for each vertex
 
-                //string str = "";
+            //    //string str = "";
 
-                //int floatsCount = cube.Meshes[0].MeshParts[0].VertexBuffer.VertexDeclaration.VertexStride / sizeof(float);
+            //    //int floatsCount = cube.Meshes[0].MeshParts[0].VertexBuffer.VertexDeclaration.VertexStride / sizeof(float);
 
-                //for(int j = 0; j < floatsCount; j++)
-                //{
+            //    //for(int j = 0; j < floatsCount; j++)
+            //    //{
 
-                //    // for each float in the vertex
+            //    //    // for each float in the vertex
 
-                //    float[] value = new float[1];
+            //    //    float[] value = new float[1];
 
-                //    cube.Meshes[0].MeshParts[0].VertexBuffer.GetData<float>((i + 1) * j * sizeof(float), value, 0, 1);
+            //    //    cube.Meshes[0].MeshParts[0].VertexBuffer.GetData<float>((i + 1) * j * sizeof(float), value, 0, 1);
 
-                //    str += value[0].ToString();
-                //    str += ", ";
-                //    /*
-                //    0                       1
-                //    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0... 
-                //    */
+            //    //    str += value[0].ToString();
+            //    //    str += ", ";
+            //    //    /*
+            //    //    0                       1
+            //    //    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0... 
+            //    //    */
 
-                //    Console.WriteLine()
+            //    //    Console.WriteLine()
 
-                //}
+            //    //}
 
-                //Console.WriteLine($"Vertex {i}: {str}");
+            //    //Console.WriteLine($"Vertex {i}: {str}");
 
-            }
+            //}
 
 
 
-            Console.WriteLine("IndexBuffer indexcount: " + cube.Meshes[0].MeshParts[0].VertexBuffer.VertexDeclaration);
-            Console.WriteLine("VertexBuffer element size:  " + cube.Meshes[0].MeshParts[0].IndexBuffer.IndexElementSize);
+            //Console.WriteLine("IndexBuffer indexcount: " + cube.Meshes[0].MeshParts[0].VertexBuffer.VertexDeclaration);
+            //Console.WriteLine("VertexBuffer element size:  " + cube.Meshes[0].MeshParts[0].IndexBuffer.IndexElementSize);
 
-            cubeShader = Content.Load<Effect>("Effects/Diffuse");
+            //cubeShader = Content.Load<Effect>("Effects/Diffuse");
 
             tank = new Tank(this);
 

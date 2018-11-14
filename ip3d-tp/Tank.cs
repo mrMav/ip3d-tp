@@ -58,7 +58,7 @@ namespace ip3d_tp
 
             Game = game;
 
-            Model = Game.Content.Load<Model>("Tank/tank");
+            Model = Game.Content.Load<Model>("Models/Tank/tank2"); // tank loaded from fbx
 
             Shader = Game.Content.Load<Effect>("Effects/Diffuse");
 
@@ -75,7 +75,7 @@ namespace ip3d_tp
             // init values
             Position = Vector3.Zero;
             Rotation = Vector3.Zero;
-            Scale = new Vector3(0.01f);
+            Scale = new Vector3(1.00f);  // the importer is already scaling the model to our needed dimensions
 
             Axis = new Axis3D(Game, Position, 50f);
             Game.Components.Add(Axis);
