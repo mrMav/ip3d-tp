@@ -68,31 +68,9 @@ namespace ip3d_tp
                 Position.Z = halfSurfaceDepth - Surface.SubHeight;
 
             }
-
-            // get the nearest vertice from the plane
-            // will need to offset 
-            int x = (int)Math.Floor((Position.X + Surface.Width / 2) / Surface.SubWidth);
-            int z = (int)Math.Floor((Position.Z + Surface.Depth / 2) / Surface.SubHeight);
-            
-            /* 
-             * get the neighbour vertices
-             * 
-             * 0---1
-             * | / |
-             * 2---3
-             */
-            int verticeIndex0 = (Surface.XSubs + 1) * z + x;
-            int verticeIndex1 = verticeIndex0 + 1;
-            int verticeIndex2 = verticeIndex0 + Surface.XSubs + 1;
-            int verticeIndex3 = verticeIndex2 + 1;
-            
-            VertexPositionNormalTexture v0 = Surface.VertexList[verticeIndex0];
-            VertexPositionNormalTexture v1 = Surface.VertexList[verticeIndex1];
-            VertexPositionNormalTexture v2 = Surface.VertexList[verticeIndex2];
-            VertexPositionNormalTexture v3 = Surface.VertexList[verticeIndex3];
             
             // use interpolation to calculate the height at this point in space
-            Position.Y = Utils.HeightBilinearInterpolation(Position, v0.Position, v1.Position, v2.Position, v3.Position) + OffsetHeight;
+            Position.Y = Surface.GetHeightFromSurface(Position) + OffsetHeight;
 
             // refresh, because we change the height and constrain the position
             ViewTransform = GetViewMatrix();

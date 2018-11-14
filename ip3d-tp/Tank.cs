@@ -32,10 +32,10 @@ namespace ip3d_tp
 
         // increase in acceleration
         public float Speed = 0f;
-        public float AccelerationValue = 0.5f;
+        public float AccelerationValue = 0.3f;
 
         // velocity will be caped to this maximum
-        public float MaxVelocity = 1.0f;
+        public float MaxVelocity = 0.75f;
 
         // the velocity vector
         public Vector3 Velocity = Vector3.Zero;
@@ -87,8 +87,6 @@ namespace ip3d_tp
 
             float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            Console.WriteLine(dt);
-
             // controls rotation
             if (Controls.IsKeyDown(Controls.TankRotateLeft))
             {
@@ -124,10 +122,7 @@ namespace ip3d_tp
             if (Velocity.Length() > MaxVelocity)
             {
                 Velocity.Normalize();
-                Velocity *= MaxVelocity;
-
-                Console.WriteLine("capped velocity");
-
+                Velocity *= MaxVelocity;                
             }
 
             // apply the velocity to the position, based on the delta time between frames
