@@ -10,6 +10,9 @@ namespace ip3d_tp
     {
         GraphicsDeviceManager graphics;
 
+        // debug flag
+        bool DEBUG_MODE = true;
+
         // I'm keeping the spritebatch because there will
         // be a gui string showing the controls
         SpriteBatch spriteBatch;
@@ -34,6 +37,8 @@ namespace ip3d_tp
 
         // the tank
         Tank tank;
+
+        ThirdPersonCamera ThirdPersonCamera;
 
         // cameras:
         // holds the current active camera
@@ -118,10 +123,7 @@ namespace ip3d_tp
 
             // dispace the vertices of the plane, based on the given heightmap, and adjust by a scale
             plane.SetHeightFromTexture(terrainHeightMap, 0.08f);
-
-            // toogle wireframe out of the box
-            plane.ShowWireframe = true;
-
+            
             // load cube
             cube = Content.Load<Model>("my_cube_no_uv");
 
@@ -186,7 +188,8 @@ namespace ip3d_tp
 
             tank = new Tank(this);
 
-
+            ThirdPersonCamera = new ThirdPersonCamera(this, tank, new Vector3(0, 15f, -15f));  // this values mus t be fixed. this happens because the tankworldmatrix is scaled way down
+            
             // create the various cameras
             basicCamera = new BasicCamera(this, 45f, 128);
 
@@ -199,11 +202,12 @@ namespace ip3d_tp
             surfaceFollowCamera.Acceleration = new Vector3(0.1f);
 
             // initialize the array of cameras
-            camerasArray = new Camera[3];
+            camerasArray = new Camera[4];
             camerasArray[0] = surfaceFollowCamera;
             camerasArray[1] = freeCamera;
             camerasArray[2] = basicCamera;
-            currCam = 1;
+            camerasArray[3] = ThirdPersonCamera;
+            currCam = 3;
 
             // set the default camera
             currentCamera = camerasArray[currCam];
@@ -232,7 +236,7 @@ namespace ip3d_tp
             // switch between cameras
             if(Controls.IsKeyPressed(Keys.Space))
             {
-                currCam = (currCam + 1) % 3;
+                currCam = (currCam + 1) % 4;
 
                 Console.WriteLine(currCam);
 
@@ -266,14 +270,18 @@ namespace ip3d_tp
             // locking the mouse only after the components are updated
             if(captureMouse)
                 Mouse.SetPosition(Window.Position.X + (graphics.PreferredBackBufferWidth / 2), Window.Position.Y + (graphics.PreferredBackBufferHeight / 2));
-            
+
+            tank.Update(gameTime, currentCamera, plane);
+            ThirdPersonCamera.Update(gameTime, plane);
+
+            //ThirdPersonCamera.AxisSystem.worldMatrix = Matrix.CreateWorld(ThirdPersonCamera.Position);
+            ThirdPersonCamera.AxisSystem.UpdateShaderMatrices(currentCamera.ViewTransform, currentCamera.ProjectionTransform);
+
             // here we update the object shader(effect) matrices
             // so it can perform the space calculations on the vertices
             plane.UpdateShaderMatrices(currentCamera.ViewTransform, currentCamera.ProjectionTransform);
             worldAxis.UpdateShaderMatrices(currentCamera.ViewTransform, currentCamera.ProjectionTransform);
-
-            tank.Update(gameTime, currentCamera, plane);
-
+            
             // update the last keyboard state
             Controls.UpdateLastStates();
         }

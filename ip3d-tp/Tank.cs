@@ -15,6 +15,8 @@ namespace ip3d_tp
 
         Model Model;
 
+        public Matrix WorldTransform;
+
         Axis3D Axis;
 
         // the model direction vectors
@@ -22,18 +24,18 @@ namespace ip3d_tp
         public Vector3 Up;
         public Vector3 Right;
 
-        Vector3 Position;
-        Vector3 Rotation;
-        Vector3 Scale;
+        public Vector3 Position;
+        public Vector3 Rotation;
+        public Vector3 Scale;
 
         float YawStep = 90f;  // in degrees
 
         // increase in acceleration
         public float Speed = 0f;
-        public float AccelerationValue = 0.5f;
+        public float AccelerationValue = 0.3f;
 
         // velocity will be caped to this maximum
-        public float MaxVelocity = 1.0f;
+        public float MaxVelocity = 0.75f;
 
         // the velocity vector
         public Vector3 Velocity = Vector3.Zero;
@@ -85,8 +87,6 @@ namespace ip3d_tp
 
             float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            Console.WriteLine(dt);
-
             // controls rotation
             if (Controls.IsKeyDown(Controls.TankRotateLeft))
             {
@@ -122,10 +122,7 @@ namespace ip3d_tp
             if (Velocity.Length() > MaxVelocity)
             {
                 Velocity.Normalize();
-                Velocity *= MaxVelocity;
-
-                Console.WriteLine("capped velocity");
-
+                Velocity *= MaxVelocity;                
             }
 
             // apply the velocity to the position, based on the delta time between frames
@@ -182,7 +179,9 @@ namespace ip3d_tp
 
             Matrix scale = Matrix.CreateScale(Scale);
 
-            Model.Root.Transform = scale * world;
+            WorldTransform = scale * world;
+
+            Model.Root.Transform = WorldTransform;
 
             Model.CopyAbsoluteBoneTransformsTo(BoneTransforms);
 

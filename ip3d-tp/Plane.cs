@@ -66,7 +66,7 @@ namespace ip3d_tp
 
         // lets play (usually, this doesn't come here)
         // direction light properties
-        public Vector4 LightDirection = new Vector4(10, 5, 0, 0);
+        public Vector4 LightDirection = Vector4.Normalize(new Vector4(10, 5, 0, 0));
         public Vector4 LightColor = Color.White.ToVector4();
         public float LightIntensity = 1.0f;
 
@@ -111,8 +111,8 @@ namespace ip3d_tp
             // load our custom effect from the content
             CustomEffect = Game.Content.Load<Effect>("Effects/Diffuse");
 
-            ShowWireframe = true;  // enable out of the box wireframe
-            ShowNormals = true;
+            ShowWireframe = false;  // disable out of the box wireframe
+            ShowNormals = false;
             
             // setup the rasterizers
             SolidRasterizerState = new RasterizerState();
@@ -136,9 +136,9 @@ namespace ip3d_tp
             // some fun
             float dt = (float)gameTime.TotalGameTime.TotalSeconds;
 
-            LightDirection.X = (float)Math.Sin(dt);  // is a direction light 
-            LightDirection.Y = 1.0f;  // is a direction light
-            LightDirection.Z = (float)Math.Cos(dt);  // is a direction light
+            //LightDirection.X = (float)Math.Sin(dt);  // is a direction light 
+            //LightDirection.Y = 1.0f;  // is a direction light
+            //LightDirection.Z = (float)Math.Cos(dt);  // is a direction light
 
         }
 
@@ -379,6 +379,36 @@ namespace ip3d_tp
 
             // set the new data in
             VertexBuffer.SetData<VertexPositionNormalTexture>(VertexList);
+
+        }
+
+        public float GetHeightFromSurface(Vector3 position)
+        {
+
+            // get the nearest vertice from the plane
+            // will need to offset 
+            int x = (int)Math.Floor((position.X + this.Width / 2) / this.SubWidth);
+            int z = (int)Math.Floor((position.Z + this.Depth / 2) / this.SubHeight);
+
+            /* 
+             * get the neighbour vertices
+             * 
+             * 0---1
+             * | / |
+             * 2---3
+             */
+            int verticeIndex0 = (this.XSubs + 1) * z + x;
+            int verticeIndex1 = verticeIndex0 + 1;
+            int verticeIndex2 = verticeIndex0 + this.XSubs + 1;
+            int verticeIndex3 = verticeIndex2 + 1;
+
+            VertexPositionNormalTexture v0 = this.VertexList[verticeIndex0];
+            VertexPositionNormalTexture v1 = this.VertexList[verticeIndex1];
+            VertexPositionNormalTexture v2 = this.VertexList[verticeIndex2];
+            VertexPositionNormalTexture v3 = this.VertexList[verticeIndex3];
+
+            // use interpolation to calculate the height at this point in space
+            return Utils.HeightBilinearInterpolation(position, v0.Position, v1.Position, v2.Position, v3.Position);
 
         }
 
