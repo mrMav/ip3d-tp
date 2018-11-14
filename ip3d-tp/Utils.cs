@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace ip3d_tp
 {
@@ -41,5 +42,27 @@ namespace ip3d_tp
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="position"></param>
+        /// <param name="normal0"></param>
+        /// <param name="normal1"></param>
+        /// <param name="normal2"></param>
+        /// <param name="normal3"></param>
+        /// <see cref="https://gamedev.stackexchange.com/questions/18615/how-do-i-linearly-interpolate-between-two-vectors"/>
+        /// <returns></returns>
+        public static Vector3 NormalBilinearInterpolation(Vector3 normal0, Vector3 normal1, Vector3 normal2, Vector3 normal3, float amountX0, float amountX1, float amountZ)
+        {
+
+            // interpolate the x's
+            Vector3 x0Lerp = Vector3.Lerp(normal0, normal1, amountX0);
+            Vector3 x1Lerp = Vector3.Lerp(normal2, normal3, amountX1);
+
+            // interpolate in z
+            return Vector3.Lerp(x0Lerp, x1Lerp, amountZ);
+
+        }
+        
     }
 }

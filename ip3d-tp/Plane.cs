@@ -47,7 +47,7 @@ namespace ip3d_tp
         Effect CustomEffect;
 
         // reference to the textures
-        Texture2D DiffuseMap;
+        public Texture2D DiffuseMap;
 
         // uv scale, for defining the texture scale
         // when updated, there is a need to flag the dirty geometry flag
@@ -66,9 +66,9 @@ namespace ip3d_tp
 
         // lets play (usually, this doesn't come here)
         // direction light properties
-        Vector4 LightDirection = new Vector4(10, 5, 0, 0);
-        Vector4 LightColor = Color.White.ToVector4();
-        float LightIntensity = 1.0f;
+        public Vector4 LightDirection = new Vector4(10, 5, 0, 0);
+        public Vector4 LightColor = Color.White.ToVector4();
+        public float LightIntensity = 1.0f;
 
         
         // constructor 
@@ -150,9 +150,7 @@ namespace ip3d_tp
 
             Game.GraphicsDevice.Indices = IndexBuffer;
             Game.GraphicsDevice.SetVertexBuffer(VertexBuffer);
-
-            Game.GraphicsDevice.RasterizerState = SolidRasterizerState;
-
+            
             Matrix worldInverseTranspose = Matrix.Transpose(Matrix.Invert(WorldTransform));
 
             CustomEffect.Parameters["World"].SetValue(WorldTransform);

@@ -14,10 +14,10 @@ namespace ip3d_tp
         public static Keys StrafeLeft  = Keys.A;
         public static Keys StrafeRight = Keys.D;
 
-        public static Keys CameraRotateYCW  = Keys.Right;
-        public static Keys CameraRotateYCCW = Keys.Left;
-        public static Keys CameraRotateXCW  = Keys.Up;
-        public static Keys CameraRotateXCCW = Keys.Down;
+        public static Keys TankRotateRight  = Keys.Right;
+        public static Keys TankRotateLeft   = Keys.Left;
+        public static Keys TankMoveForward  = Keys.Up;
+        public static Keys TankMoveBackward = Keys.Down;
 
         public static KeyboardState LastKeyboardState;
         public static KeyboardState CurrKeyboardState;
