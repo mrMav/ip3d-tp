@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using System.Collections.Generic;
 
 namespace ip3d_tp
 {
@@ -9,16 +10,25 @@ namespace ip3d_tp
     /// </summary>
     public static class Controls
     {
-        public static Keys Forward     = Keys.W;
-        public static Keys Backward    = Keys.S;
-        public static Keys StrafeLeft  = Keys.A;
-        public static Keys StrafeRight = Keys.D;
 
-        public static Keys TankRotateRight  = Keys.Right;
-        public static Keys TankRotateLeft   = Keys.Left;
-        public static Keys TankMoveForward  = Keys.Up;
-        public static Keys TankMoveBackward = Keys.Down;
+        public static short Tank1ID = 0;
+        public static short Tank2ID = 1;
 
+        public static Keys[,] MovementKeys;
+
+        public enum Cursor
+        {
+            Up,
+            Down,
+            Left,
+            Right
+        }
+
+        public static Keys Forward     = Keys.Up;
+        public static Keys Backward    = Keys.Down;
+        public static Keys StrafeLeft  = Keys.Left;
+        public static Keys StrafeRight = Keys.Right;
+        
         public static KeyboardState LastKeyboardState;
         public static KeyboardState CurrKeyboardState;
 
@@ -27,6 +37,19 @@ namespace ip3d_tp
 
         public static void Initilalize()
         {
+
+            MovementKeys = new Keys[2,4];
+
+            MovementKeys[Tank1ID, (int)Cursor.Up]    = Keys.W;
+            MovementKeys[Tank1ID, (int)Cursor.Down]  = Keys.S;
+            MovementKeys[Tank1ID, (int)Cursor.Left]  = Keys.A;
+            MovementKeys[Tank1ID, (int)Cursor.Right] = Keys.D;
+
+            MovementKeys[Tank2ID, (int)Cursor.Up]    = Keys.I;
+            MovementKeys[Tank2ID, (int)Cursor.Down]  = Keys.K;
+            MovementKeys[Tank2ID, (int)Cursor.Left]  = Keys.J;
+            MovementKeys[Tank2ID, (int)Cursor.Right] = Keys.L;
+
             LastKeyboardState = Keyboard.GetState();
             CurrKeyboardState = Keyboard.GetState();
 

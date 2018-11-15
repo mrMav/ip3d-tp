@@ -36,9 +36,11 @@ namespace ip3d_tp
         Effect cubeShader;
 
         // the tank
-        Tank tank;
+        Tank tank1;
+        Tank tank2;
 
-        ThirdPersonCamera ThirdPersonCamera;
+        ThirdPersonCamera ThirdPersonCamera1;
+        ThirdPersonCamera ThirdPersonCamera2;
 
         // cameras:
         // holds the current active camera
@@ -193,9 +195,12 @@ namespace ip3d_tp
 
             //cubeShader = Content.Load<Effect>("Effects/Diffuse");
 
-            tank = new Tank(this);
+            tank1 = new Tank(this);
+            tank2 = new Tank(this);
+            tank2.TankID = 1;
 
-            ThirdPersonCamera = new ThirdPersonCamera(this, tank, new Vector3(0, 15f, -15f));  // this values mus t be fixed. this happens because the tankworldmatrix is scaled way down
+            ThirdPersonCamera1 = new ThirdPersonCamera(this, tank1, new Vector3(0, 15f, -15f));  // this values mus t be fixed. this happens because the tankworldmatrix is scaled way down
+            ThirdPersonCamera2 = new ThirdPersonCamera(this, tank2, new Vector3(0, 15f, -15f));  // this values mus t be fixed. this happens because the tankworldmatrix is scaled way down
             
             // create the various cameras
             basicCamera = new BasicCamera(this, 45f, 128);
@@ -209,11 +214,12 @@ namespace ip3d_tp
             surfaceFollowCamera.Acceleration = new Vector3(0.1f);
 
             // initialize the array of cameras
-            camerasArray = new Camera[4];
+            camerasArray = new Camera[5];
             camerasArray[0] = surfaceFollowCamera;
             camerasArray[1] = freeCamera;
             camerasArray[2] = basicCamera;
-            camerasArray[3] = ThirdPersonCamera;
+            camerasArray[3] = ThirdPersonCamera1;
+            camerasArray[4] = ThirdPersonCamera2;
             currCam = 3;
 
             // set the default camera
@@ -283,11 +289,15 @@ namespace ip3d_tp
             if(captureMouse)
                 Mouse.SetPosition(Window.Position.X + (graphics.PreferredBackBufferWidth / 2), Window.Position.Y + (graphics.PreferredBackBufferHeight / 2));
 
-            tank.Update(gameTime, currentCamera, plane);
-            ThirdPersonCamera.Update(gameTime, plane);
+            tank1.Update(gameTime, currentCamera, plane);
+            ThirdPersonCamera1.Update(gameTime, plane);
+
+            tank2.Update(gameTime, currentCamera, plane);
+            ThirdPersonCamera2.Update(gameTime, plane);
 
             //ThirdPersonCamera.AxisSystem.worldMatrix = Matrix.CreateWorld(ThirdPersonCamera.Position);
-            ThirdPersonCamera.AxisSystem.UpdateShaderMatrices(currentCamera.ViewTransform, currentCamera.ProjectionTransform);
+            ThirdPersonCamera1.AxisSystem.UpdateShaderMatrices(currentCamera.ViewTransform, currentCamera.ProjectionTransform);
+            ThirdPersonCamera2.AxisSystem.UpdateShaderMatrices(currentCamera.ViewTransform, currentCamera.ProjectionTransform);
 
             // here we update the object shader(effect) matrices
             // so it can perform the space calculations on the vertices
@@ -306,7 +316,8 @@ namespace ip3d_tp
             // it extends component, and not drawable
             plane.DrawCustomShader(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
 
-            tank.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
+            tank1.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
+            tank2.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
 
             // draw the cube with it's shader
             //foreach(ModelMesh mesh in cube.Meshes)
@@ -366,7 +377,7 @@ namespace ip3d_tp
             //spriteBatch.DrawString(font, $"Camera (SPACE, Cycle): {camerasArray[currCam].GetType().Name}\nWireframe (F, Toogle): {plane.ShowWireframe}\nNormals (N, Toogle): {plane.ShowNormals}", new Vector2(10f, 10f), new Color(0f, 1f, 0f));
             //spriteBatch.DrawString(font, $"{camerasArray[currCam].About()}", new Vector2(graphics.PreferredBackBufferWidth / 2, 10f), new Color(0f, 1f, 0f));
             spriteBatch.DrawString(font, $"{FrameRate.AverageFramesPerSecond}", new Vector2(10f, 10f), new Color(0f, 1f, 0f));
-            spriteBatch.DrawString(font, tank.GetDebugInfo(), new Vector2(10f, 26f), new Color(0f, 1f, 0f));
+            spriteBatch.DrawString(font, tank1.GetDebugInfo(), new Vector2(10f, 26f), new Color(0f, 1f, 0f));
             spriteBatch.End();
 
             base.Draw(gameTime);

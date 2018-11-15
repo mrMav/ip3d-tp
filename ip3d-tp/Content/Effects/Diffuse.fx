@@ -10,7 +10,7 @@ float4x4 Projection;
 float4x4 WorldInverseTranspose;
 
 float4 AmbientColor = float4(1, 1, 1, 1);
-float AmbientIntensity = 0.1;
+float AmbientIntensity = 0.2;
 
 float4 DiffuseLightDirection; // = float4(100, 100, 0, 0);
 float4 DiffuseColor;  //= float4(1.0, 1.0, 1.0, 1.0);
@@ -69,7 +69,7 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0{
 	float4 textureColor = tex2D(textureSampler, input.TextureCoord);
 	textureColor.a = 1;
 
-	return saturate(textureColor * diffuse + AmbientColor * AmbientIntensity);
+	return saturate(textureColor * diffuse + textureColor * AmbientIntensity);
 
 }
 

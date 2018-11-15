@@ -56,6 +56,8 @@ namespace ip3d_tp
         // an array containing the needed textures
         Texture2D[] Textures;
 
+        public short TankID;
+
         public Tank(Game game)
         {
 
@@ -93,6 +95,8 @@ namespace ip3d_tp
             Rotation = Vector3.Zero;
             Scale = new Vector3(1.00f);  // the importer is already scaling the model to our needed dimensions
 
+            TankID = 0;
+
             Axis = new Axis3D(Game, Position, 50f);
             Game.Components.Add(Axis);
 
@@ -104,12 +108,12 @@ namespace ip3d_tp
             float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             // controls rotation
-            if (Controls.IsKeyDown(Controls.TankRotateLeft))
+            if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Left]))
             {
                 Rotation.Y += YawStep * dt;
 
             }
-            else if (Controls.IsKeyDown(Controls.TankRotateRight))
+            else if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Right]))
             {
                 Rotation.Y -= YawStep * dt;
             }
@@ -118,12 +122,12 @@ namespace ip3d_tp
             UpdateDirectionVectors(surface);
 
             // update the model position, based on the updated vectors
-            if (Controls.IsKeyDown(Controls.TankMoveForward))
+            if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Up]))
             {
                 Speed -= (AccelerationValue * dt);
 
             }
-            else if (Controls.IsKeyDown(Controls.TankMoveBackward))
+            else if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Down]))
             {
                 Speed += (AccelerationValue * dt);
                 
