@@ -8,17 +8,28 @@ namespace ip3d_tp
 
     public class Game1 : Game
     {
+        // flag indicating if the mouse is captured or not 
+        bool captureMouse = true;
+
+        // flag to indicate if help should be displayed
+        public bool showHelp = true;
+
+        // an utility to measure framerates
+        FrameRate FrameRate = new FrameRate();
+        
+        // the graphics device
         GraphicsDeviceManager graphics;
-
-        // debug flag
-        bool DEBUG_MODE = true;
-
+        
         // I'm keeping the spritebatch because there will
         // be a gui string showing the controls
         SpriteBatch spriteBatch;
 
         // this will be the font we will use for text rendering
         SpriteFont font;
+
+        /*
+         * world objects
+         */ 
 
         // the world axis render object, to be a reference in space
         Axis3D worldAxis;
@@ -28,26 +39,25 @@ namespace ip3d_tp
 
         // texture to be applied to the terrain
         Texture2D terrainHeightMap;
-
-        // a test cube object
-        Model cube;
-
-        // the cube shader
-        Effect cubeShader;
-
+        
         // the tank
         Tank tank1;
+        
+        // the second tank
         Tank tank2;
 
-        ThirdPersonCamera ThirdPersonCamera1;
-        ThirdPersonCamera ThirdPersonCamera2;
+        /*
+         * cameras
+         */
 
-        // cameras:
         // holds the current active camera
         Camera currentCamera;
+         
+        // the cameras that will be attached to the first tank
+        ThirdPersonCamera ThirdPersonCamera1;
 
-        // basic camera rotates around the center of the landscape
-        BasicCamera basicCamera;
+        // the camera that will be attached to the second tank
+        ThirdPersonCamera ThirdPersonCamera2;
         
         // acts as a free camera, meaning it is possible to fly around
         FreeCamera freeCamera;
@@ -55,19 +65,18 @@ namespace ip3d_tp
         // follows the surface, at an offset from the ground
         SurfaceFollowCamera surfaceFollowCamera;
 
-        // put the cameras in an array for easy cycling
-        Camera[] camerasArray;
-        int currCam;
+        /*
+         * lights
+         */
 
-        bool captureMouse = true;
-
-        FrameRate FrameRate = new FrameRate();
-
-
-        // lets play (usually, this doesn't come here)
         // direction light properties
-        public Vector4 LightDirection = Vector4.Normalize(new Vector4(10, 5, 0, 0));
+        // indicates the direction that the infinity light comes from
+        public Vector4 LightDirection = new Vector4(10, 5, 0, 0);
+
+        // the color of the light
         public Vector4 LightColor = Color.White.ToVector4();
+
+        // the intensity of said light
         public float LightIntensity = 1.0f;
 
         public Game1()
@@ -100,13 +109,10 @@ namespace ip3d_tp
         protected override void Initialize()
         {
             Window.Title = $"EP3D-TP - JORGE NORO - 15705 {graphics.GraphicsProfile}, Sampling: {graphics.PreferMultiSampling}, Samples: {GraphicsDevice.PresentationParameters.MultiSampleCount}";
-            IsMouseVisible = false;
 
-            // ensure that the culling is happening for counterclockwise polygons
-            RasterizerState rasterizerState = new RasterizerState();
-            rasterizerState.CullMode = CullMode.CullCounterClockwiseFace;
-            GraphicsDevice.RasterizerState = rasterizerState;
-
+            // set mouse cursor state
+            IsMouseVisible = IsMouseVisible;
+            
             base.Initialize();
         }
 
@@ -115,96 +121,41 @@ namespace ip3d_tp
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            // load font
+            // load font for debugging
             font = Content.Load<SpriteFont>("font");
 
-            // laod texture
+            // load a texture to modify the surface vertices
             terrainHeightMap = Content.Load<Texture2D>("lh3d1");
 
-            // initialize the axis and add it to the componetens manager
+            // initialize the axis and add it to the components manager
             worldAxis = new Axis3D(this, Vector3.Zero, 200f);
             Components.Add(worldAxis);
 
             // initialize the plane with the prefered settings
             plane = new Plane(this, "ground_texture", 128*2, 128*2, terrainHeightMap.Width - 1, terrainHeightMap.Height - 1, 0.5f);
-            //plane = new Plane(this, "grey", 20, 30, 4, 10);
             Components.Add(plane);
 
             // dispace the vertices of the plane, based on the given heightmap, and adjust by a scale
             plane.SetHeightFromTexture(terrainHeightMap, 0.08f);
             
-            // load cube
-            //cube = Content.Load<Model>("my_cube_no_uv");
-
-
-            //int count = cube.Meshes[0].MeshParts[0].VertexBuffer.VertexCount * (cube.Meshes[0].MeshParts[0].VertexBuffer.VertexDeclaration.VertexStride / sizeof(float));
-
-            //for (int i = 0; i < count; i++)
-            //{
-            //    float[] value = new float[1];
-
-            //    cube.Meshes[0].MeshParts[0].VertexBuffer.GetData<float>(i * sizeof(float), value, 0, 1);
-
-            //    if (i % 8 == 0)
-            //    {
-            //        Console.Write("\n");
-            //        Console.Write("Vertex " + (int)Math.Floor(i / 8f) + ": ");
-
-            //    }
-
-            //    Console.Write(value[0]);
-
-            //    if (i % 8 != 7)
-            //        Console.Write(", ");
-                
-
-            //    // for each vertex
-
-            //    //string str = "";
-
-            //    //int floatsCount = cube.Meshes[0].MeshParts[0].VertexBuffer.VertexDeclaration.VertexStride / sizeof(float);
-
-            //    //for(int j = 0; j < floatsCount; j++)
-            //    //{
-
-            //    //    // for each float in the vertex
-
-            //    //    float[] value = new float[1];
-
-            //    //    cube.Meshes[0].MeshParts[0].VertexBuffer.GetData<float>((i + 1) * j * sizeof(float), value, 0, 1);
-
-            //    //    str += value[0].ToString();
-            //    //    str += ", ";
-            //    //    /*
-            //    //    0                       1
-            //    //    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0... 
-            //    //    */
-
-            //    //    Console.WriteLine()
-
-            //    //}
-
-            //    //Console.WriteLine($"Vertex {i}: {str}");
-
-            //}
-
-
-
-            //Console.WriteLine("IndexBuffer indexcount: " + cube.Meshes[0].MeshParts[0].VertexBuffer.VertexDeclaration);
-            //Console.WriteLine("VertexBuffer element size:  " + cube.Meshes[0].MeshParts[0].IndexBuffer.IndexElementSize);
-
-            //cubeShader = Content.Load<Effect>("Effects/Diffuse");
-
+            // create the tanks 
             tank1 = new Tank(this);
+            tank1.Position.X = 4f;  // offset a bit so the two don't overlap
+
             tank2 = new Tank(this);
-            tank2.TankID = 1;
+            tank2.Position.X = -4f;
+            tank2.TankID = 1;  // identify this tank as ID 1, used for the controls
 
-            ThirdPersonCamera1 = new ThirdPersonCamera(this, tank1, new Vector3(0, 15f, -15f));  // this values mus t be fixed. this happens because the tankworldmatrix is scaled way down
-            ThirdPersonCamera2 = new ThirdPersonCamera(this, tank2, new Vector3(0, 15f, -15f));  // this values mus t be fixed. this happens because the tankworldmatrix is scaled way down
-            
+            /*
+             * cameras
+             * 
+             */ 
+
             // create the various cameras
-            basicCamera = new BasicCamera(this, 45f, 128);
+            ThirdPersonCamera1 = new ThirdPersonCamera(this, tank1, plane, new Vector3(0, 15f, -15f));  // see definition for an understanding
 
+            ThirdPersonCamera2 = new ThirdPersonCamera(this, tank2, plane, new Vector3(0, 15f, -15f));
+            
             freeCamera = new FreeCamera(this, 45f);
             freeCamera.Position.Y = 10;
             freeCamera.Position.Z = 10;
@@ -212,18 +163,9 @@ namespace ip3d_tp
             surfaceFollowCamera = new SurfaceFollowCamera(this, 45f, plane, 1.76f); // my height 
             surfaceFollowCamera.MaxVelocity = 2.0f;
             surfaceFollowCamera.Acceleration = new Vector3(0.1f);
-
-            // initialize the array of cameras
-            camerasArray = new Camera[5];
-            camerasArray[0] = surfaceFollowCamera;
-            camerasArray[1] = freeCamera;
-            camerasArray[2] = basicCamera;
-            camerasArray[3] = ThirdPersonCamera1;
-            camerasArray[4] = ThirdPersonCamera2;
-            currCam = 3;
-
+            
             // set the default camera
-            currentCamera = camerasArray[currCam];
+            currentCamera = ThirdPersonCamera1;
 
             // init controls
             Controls.Initilalize();
@@ -237,38 +179,51 @@ namespace ip3d_tp
 
         protected override void Update(GameTime gameTime)
         {
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Controls.IsKeyDown(Keys.Escape))
+                Exit();
 
-            float dt = (float)gameTime.TotalGameTime.TotalSeconds;
+            #region UtilsUpdate
+            
+            // frame delta value, for calculations based on time
+            float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            // update the framerate utility
             FrameRate.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
 
             // set the current keyboard state
             Controls.UpdateCurrentStates();
 
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Controls.IsKeyDown(Keys.Escape))
-                Exit();
+            #endregion
 
-            LightDirection.X = (float)Math.Sin(dt);  // is a direction light 
-            LightDirection.Y = 1.0f;  // is a direction light
-            LightDirection.Z = (float)Math.Cos(dt);  // is a direction light
+            #region UserInput
 
             // switch between cameras
-            if (Controls.IsKeyPressed(Keys.Space))
+            if (Controls.IsKeyPressed(Keys.F1))
             {
-                currCam = (currCam + 1) % 4;
+                currentCamera = ThirdPersonCamera1;
 
-                Console.WriteLine(currCam);
+            } else if(Controls.IsKeyPressed(Keys.F2))
+            {
+                currentCamera = ThirdPersonCamera2;
 
-                currentCamera = camerasArray[currCam];
+            } else if (Controls.IsKeyPressed(Keys.F3))
+            {
+                currentCamera = surfaceFollowCamera;
+
+            } else if (Controls.IsKeyPressed(Keys.F4))
+            {
+                currentCamera = freeCamera;
+
             }
-
+            
             // toggle wireframe
-            if (Controls.IsKeyPressed(Keys.F))
+            if (Controls.IsKeyPressed(Keys.F) && showHelp)
             {
                 plane.ShowWireframe = !plane.ShowWireframe;
             }
 
             // toggle normals
-            if (Controls.IsKeyPressed(Keys.N))
+            if (Controls.IsKeyPressed(Keys.N) && showHelp)
             {
                 plane.ShowNormals = !plane.ShowNormals;
             }
@@ -280,25 +235,34 @@ namespace ip3d_tp
                 captureMouse = !captureMouse;
             }
 
-            currentCamera.Update(gameTime);
+            // toogle help
+            if (Controls.IsKeyPressed(Keys.H))
+            {
+                showHelp = !showHelp;
+            }
+
+            #endregion
+
+            // locking the mouse only after the components are updated
+            if (captureMouse)
+            {
+                Mouse.SetPosition(graphics.PreferredBackBufferWidth / 2, graphics.PreferredBackBufferHeight / 2);
+            }
 
             // every component will be updated after base update
             base.Update(gameTime);
 
-            // locking the mouse only after the components are updated
-            if(captureMouse)
-                Mouse.SetPosition(Window.Position.X + (graphics.PreferredBackBufferWidth / 2), Window.Position.Y + (graphics.PreferredBackBufferHeight / 2));
+            // updates the state of the current camera
+            currentCamera.Update(gameTime);
 
+            // we update the tanks manually so we can more flexibility
+            // they are not part of the component system.
+            // Note: all this internal component system is a bit week.
+            //       I hope in the future of this project to develop our own
+            //       node based object structure. Let's see how that goes. If I have the time.
             tank1.Update(gameTime, currentCamera, plane);
-            ThirdPersonCamera1.Update(gameTime, plane);
-
             tank2.Update(gameTime, currentCamera, plane);
-            ThirdPersonCamera2.Update(gameTime, plane);
-
-            //ThirdPersonCamera.AxisSystem.worldMatrix = Matrix.CreateWorld(ThirdPersonCamera.Position);
-            ThirdPersonCamera1.AxisSystem.UpdateShaderMatrices(currentCamera.ViewTransform, currentCamera.ProjectionTransform);
-            ThirdPersonCamera2.AxisSystem.UpdateShaderMatrices(currentCamera.ViewTransform, currentCamera.ProjectionTransform);
-
+            
             // here we update the object shader(effect) matrices
             // so it can perform the space calculations on the vertices
             plane.UpdateShaderMatrices(currentCamera.ViewTransform, currentCamera.ProjectionTransform);
@@ -316,46 +280,9 @@ namespace ip3d_tp
             // it extends component, and not drawable
             plane.DrawCustomShader(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
 
+            // draw the tanks with the light created
             tank1.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
             tank2.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
-
-            // draw the cube with it's shader
-            //foreach(ModelMesh mesh in cube.Meshes)
-            //{
-            //    //foreach (BasicEffect effect in mesh.Effects)
-            //    //{
-            //    //    effect.World = Matrix.Identity;
-            //    //    effect.View = currentCamera.ViewTransform;
-            //    //    effect.Projection = currentCamera.ProjectionTransform;
-
-            //    //    effect.EnableDefaultLighting();
-
-            //    //}
-
-            //    // draw the cube with the custom shader
-
-            //    cubeShader.Parameters["World"].SetValue(Matrix.Identity);
-            //    cubeShader.Parameters["View"].SetValue(currentCamera.ViewTransform);
-            //    cubeShader.Parameters["Projection"].SetValue(currentCamera.ProjectionTransform);
-            //    cubeShader.Parameters["WorldInverseTranspose"].SetValue(Matrix.Identity);  // well, no need to invert. thanks algebra!
-
-            //    cubeShader.Parameters["DiffuseLightDirection"].SetValue(plane.LightDirection);
-            //    cubeShader.Parameters["DiffuseColor"].SetValue(plane.LightColor);
-            //    cubeShader.Parameters["DiffuseIntensity"].SetValue(plane.LightIntensity);
-
-            //    cubeShader.Parameters["ModelTexture"].SetValue(terrainHeightMap);
-
-            //    cubeShader.CurrentTechnique.Passes[0].Apply();
-
-            //    GraphicsDevice.Indices = mesh.MeshParts[0].IndexBuffer;
-            //    GraphicsDevice.SetVertexBuffer(mesh.MeshParts[0].VertexBuffer);
-
-            //    GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, mesh.MeshParts[0].IndexBuffer.IndexCount / 3);
-
-            //    //mesh.Draw();
-
-            //}
-
 
             // render the gui text
             // notive the DepthStencilState, without default set in, depth will not 
@@ -373,11 +300,20 @@ namespace ip3d_tp
             // the blendstate messes up with custom shader.
             // render targets might be the solution
             //
+            // update 16/11/2018
+            // no. just changing the blend state is the solution.
             spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.LinearWrap, DepthStencilState.Default, null, null, null);
-            //spriteBatch.DrawString(font, $"Camera (SPACE, Cycle): {camerasArray[currCam].GetType().Name}\nWireframe (F, Toogle): {plane.ShowWireframe}\nNormals (N, Toogle): {plane.ShowNormals}", new Vector2(10f, 10f), new Color(0f, 1f, 0f));
-            //spriteBatch.DrawString(font, $"{camerasArray[currCam].About()}", new Vector2(graphics.PreferredBackBufferWidth / 2, 10f), new Color(0f, 1f, 0f));
-            spriteBatch.DrawString(font, $"{FrameRate.AverageFramesPerSecond}", new Vector2(10f, 10f), new Color(0f, 1f, 0f));
-            spriteBatch.DrawString(font, tank1.GetDebugInfo(), new Vector2(10f, 26f), new Color(0f, 1f, 0f));
+
+            if(showHelp)
+            {
+
+                spriteBatch.DrawString(font, $"{Math.Round(FrameRate.AverageFramesPerSecond)}", new Vector2(10f, 10f), new Color(0f, 1f, 0f));
+                spriteBatch.DrawString(font, $"Help (H, Toogle): {showHelp}\nWireframe (F, Toogle): {plane.ShowWireframe}\nNormals (N, Toogle): {plane.ShowNormals}", new Vector2(10f, 26f), new Color(0f, 1f, 0f));
+                spriteBatch.DrawString(font, tank1.GetDebugInfo(), new Vector2(10f, graphics.PreferredBackBufferHeight - 5 * 26f), new Color(0f, 1f, 0f));
+                spriteBatch.DrawString(font, $"Cycle between cameras in F1-F12\nAbout the camera:\n{currentCamera.About()}", new Vector2(graphics.PreferredBackBufferWidth / 2, 10f), new Color(0f, 1f, 0f));
+
+            }
+
             spriteBatch.End();
 
             base.Draw(gameTime);

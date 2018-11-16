@@ -56,9 +56,15 @@ namespace ip3d_tp
         }        public override void Draw(GameTime gameTime)
         {
             base.Draw(gameTime);
-                        
-            effect.CurrentTechnique.Passes[0].Apply();
-            Game.GraphicsDevice.DrawUserPrimitives<VertexPositionColor>( PrimitiveType.LineList, vertices, 0, 3);
+            
+            if(((Game1)Game).showHelp)
+            {
+
+                effect.CurrentTechnique.Passes[0].Apply();
+                Game.GraphicsDevice.DrawUserPrimitives<VertexPositionColor>( PrimitiveType.LineList, vertices, 0, 3);
+
+            }
+
             
         }
     }

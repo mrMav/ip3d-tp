@@ -339,10 +339,11 @@ namespace ip3d_tp
         public string GetDebugInfo()
         {
 
-            return $"Position: {Position}\n" +
+            return $"TankID: {TankID}\n" +
+                   $"Position: {Position}\n" +
                    $"Rotation: {Rotation}\n" +
-                   $"Velocity: {Velocity.Length()}\n" +
-                   $"Speed: {Speed}";
+                   $"Velocity: {Math.Round(Velocity.Length(), 4)}\n" +
+                   $"Speed: {Math.Round(Speed, 4)}";
 
         }
 

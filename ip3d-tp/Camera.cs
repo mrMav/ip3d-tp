@@ -21,9 +21,7 @@ namespace ip3d_tp
 
         // the camera field of view
         public float FieldOfView;
-
-        public Axis3D AxisSystem; 
-
+        
         // class constructor
         public Camera(Game game, float fieldOfView = 45f)
         {

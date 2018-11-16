@@ -1,10 +1,13 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using System;
 
 namespace ip3d_tp
 {
     class ThirdPersonCamera : Camera
     {
+
+        Plane Surface;
 
         Tank TankToFollow;
 
@@ -29,8 +32,10 @@ namespace ip3d_tp
 
         float LastYaw;
 
-        public ThirdPersonCamera(Game game, Tank tankToFollow, Vector3 offset, float fieldOfView = 45f) : base(game, fieldOfView)
+        public ThirdPersonCamera(Game game, Tank tankToFollow, Plane surface, Vector3 offset, float fieldOfView = 45f) : base(game, fieldOfView)
         {
+
+            Surface = surface;
 
             TankToFollow = tankToFollow;
 
@@ -41,20 +46,25 @@ namespace ip3d_tp
 
             OffsetDistance = offset.Length();
             
-            AxisSystem = new Axis3D(Game, Position, 50f);
-            game.Components.Add(AxisSystem);
-
         }
 
-        public void Update(GameTime gameTime, Plane surface)
+        public override void Update(GameTime gameTime)
         {
             
+            if(Controls.IsKeyPressed(Keys.C))
+            {
+                if (Type == CameraType.HardFollow)
+                    Type = CameraType.MouseOrbit;
+                else
+                    Type = CameraType.HardFollow;
+            }
+
             if(Type == CameraType.HardFollow)
             {
 
-                Position = Vector3.Transform(Offset * (1f + TankToFollow.Velocity.Length()), TankToFollow.WorldTransform);
+                Vector3 offset = new Vector3(Offset.X, 0, Offset.Z);
 
-                ViewTransform = Matrix.CreateLookAt(Position, TankToFollow.Position, Vector3.Up);
+                Position = Vector3.Transform(offset * (1f + TankToFollow.Velocity.Length()), TankToFollow.WorldTransform);
 
             } else if(Type == CameraType.MouseOrbit)
             {
@@ -78,64 +88,62 @@ namespace ip3d_tp
                 //Position = Vector3.Transform(new Vector3(x, y, z) / TankToFollow.Scale /* * (1f + TankToFollow.Velocity.Length())*/, TankToFollow.WorldTransform);
 
                 Position = new Vector3(x, y, z) + TankToFollow.Position;
-                ConstrainToPlane(surface);
-
-                // check if new height is under desired values
-                // camera and ground colision
-                float height = surface.GetHeightFromSurface(Position) + OffsetFromFloor;  // this is the minimum possible height, at this point
-                if (Position.Y < height)
-                {
-
-                    Pitch = LastPitch;
-
-                    Position.Y = height;
-
-                }
+                ConstrainToPlane();
                 
-                ViewTransform = Matrix.CreateLookAt(Position, TankToFollow.Position + new Vector3(0, 1.76f, 0), Vector3.Up);
+            }
+
+            // check if new height is under desired values
+            // camera and ground colision
+            float height = Surface.GetHeightFromSurface(Position) + OffsetFromFloor;  // this is the minimum possible height, at this point
+            if (Position.Y < height)
+            {
+
+                Pitch = LastPitch;
+
+                Position.Y = height;
 
             }
 
-
+            ViewTransform = Matrix.CreateLookAt(Position, TankToFollow.Position + new Vector3(0, 1.76f, 0), Vector3.Up);
 
         }
 
-        public void ConstrainToPlane(Plane surface)
+        public void ConstrainToPlane()
         {
             // constrain to bounds
             // inset one subdivision
 
-            float halfSurfaceWidth = surface.Width / 2;
-            float halfSurfaceDepth = surface.Depth / 2;
+            float halfSurfaceWidth = Surface.Width / 2;
+            float halfSurfaceDepth = Surface.Depth / 2;
 
             // because we know that the plane origin is at its center
             // we will have to calculate the bounds with that in mind, and add 
             // te width and depth divided by 2
-            if (Position.X < -halfSurfaceWidth + surface.SubWidth)
+            if (Position.X < -halfSurfaceWidth + Surface.SubWidth)
             {
 
-                Position.X = -halfSurfaceWidth + surface.SubWidth;
+                Position.X = -halfSurfaceWidth + Surface.SubWidth;
                 Yaw = LastYaw;
 
             }
-            if (Position.X > halfSurfaceWidth - surface.SubWidth)
+            if (Position.X > halfSurfaceWidth - Surface.SubWidth)
             {
 
-                Position.X = halfSurfaceWidth - surface.SubWidth;
+                Position.X = halfSurfaceWidth - Surface.SubWidth;
                 Yaw = LastYaw;
 
             }
-            if (Position.Z < -halfSurfaceDepth + surface.SubHeight)
+            if (Position.Z < -halfSurfaceDepth + Surface.SubHeight)
             {
 
-                Position.Z = -halfSurfaceDepth + surface.SubHeight;
+                Position.Z = -halfSurfaceDepth + Surface.SubHeight;
                 Yaw = LastYaw;
 
             }
-            if (Position.Z > halfSurfaceDepth - surface.SubHeight)
+            if (Position.Z > halfSurfaceDepth - Surface.SubHeight)
             {
 
-                Position.Z = halfSurfaceDepth - surface.SubHeight;
+                Position.Z = halfSurfaceDepth - Surface.SubHeight;
                 Yaw = LastYaw;
 
             }
@@ -157,7 +165,7 @@ namespace ip3d_tp
 
             if (constrainPitch)
             {
-                if (Pitch > 89.0f) 
+                if (Pitch > 89.0f)
                     Pitch = 89.0f;
                 if (Pitch < -89.0f)
                     Pitch = -89.0f;
@@ -168,7 +176,7 @@ namespace ip3d_tp
 
         public override string About()
         {
-            return "Follows the tank.";
+            return "Follows the tank.\nRotate the mouse to look around.\nToogle 'C' to lock the angle.";
         }
 
     }

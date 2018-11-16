@@ -156,29 +156,33 @@ namespace ip3d_tp
             CustomEffect.CurrentTechnique.Passes[0].Apply();
 
             Game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, IndicesList.Length / 3);
-
-
-            if (ShowWireframe)
-            {
-                // same as before but in wireframe rasterizer
-
-                ColorShaderEffect.DiffuseColor = Color.Black.ToVector3();
-                ColorShaderEffect.CurrentTechnique.Passes[0].Apply();
-                Game.GraphicsDevice.RasterizerState = WireframeRasterizerState;
-                Game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, IndicesList.Length / 3);
-
-            }
-
-            if (ShowNormals)
+            
+            if (((Game1)Game).showHelp)
             {
 
-                // same as before but in wireframe rasterizer
+                if (ShowWireframe)
+                {
+                    // same as before but in wireframe rasterizer
 
-                ColorShaderEffect.DiffuseColor = Color.MonoGameOrange.ToVector3();
-                ColorShaderEffect.CurrentTechnique.Passes[0].Apply();
-                Game.GraphicsDevice.RasterizerState = WireframeRasterizerState;
-                //Game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, IndicesList.Length / 3);
-                Game.GraphicsDevice.DrawUserPrimitives<VertexPosition>(PrimitiveType.LineList, NormalList, 0, NormalList.Length / 2);
+                    ColorShaderEffect.DiffuseColor = Color.Black.ToVector3();
+                    ColorShaderEffect.CurrentTechnique.Passes[0].Apply();
+                    Game.GraphicsDevice.RasterizerState = WireframeRasterizerState;
+                    Game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, IndicesList.Length / 3);
+
+                }
+
+                if (ShowNormals)
+                {
+
+                    // same as before but in wireframe rasterizer
+
+                    ColorShaderEffect.DiffuseColor = Color.MonoGameOrange.ToVector3();
+                    ColorShaderEffect.CurrentTechnique.Passes[0].Apply();
+                    Game.GraphicsDevice.RasterizerState = WireframeRasterizerState;
+                    //Game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, IndicesList.Length / 3);
+                    Game.GraphicsDevice.DrawUserPrimitives<VertexPosition>(PrimitiveType.LineList, NormalList, 0, NormalList.Length / 2);
+
+                }
 
             }
 

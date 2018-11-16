@@ -134,28 +134,38 @@ namespace ip3d_tp
             ProcessMouseScroll();            
 
             // update the camera position, based on the updated vectors
-            if (Controls.IsKeyDown(Controls.Forward))
+            if (Controls.IsKeyDown(Controls.CameraForward))
             {
                 Velocity += Front * AccelerationValue;
 
             }
-            else if (Controls.IsKeyDown(Controls.Backward))
+            else if (Controls.IsKeyDown(Controls.CameraBackward))
             {
                 Velocity -= Front * AccelerationValue;
             }
 
-            if (Controls.IsKeyDown(Controls.StrafeLeft))
+            if (Controls.IsKeyDown(Controls.CameraStrafeLeft))
             {
                 Velocity -= Right * AccelerationValue;
 
             }
-            else if (Controls.IsKeyDown(Controls.StrafeRight))
+            else if (Controls.IsKeyDown(Controls.CameraStrafeRight))
             {
                 Velocity += Right * AccelerationValue;
             }
 
+            if (Controls.IsKeyDown(Controls.CameraMoveUp))
+            {
+                Velocity += Up * AccelerationValue;
+
+            }
+            else if (Controls.IsKeyDown(Controls.CameraMoveDown))
+            {
+                Velocity -= Up * AccelerationValue;
+            }
+
             // cap the velocity so we don't move faster diagonally
-            if(Velocity.Length() > MaxVelocity)
+            if (Velocity.Length() > MaxVelocity)
             {
                 Velocity.Normalize();
                 Velocity *= MaxVelocity;
@@ -180,7 +190,7 @@ namespace ip3d_tp
 
         public override string About()
         {
-            return "Use WASD to move around.\nLook around with the mouse.\nScroll zooms in and out.\nYou are free in the world, enjoy it.";
+            return "Use 8-6-5-4 to move around.\n7 and 1 to go up and down.\nLook around with the mouse.\nScroll zooms in and out.\nYou are free in the world, enjoy it.";
         }
 
     }

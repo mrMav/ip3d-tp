@@ -79,7 +79,7 @@ namespace ip3d_tp
 
         public override string About()
         {
-            return "Use WASD to move around.\nLook around with the mouse.\nScroll zooms in and out.\nYou will be snapped and constrained to the terrain.";
+            return "Use NumPad 8-6-5-4 to move around.\nLook around with the mouse.\nScroll zooms in and out.\nYou will be snapped and constrained to the terrain.";
         }
 
     }

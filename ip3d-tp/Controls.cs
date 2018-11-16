@@ -24,11 +24,13 @@ namespace ip3d_tp
             Right
         }
 
-        public static Keys Forward     = Keys.Up;
-        public static Keys Backward    = Keys.Down;
-        public static Keys StrafeLeft  = Keys.Left;
-        public static Keys StrafeRight = Keys.Right;
-        
+        public static Keys CameraForward     = Keys.NumPad8;
+        public static Keys CameraBackward    = Keys.NumPad5;
+        public static Keys CameraStrafeLeft  = Keys.NumPad4;
+        public static Keys CameraStrafeRight = Keys.NumPad6;
+        public static Keys CameraMoveUp      = Keys.NumPad7;
+        public static Keys CameraMoveDown    = Keys.NumPad1;
+
         public static KeyboardState LastKeyboardState;
         public static KeyboardState CurrKeyboardState;
 
