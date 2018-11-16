@@ -10,13 +10,16 @@ namespace ip3d_tp
 {
     class Tank
     {
-
+        // game reference
         Game Game;
 
+        // the loaded 3d model
         Model Model;
 
+        // the object world transform
         public Matrix WorldTransform;
 
+        // an axis for debug purposes
         Axis3D Axis;
 
         // the model direction vectors
@@ -24,6 +27,7 @@ namespace ip3d_tp
         public Vector3 Up;
         public Vector3 Right;
 
+        // movement variables
         public Vector3 Position;
         public Vector3 Rotation;
         public Vector3 Scale;
@@ -31,8 +35,8 @@ namespace ip3d_tp
         float YawStep = 90f;  // in degrees
 
         // increase in acceleration
-        public float Speed = 0f;
         public float AccelerationValue = 0.3f;
+        public float Speed = 0f;
 
         // velocity will be caped to this maximum
         public float MaxVelocity = 0.75f;
@@ -43,28 +47,34 @@ namespace ip3d_tp
         // the drag to apply
         public float Drag = 0.8f;
 
+        // the shader to render the tank
         Effect Shader;
 
-        // rasterizeres for solid and wireframe modes
+        // rasterizer
         RasterizerState SolidRasterizerState;
 
         // blend state to render this model meshes
         BlendState BlendState;
 
+        // array to store the Bones Transformations
         Matrix[] BoneTransforms;
 
         // an array containing the needed textures
         Texture2D[] Textures;
 
+        // this tank ID for controls
         public short TankID;
 
+        // constructor
         public Tank(Game game)
         {
 
             Game = game;
 
-            Model = Game.Content.Load<Model>("Models/Tank/tank2"); // tank loaded from fbx
+            // tank loaded from fbx
+            Model = Game.Content.Load<Model>("Models/Tank/tank2");
 
+            // loading the shader
             Shader = Game.Content.Load<Effect>("Effects/Diffuse");
 
             BoneTransforms = new Matrix[Model.Bones.Count];
@@ -72,6 +82,7 @@ namespace ip3d_tp
             Textures = new Texture2D[Model.Meshes.Count];
 
             // this texture indexing will work. for now.
+            // we are indexing the textures to the meshes
             int count = 0;
             foreach(ModelMesh mesh in Model.Meshes)
             {
@@ -82,21 +93,24 @@ namespace ip3d_tp
 
             }
 
-            // setup the rasterizers
+            // setup the rasterizer
             SolidRasterizerState = new RasterizerState();
 
             SolidRasterizerState.FillMode = FillMode.Solid;
 
-            this.BlendState = new BlendState();
-            this.BlendState.AlphaBlendFunction = BlendFunction.Add;
+            // the blend state
+            BlendState = new BlendState();
+            BlendState.AlphaBlendFunction = BlendFunction.Add;
 
             // init values
             Position = Vector3.Zero;
             Rotation = Vector3.Zero;
             Scale = new Vector3(1.00f);  // the importer is already scaling the model to our needed dimensions
 
+            // default the ID to 0
             TankID = 0;
 
+            // create the axis for debug
             Axis = new Axis3D(Game, Position, 50f);
             Game.Components.Add(Axis);
 
@@ -104,7 +118,7 @@ namespace ip3d_tp
 
         public void Update(GameTime gameTime, Camera camera, Plane surface)
         {
-
+            // delta for time based calcs
             float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             // controls rotation
@@ -136,16 +150,17 @@ namespace ip3d_tp
                 Speed = 0f;
             }
 
+            // apply speed to velocity
             Velocity += Front * Speed;
             
-            // cap the velocity so we don't move faster diagonally
+            // cap the velocity so we don't move faster than we should
             if (Velocity.Length() > MaxVelocity)
             {
                 Velocity.Normalize();
                 Velocity *= MaxVelocity;                
             }
 
-            // apply the velocity to the position, based on the delta time between frames
+            // apply the velocity to the position
             Position += Velocity;
 
             // add some sexy drag
@@ -160,6 +175,7 @@ namespace ip3d_tp
             // update the bones matrices
             UpdateMatrices();
 
+            // update the debug axis
             Axis.worldMatrix = Matrix.CreateScale(new Vector3(50f) / Scale) * Model.Root.Transform;
             Axis.UpdateShaderMatrices(camera.ViewTransform, camera.ProjectionTransform);
 
@@ -178,6 +194,11 @@ namespace ip3d_tp
                 
                 foreach (ModelMeshPart part in mesh.MeshParts)
                 {
+
+                    /*
+                     * here we send the data to the shader for processing
+                     * see the Diffuse.fx for the implementation
+                     */ 
 
                     part.Effect = Shader;
                

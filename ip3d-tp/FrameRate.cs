@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace ip3d_tp
 {
-    // https://stackoverflow.com/questions/20676185/xna-monogame-getting-the-frames-per-second
+    // based on https://stackoverflow.com/questions/20676185/xna-monogame-getting-the-frames-per-second
     public class FrameRate
     {
         public FrameRate()

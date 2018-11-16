@@ -6,16 +6,22 @@ namespace ip3d_tp
 {
     /// <summary>
     /// Basic controls wrapper for Monogame Input
-    /// Self explanatory
     /// </summary>
     public static class Controls
     {
 
+        /*
+         * Holds the ids for different tanks
+         */ 
         public static short Tank1ID = 0;
         public static short Tank2ID = 1;
 
+        /*
+         * this multidimensional array will contain the keys for both tanks
+         */ 
         public static Keys[,] MovementKeys;
 
+        // enumerator to simplify basic movement access
         public enum Cursor
         {
             Up,
@@ -24,6 +30,9 @@ namespace ip3d_tp
             Right
         }
 
+        /*
+         * Camera movement keys
+         */ 
         public static Keys CameraForward     = Keys.NumPad8;
         public static Keys CameraBackward    = Keys.NumPad5;
         public static Keys CameraStrafeLeft  = Keys.NumPad4;
@@ -39,7 +48,7 @@ namespace ip3d_tp
 
         public static void Initilalize()
         {
-
+            // init tanks movement keys array
             MovementKeys = new Keys[2,4];
 
             MovementKeys[Tank1ID, (int)Cursor.Up]    = Keys.W;

@@ -3,6 +3,11 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace ip3d_tp
 {
+    /// <summary>
+    /// Class for representing an axis system.
+    /// The code is self explanatory.
+    /// It uses creates and draws a list of lines.
+    /// </summary>
     class Axis3D : DrawableGameComponent
     {
         VertexPositionColor[] vertices;
@@ -24,7 +29,6 @@ namespace ip3d_tp
             effect.LightingEnabled = false;
             effect.VertexColorEnabled = true;
 
-            // Cria os eixos 3D
             CreateGeometry();
         }
 
@@ -53,7 +57,9 @@ namespace ip3d_tp
             effect.Projection = projectionTransform;
             effect.View = viewTransform;
             effect.World = worldMatrix;
-        }        public override void Draw(GameTime gameTime)
+        }
+
+        public override void Draw(GameTime gameTime)
         {
             base.Draw(gameTime);
             

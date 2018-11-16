@@ -4,19 +4,33 @@ Based on http://rbwhitaker.wikidot.com/diffuse-lighting-shader
 
 */
 
+/*
+ * Matrices for vertex shader
+ */
 float4x4 World;
 float4x4 View;
 float4x4 Projection;
-float4x4 WorldInverseTranspose;
+float4x4 WorldInverseTranspose;  // we need to inverse and transpose to 'localize' the light vector
 
+// ambient color to apply in the pixel shading
 float4 AmbientColor = float4(1, 1, 1, 1);
-float AmbientIntensity = 0.2;
+float AmbientIntensity = 0.3;  // ambient intensity factor
 
-float4 DiffuseLightDirection; // = float4(100, 100, 0, 0);
-float4 DiffuseColor;  //= float4(1.0, 1.0, 1.0, 1.0);
-float DiffuseIntensity;  // = 0.001;
+// right now, only one directional diffuse light is supported
+// these are fed to the shader
+float4 DiffuseLightDirection;
+float4 DiffuseColor;
+float DiffuseIntensity;
 
+// this is the diffuse texture
 texture ModelTexture;
+
+/*
+Definition of the texture sampler, which states how 
+we will 'sample' the texture. In this case we will LinearInterpolate the pixel
+colors if the texture gets bigger or smaller
+we will also wrap the texture on values bellow 0 and above 1
+*/
 sampler2D textureSampler = sampler_state {
 
 	Texture = (ModelTexture);
@@ -28,6 +42,7 @@ sampler2D textureSampler = sampler_state {
 };
 
 // this is the struct for our VertexPositionNormalTexture
+// this is the structure that is fed to the vertex shader
 struct VertexShaderInput {
 
 	float4 Position : POSITION0;
@@ -36,6 +51,7 @@ struct VertexShaderInput {
 
 };
 
+// the struct that the vertex shader outputs
 struct VertexShaderOutput {
 
 	float4 Position : POSITION0;
@@ -44,6 +60,7 @@ struct VertexShaderOutput {
 
 };
 
+// shader vertex
 VertexShaderOutput VertexShaderFunction(VertexShaderInput input) {
 
 	VertexShaderOutput output;
@@ -52,6 +69,7 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input) {
 	float4 worldPosition = mul(input.Position, World);
 	float4 viewPosition = mul(worldPosition, View);
 
+	// build the output structure
 	output.Position = mul(viewPosition, Projection);
 	output.Normal = input.Normal;
 	output.TextureCoord = input.TextureCoord;
@@ -59,24 +77,36 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input) {
 	return output;
 }
 
-float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0{
+// pixel shader
+float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0 {
 	
 	// calculate the normal for diffuse
 	float4 normal = mul(input.Normal, WorldInverseTranspose);
-	float lightIntensity = dot(normal, normalize(DiffuseLightDirection)); // calculate angle between surface normal
+
+	// calculate angle between surface normal
+	float lightIntensity = dot(normal, normalize(DiffuseLightDirection));
+
+	// diffuse result (saturate clamps values to 0-1 range)
 	float diffuse = saturate(DiffuseColor * DiffuseIntensity * lightIntensity);
 
+	// sample texture, and get the color
 	float4 textureColor = tex2D(textureSampler, input.TextureCoord);
 	textureColor.a = 1;
 
-	return saturate(textureColor * diffuse + textureColor * AmbientIntensity);
+	// calculate the shadow side with diffuse and ambient
+	float4 ambient = textureColor + AmbientColor * AmbientIntensity;
+
+	// result
+	return saturate(textureColor * diffuse + ambient * AmbientIntensity);
 
 }
 
+// technique name and passes
 technique Textured {
 
 	pass Pass1 {
 
+		// program compilation
 		VertexShader = compile vs_4_0 VertexShaderFunction();
 		PixelShader = compile ps_4_0 PixelShaderFunction();
 
