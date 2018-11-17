@@ -71,7 +71,7 @@ namespace ip3d_tp
 
         // direction light properties
         // indicates the direction that the infinity light comes from
-        public Vector4 LightDirection = new Vector4(10, 5, 0, 0);
+        public Vector4 LightDirection = new Vector4(-1, -1, -1, 0);
 
         // the color of the light
         public Vector4 LightColor = Color.White.ToVector4();
@@ -132,7 +132,7 @@ namespace ip3d_tp
             Components.Add(worldAxis);
 
             // initialize the plane with the prefered settings
-            plane = new Plane(this, "ground_texture", 128*2, 128*2, terrainHeightMap.Width - 1, terrainHeightMap.Height - 1, 0.5f);
+            plane = new Plane(this, "Textures/ground_diffuse", 128*2, 128*2, terrainHeightMap.Width - 1, terrainHeightMap.Height - 1, 0.5f);
             Components.Add(plane);
 
             // dispace the vertices of the plane, based on the given heightmap, and adjust by a scale
@@ -165,7 +165,7 @@ namespace ip3d_tp
             surfaceFollowCamera.Acceleration = new Vector3(0.1f);
             
             // set the default camera
-            currentCamera = ThirdPersonCamera1;
+            currentCamera = freeCamera;
 
             // init controls
             Controls.Initilalize();

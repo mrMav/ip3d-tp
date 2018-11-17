@@ -75,7 +75,7 @@ namespace ip3d_tp
             Model = Game.Content.Load<Model>("Models/Tank/tank2");
 
             // loading the shader
-            Shader = Game.Content.Load<Effect>("Effects/Diffuse");
+            Shader = Game.Content.Load<Effect>("Effects/Specular2");
 
             BoneTransforms = new Matrix[Model.Bones.Count];
 
@@ -113,6 +113,30 @@ namespace ip3d_tp
             // create the axis for debug
             Axis = new Axis3D(Game, Position, 50f);
             Game.Components.Add(Axis);
+
+
+            //int j = Model.Meshes[0].MeshParts[0].VertexBuffer.VertexCount * (Model.Meshes[0].MeshParts[0].VertexBuffer.VertexDeclaration.VertexStride / sizeof(float));
+
+            //for (int i = 0; i < j; i++)
+            //{
+            //    float[] value = new float[1];
+
+            //    Model.Meshes[0].MeshParts[0].VertexBuffer.GetData<float>(i * sizeof(float), value, 0, 1);
+
+            //    if (i % 8 == 0)
+            //    {
+            //        Console.Write("\n");
+            //        Console.Write("Vertex " + (int)Math.Floor(i / 8f) + ": ");
+
+            //    }
+
+            //    Console.Write(value[0]);
+
+            //    if (i % 8 != 7)
+            //        Console.Write(", ");
+                                
+            //}
+
 
         }
 
@@ -207,17 +231,30 @@ namespace ip3d_tp
                     Matrix world = BoneTransforms[mesh.ParentBone.Index];
                     Matrix worldInverseTranspose = Matrix.Transpose(Matrix.Invert(mesh.ParentBone.Transform * world));
 
-                    Shader.Parameters["World"].SetValue(world);
+                    //Shader.Parameters["World"].SetValue(world);
+                    //Shader.Parameters["View"].SetValue(camera.ViewTransform);
+                    //Shader.Parameters["Projection"].SetValue(camera.ProjectionTransform);
+                    //Shader.Parameters["WorldInverseTranspose"].SetValue(worldInverseTranspose);
+
+                    //Shader.Parameters["DiffuseLightDirection"].SetValue(lightDirection);
+                    //Shader.Parameters["DiffuseColor"].SetValue(lightColor);
+                    //Shader.Parameters["DiffuseIntensity"].SetValue(lightIntensity);
+                    
+                    //Shader.Parameters["ModelTexture"].SetValue(Textures[count]);
+
+                    Shader.Parameters["World"].SetValue(World);
                     Shader.Parameters["View"].SetValue(camera.ViewTransform);
                     Shader.Parameters["Projection"].SetValue(camera.ProjectionTransform);
                     Shader.Parameters["WorldInverseTranspose"].SetValue(worldInverseTranspose);
+                    Shader.Parameters["ViewPosition"].SetValue(camera.Position);
 
-                    Shader.Parameters["DiffuseLightDirection"].SetValue(lightDirection);
-                    Shader.Parameters["DiffuseColor"].SetValue(lightColor);
-                    Shader.Parameters["DiffuseIntensity"].SetValue(lightIntensity);
-                    
-                    Shader.Parameters["ModelTexture"].SetValue(Textures[count]);
-                                        
+                    Shader.Parameters["DirectionLightDirection"].SetValue(lightDirection);
+                    //CustomEffect.Parameters["DiffuseColor"].SetValue(lightColor);
+                    //CustomEffect.Parameters["DiffuseIntensity"].SetValue(lightIntensity);
+
+                    Shader.Parameters["MaterialDiffuseTexture"].SetValue(Textures[count]);
+                    //CustomEffect.Parameters["BumpTexture"].SetValue(BumpMap);
+
                 }
 
                 mesh.Draw();

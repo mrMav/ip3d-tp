@@ -122,7 +122,10 @@ namespace ip3d_tp
             }
 
             // finally, update view transform
-            ViewTransform = Matrix.CreateLookAt(Position, TankToFollow.Position + new Vector3(0, 1.76f, 0), Vector3.Up);
+            Target = TankToFollow.Position + new Vector3(0, 1.76f, 0);
+            ViewTransform = Matrix.CreateLookAt(Position, Target, Vector3.Up);
+
+            base.Update(gameTime);
 
         }
 

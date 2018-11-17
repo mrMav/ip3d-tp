@@ -49,6 +49,8 @@ namespace ip3d_tp
         // reference to the textures
         public Texture2D DiffuseMap;
 
+        public Texture2D BumpMap;
+
         // uv scale, for defining the texture scale
         // when updated, there is a need to flag the dirty geometry flag
         float UVScale;
@@ -80,6 +82,7 @@ namespace ip3d_tp
             WorldTransform = Matrix.Identity;
 
             DiffuseMap = Game.Content.Load<Texture2D>(textureKey);
+            BumpMap = Game.Content.Load<Texture2D>("Textures/ground_bump");
             UVScale = uvscale;
 
             // in this phase, I want to stop everything if the texture is null
@@ -102,7 +105,7 @@ namespace ip3d_tp
             ColorShaderEffect.LightingEnabled = false;  // we won't be using light. we would need normals for that
 
             // load our custom effect from the content
-            CustomEffect = Game.Content.Load<Effect>("Effects/Diffuse");
+            CustomEffect = Game.Content.Load<Effect>("Effects/Specular2");
 
             ShowWireframe = false;  // disable out of the box wireframe
             ShowNormals = false;
@@ -146,12 +149,14 @@ namespace ip3d_tp
             CustomEffect.Parameters["View"].SetValue(camera.ViewTransform);
             CustomEffect.Parameters["Projection"].SetValue(camera.ProjectionTransform);
             CustomEffect.Parameters["WorldInverseTranspose"].SetValue(worldInverseTranspose);
+            CustomEffect.Parameters["ViewPosition"].SetValue(camera.Position);
 
-            CustomEffect.Parameters["DiffuseLightDirection"].SetValue(lightDirection);
-            CustomEffect.Parameters["DiffuseColor"].SetValue(lightColor);
-            CustomEffect.Parameters["DiffuseIntensity"].SetValue(lightIntensity);
-
-            CustomEffect.Parameters["ModelTexture"].SetValue(DiffuseMap);
+            CustomEffect.Parameters["DirectionLightDirection"].SetValue(lightDirection);
+            //CustomEffect.Parameters["DiffuseColor"].SetValue(lightColor);
+            //CustomEffect.Parameters["DiffuseIntensity"].SetValue(lightIntensity);
+                       
+            CustomEffect.Parameters["MaterialDiffuseTexture"].SetValue(DiffuseMap);
+            //CustomEffect.Parameters["BumpTexture"].SetValue(BumpMap);
 
             CustomEffect.CurrentTechnique.Passes[0].Apply();
 
