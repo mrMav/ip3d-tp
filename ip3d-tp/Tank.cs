@@ -1,10 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ip3d_tp
 {
@@ -62,6 +58,11 @@ namespace ip3d_tp
         // an array containing the needed textures
         Texture2D[] Textures;
 
+        // textures for shading enrichment
+        Texture2D BurrsMap;
+        Texture2D SpecularMap;
+        Texture2D NormalMap;
+
         // this tank ID for controls
         public short TankID;
 
@@ -75,7 +76,10 @@ namespace ip3d_tp
             Model = Game.Content.Load<Model>("Models/Tank/tank2");
 
             // loading the shader
-            Shader = Game.Content.Load<Effect>("Effects/Diffuse");
+            Shader = Game.Content.Load<Effect>("Effects/Tank");
+            BurrsMap = Game.Content.Load<Texture2D>("Textures/metal_diffuse_1k");
+            SpecularMap = Game.Content.Load<Texture2D>("Textures/metal_specular_1k");
+            NormalMap = Game.Content.Load<Texture2D>("Textures/metal_normal_1k");
 
             BoneTransforms = new Matrix[Model.Bones.Count];
 
@@ -113,7 +117,7 @@ namespace ip3d_tp
             // create the axis for debug
             Axis = new Axis3D(Game, Position, 50f);
             Game.Components.Add(Axis);
-
+                       
         }
 
         public void Update(GameTime gameTime, Camera camera, Plane surface)
@@ -182,7 +186,7 @@ namespace ip3d_tp
 
         }
 
-        public void Draw(GameTime gameTime, Camera camera, Vector4 lightDirection, Vector4 lightColor, float lightIntensity)
+        public void Draw(GameTime gameTime, Camera camera, Vector3 lightDirection, Vector4 lightColor, float lightIntensity)
         {
 
             Game.GraphicsDevice.RasterizerState = this.SolidRasterizerState;
@@ -206,18 +210,21 @@ namespace ip3d_tp
 
                     Matrix world = BoneTransforms[mesh.ParentBone.Index];
                     Matrix worldInverseTranspose = Matrix.Transpose(Matrix.Invert(mesh.ParentBone.Transform * world));
+                    
+                    Shader.Parameters["DirectionLightDirection"].SetValue(lightDirection);
 
                     Shader.Parameters["World"].SetValue(world);
                     Shader.Parameters["View"].SetValue(camera.ViewTransform);
                     Shader.Parameters["Projection"].SetValue(camera.ProjectionTransform);
-                    Shader.Parameters["WorldInverseTranspose"].SetValue(worldInverseTranspose);
 
-                    Shader.Parameters["DiffuseLightDirection"].SetValue(lightDirection);
-                    Shader.Parameters["DiffuseColor"].SetValue(lightColor);
-                    Shader.Parameters["DiffuseIntensity"].SetValue(lightIntensity);
-                    
-                    Shader.Parameters["ModelTexture"].SetValue(Textures[count]);
-                                        
+                    //Shader.Parameters["WorldInverseTranspose"].SetValue(worldInverseTranspose);
+                    Shader.Parameters["ViewPosition"].SetValue(camera.Position);
+
+                    Shader.Parameters["MaterialDiffuseTexture"].SetValue(Textures[count]);                    
+                    Shader.Parameters["Material2DiffuseTexture"].SetValue(BurrsMap);
+                    Shader.Parameters["SpecularMapTexture"].SetValue(SpecularMap);                    
+                    Shader.Parameters["NormalMapTexture"].SetValue(NormalMap);
+
                 }
 
                 mesh.Draw();

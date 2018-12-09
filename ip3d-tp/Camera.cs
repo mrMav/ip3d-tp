@@ -14,6 +14,8 @@ namespace ip3d_tp
         // create variables to hold the current camera position and target
         public Vector3 Position;
         public Vector3 Target;
+
+        public Vector3 View;
                 
         // these are the matrices to be used when this camera is active
         public Matrix ViewTransform;
@@ -45,6 +47,8 @@ namespace ip3d_tp
 
         public virtual void Update(GameTime gameTime)
         {
+
+            View = Target - Position;
 
         }
 

@@ -15,8 +15,8 @@ namespace ip3d_tp
         public Vector3 WorldUp;
 
         // yaw and pitch angles
-        float Yaw;
-        float Pitch = -35;  // default;
+        public float Yaw;
+        public float Pitch = -35;  // default;
 
         // sensicity scaler
         float MouseSensitivity = 0.1f;
