@@ -1,19 +1,28 @@
-﻿using Microsoft.Xna.Framework;
+﻿using ip3d_tp.Physics3D;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 
 namespace ip3d_tp
 {
+    /// <summary>
+    /// Holds global data and game flags
+    /// </summary>
+    public static class Global
+    {
+
+        // toggle for debug
+        public static bool ShowHelp = true;
+
+
+    }
 
     public class Game1 : Game
     {
         // flag indicating if the mouse is captured or not 
         bool captureMouse = true;
-
-        // flag to indicate if help should be displayed
-        public bool showHelp = true;
-
+        
         // an utility to measure framerates
         FrameRate FrameRate = new FrameRate();
         
@@ -89,10 +98,11 @@ namespace ip3d_tp
             // state that we will use a HiDef profile, check here the difs:
             // https://blogs.msdn.microsoft.com/shawnhar/2010/03/12/reach-vs-hidef/
 
-            graphics.SynchronizeWithVerticalRetrace = true;
+            graphics.SynchronizeWithVerticalRetrace = false;
             graphics.PreferredBackBufferWidth = 1280;
             graphics.PreferredBackBufferHeight = 720;
             //graphics.IsFullScreen = true;
+            IsFixedTimeStep = false;
 
             graphics.GraphicsProfile = GraphicsProfile.HiDef;
             graphics.PreparingDeviceSettings += Graphics_PreparingDeviceSettings;
@@ -140,10 +150,10 @@ namespace ip3d_tp
             
             // create the tanks 
             tank1 = new Tank(this);
-            tank1.Position.X = 4f;  // offset a bit so the two don't overlap
+            tank1.Body.X = 4f;  // offset a bit so the two don't overlap
 
             tank2 = new Tank(this);
-            tank2.Position.X = -4f;
+            tank2.Body.X = -4f;
             tank2.TankID = 1;  // identify this tank as ID 1, used for the controls
 
             /*
@@ -220,13 +230,13 @@ namespace ip3d_tp
             }
             
             // toggle wireframe
-            if (Controls.IsKeyPressed(Keys.F) && showHelp)
+            if (Controls.IsKeyPressed(Keys.F) && Global.ShowHelp)
             {
                 plane.ShowWireframe = !plane.ShowWireframe;
             }
 
             // toggle normals
-            if (Controls.IsKeyPressed(Keys.N) && showHelp)
+            if (Controls.IsKeyPressed(Keys.N) && Global.ShowHelp)
             {
                 plane.ShowNormals = !plane.ShowNormals;
             }
@@ -241,7 +251,7 @@ namespace ip3d_tp
             // toogle help
             if (Controls.IsKeyPressed(Keys.H))
             {
-                showHelp = !showHelp;
+                Global.ShowHelp = !Global.ShowHelp;
             }
 
             #endregion
@@ -270,6 +280,25 @@ namespace ip3d_tp
             tank1.Update(gameTime, currentCamera, plane);
             tank2.Update(gameTime, currentCamera, plane);
             
+            // collision needs to run on a fairly high speed in order
+            // to be accurate. The implication of this is the
+            // method that we are defining the tanks height.
+            // the tanks are glued to the ground, and fetch the new height
+            // every frame. This leads to 'teleporting' and oder glitchs when 
+            // applying the collision resolution.
+            if (Physics.SATCollide(tank1.Body, tank2.Body))
+            {
+
+                tank1.BodyDebug.MaterialColor = Color.Red;
+
+            }
+            else
+            {
+                tank1.BodyDebug.MaterialColor = Color.Blue;
+
+            };
+
+
             // here we update the object shader(effect) matrices
             // so it can perform the space calculations on the vertices
             plane.UpdateShaderMatrices(currentCamera.ViewTransform, currentCamera.ProjectionTransform);
@@ -311,12 +340,12 @@ namespace ip3d_tp
             // no. just changing the blend state is the solution.
             spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.LinearWrap, DepthStencilState.Default, null, null, null);
 
-            if(showHelp)
+            if(Global.ShowHelp)
             {
 
                 spriteBatch.DrawString(font, $"{Math.Round(FrameRate.AverageFramesPerSecond)}", new Vector2(10f, 10f), new Color(0f, 1f, 0f));
-                spriteBatch.DrawString(font, $"Help (H, Toogle): {showHelp}\nWireframe (F, Toogle): {plane.ShowWireframe}\nNormals (N, Toogle): {plane.ShowNormals}", new Vector2(10f, 26f), new Color(0f, 1f, 0f));
-                spriteBatch.DrawString(font, tank1.GetDebugInfo(), new Vector2(10f, graphics.PreferredBackBufferHeight - 5 * 26f), new Color(0f, 1f, 0f));
+                spriteBatch.DrawString(font, $"Help (H, Toogle): {Global.ShowHelp}\nWireframe (F, Toogle): {plane.ShowWireframe}\nNormals (N, Toogle): {plane.ShowNormals}", new Vector2(10f, 26f), new Color(0f, 1f, 0f));
+                spriteBatch.DrawString(font, tank1.Body.GetDebugString(), new Vector2(10f, graphics.PreferredBackBufferHeight - 5 * 26f), new Color(0f, 1f, 0f));
                 spriteBatch.DrawString(font, $"Cycle between cameras in F1-F12\nAbout the camera:\n{currentCamera.About()}", new Vector2(graphics.PreferredBackBufferWidth / 2, 10f), new Color(0f, 1f, 0f));
 
             }

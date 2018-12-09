@@ -45,6 +45,10 @@
     <Compile Include="BasicCamera.cs" />
     <Compile Include="Camera.cs" />
     <Compile Include="OrbitCamera.cs" />
+    <Compile Include="Physics\Body.cs" />
+    <Compile Include="Box.cs" />
+    <Compile Include="Physics\OBB.cs" />
+    <Compile Include="Physics\Physics.cs" />
     <Compile Include="ThirdPersonCamera.cs" />
     <Compile Include="FrameRate.cs" />
     <Compile Include="Controls.cs" />
@@ -67,6 +71,7 @@
   <ItemGroup>
     <Content Include="Content\Effects\Ambient.fx" />
     <Content Include="Content\Effects\Bump.fx" />
+    <Content Include="Content\Effects\Phong.fx" />
     <Content Include="Content\Effects\Tank.fx" />
     <Content Include="Content\Effects\Terrain.fx" />
     <Content Include="Content\Effects\Bump3.fx" />
