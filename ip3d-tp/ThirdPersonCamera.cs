@@ -65,7 +65,7 @@ namespace ip3d_tp
         public override void Update(GameTime gameTime)
         {
 
-            Target = TankToFollow.Position + new Vector3(0, OffsetFromFloor, 0);
+            Target = TankToFollow.Body.Position + new Vector3(0, OffsetFromFloor, 0);
 
             float midWidth = Game.GraphicsDevice.Viewport.Width / 2;
             float midHeight = Game.GraphicsDevice.Viewport.Height / 2;
@@ -91,12 +91,12 @@ namespace ip3d_tp
 
                 // the result will be an offset in the tank world space
                 // the offset will also push back when accelerating
-                Position = Vector3.Transform(offset * (1f + TankToFollow.Velocity.Length() * 0.4f), TankToFollow.WorldTransform);
+                Position = Vector3.Transform(offset * (1f + TankToFollow.Body.Velocity.Length() * 0.4f), TankToFollow.WorldTransform);
 
             } else if(Type == CameraType.MouseOrbit)
             {
                                
-                float pushBack = (1f + TankToFollow.Velocity.Length() * 0.4f);
+                float pushBack = (1f + TankToFollow.Body.Velocity.Length() * 0.4f);
                 Vector3 position = new Vector3(0f, 0f, OffsetDistance * pushBack);
 
                 position = Vector3.Transform(position, Matrix.CreateRotationX(MathHelper.ToRadians(Pitch)));
