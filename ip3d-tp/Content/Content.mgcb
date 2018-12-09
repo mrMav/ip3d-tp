@@ -195,3 +195,9 @@
 /processorParam:TextureFormat=Color
 /build:Textures/metal_specular_1k.jpg
 
+#begin Effects/Phong.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:DebugMode=Auto
+/build:Effects/Phong.fx
+

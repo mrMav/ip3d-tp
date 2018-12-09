@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
+using System;
 
-namespace Physics3DBedTest.Physics3D
+namespace ip3d_tp.Physics3D
 {
     /// <summary>
     /// Represents a Physics body
@@ -14,8 +15,10 @@ namespace Physics3DBedTest.Physics3D
         public Vector3 Drag;
         public Vector3 Origin;
         public float MaxVelocity;
+        public float Speed;
 
         public Vector3 PreviousPosition;
+        public Vector3 PreviousRotation;
 
         public Vector3 Delta;
 
@@ -25,6 +28,7 @@ namespace Physics3DBedTest.Physics3D
         
         // the collision rect shape to be used on collisions
         public OBB CollisionRect;
+        public Vector3 Offset;
 
         public float X
         {
@@ -69,15 +73,18 @@ namespace Physics3DBedTest.Physics3D
                 return Bounds.Position;
             }
         }
-        
+
+        public Vector3 Rotation
+        {
+            get
+            {
+                return Bounds.Rotation;
+            }
+        }
+
         public bool Enabled { get; set; }
 
-        public bool CollidingUp { get; set; }
-        public bool CollidingRight { get; set; }
-        public bool CollidingBottom { get; set; }
-        public bool CollidingLeft { get; set; }
-        public bool CollidingFront { get; set; }
-        public bool CollidingBack { get; set; }
+        public bool IsColliding { get; set; }
 
         public bool MovingUp { get; set; }
         public bool MovingRight { get; set; }
@@ -101,6 +108,7 @@ namespace Physics3DBedTest.Physics3D
             Bounds = new OBB(x, y, z, width, height, depth);
             CollisionRect = new OBB(x, y, z, width, height, depth);
             SetSize(width, height, depth);
+            Offset = Vector3.Zero;
 
             Drag = new Vector3(1f);
             MaxVelocity = 10f;
@@ -115,6 +123,7 @@ namespace Physics3DBedTest.Physics3D
         public void PreMovementUpdate(GameTime gameTime)
         {
             PreviousPosition = Position;
+            PreviousRotation = Rotation;
         }
 
         /// <summary>
@@ -130,7 +139,7 @@ namespace Physics3DBedTest.Physics3D
             // update collision shape
             //UpdateCollisionRect();
 
-            ResetCollisions();
+            IsColliding = false;
 
             Velocity += Acceleration;
 
@@ -147,16 +156,45 @@ namespace Physics3DBedTest.Physics3D
             Velocity *= Drag;
             Acceleration = Vector3.Zero;  // reset accelereration
 
-            Bounds.UpdateMatrices(Vector3.Up);
+        }
 
+        /// <summary>
+        /// Call this method after all the variables are regarding movement
+        /// are updated
+        /// </summary>
+        /// <param name="gameTime"></param>
+        public void UpdateMotion(GameTime gameTime)
+        {
+            // apply speed to velocity
+            Velocity += Bounds.Front * Speed;
+
+            // cap the velocity so we don't move faster than we should
+            if (Velocity.Length() > MaxVelocity)
+            {
+                Velocity.Normalize();
+                Velocity *= MaxVelocity;
+            }
+
+            // apply the velocity to the position
+            SetPosition(Position + Velocity);
+
+            // add some sexy drag
+            Velocity *= Drag;
+
+            Update(gameTime);
+            UpdateCollisionRect();
         }
 
         public void UpdateCollisionRect()
         {
             // update collision shape
-            CollisionRect.X = X;
-            CollisionRect.Y = Y;
-            CollisionRect.Z = Z;
+
+            CollisionRect.SetPosition(Position + Offset);
+            CollisionRect.SetRotation(Rotation);
+
+            CollisionRect.SetUp(Bounds.Up);
+            CollisionRect.UpdateMatrices();
+
         }
 
         /// <summary>
@@ -221,16 +259,6 @@ namespace Physics3DBedTest.Physics3D
 
         }
 
-        public void ResetCollisions()
-        {
-            CollidingUp = false;
-            CollidingRight = false;
-            CollidingBottom = false;
-            CollidingLeft = false;
-            CollidingFront = false;
-            CollidingBack = false;
-        }
-
         public void ResetMovingDirections()
         {
             MovingUp = false;
@@ -259,18 +287,27 @@ namespace Physics3DBedTest.Physics3D
         public void SetSize(float width, float height, float depth)
         {
 
-            CollisionRect.X = X;
-            CollisionRect.Y = Y;
-            CollisionRect.Z = Z;
+            UpdateCollisionRect();
 
             CollisionRect.Resize(width, height, depth);
             
         }
 
+        public void SetPosition(Vector3 pos)
+        {
+
+            Bounds.SetPosition(pos);
+        }
+
+        public void SetRotation(Vector3 rot)
+        {
+            Bounds.SetRotation(rot);
+        }
+
         public string GetDebugString()
         {
             string debug = $"Moving:\n Up: {MovingUp}, Down: {MovingDown}, Right: {MovingRight}, Left: {MovingLeft}, Forward: {MovingForward}, Backward: {MovingBackward}\n";
-            debug += $"Collisions:\n Top: {CollidingUp}, Bottom: {CollidingBottom}, Right: {CollidingRight}, Left: {CollidingLeft}, Front: {CollidingFront}, Back: {CollidingBack}\n";
+            debug += $"Colliding:\n: {IsColliding}";
             debug += $"Position: {Position}\n";
             debug += $"Prev Pos: {PreviousPosition}\n";
             debug += $"DeltaX: {DeltaX()}\n";

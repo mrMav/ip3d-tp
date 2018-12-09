@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 
-namespace Physics3DBedTest.Physics3D
+namespace ip3d_tp.Physics3D
 {
     static class Physics
     {
@@ -28,6 +28,8 @@ namespace Physics3DBedTest.Physics3D
             // the minimum overlap axe index
             int minAxeIndex = 0;
 
+            OBB abox = a.CollisionRect;
+            OBB bbox = b.CollisionRect;
 
             // calculate all the possible axes
             Vector3[] axes = new Vector3[15];
@@ -63,10 +65,10 @@ namespace Physics3DBedTest.Physics3D
 
 
                 // the projected distance
-                float dist = Math.Abs(Vector3.Dot(b.Position - a.Position, axes[i]));
+                float dist = Math.Abs(Vector3.Dot(bbox.Position - abox.Position, axes[i]));
 
-                float boxA = a.Bounds.HalfProjection(axes[i]);
-                float boxB = b.Bounds.HalfProjection(axes[i]);
+                float boxA = abox.HalfProjection(axes[i]);
+                float boxB = bbox.HalfProjection(axes[i]);
 
                 float overlap = boxA + boxB - dist;
 
@@ -137,16 +139,21 @@ namespace Physics3DBedTest.Physics3D
 
                 // this works fine for the purpose.
                 // just subtract the MTV
-                a.Bounds.X -= MinimumTranslationVector.X / 2f;
-                a.Bounds.Y -= MinimumTranslationVector.Y / 2f;
-                a.Bounds.Z -= MinimumTranslationVector.Z / 2f;
+                a.Bounds.X -= MinimumTranslationVector.X;
+                a.Bounds.Y -= MinimumTranslationVector.Y;
+                a.Bounds.Z -= MinimumTranslationVector.Z;
 
+                //a.SetPosition(a.PreviousPosition);
+                //a.SetRotation(a.PreviousRotation);
 
-                b.Bounds.X += MinimumTranslationVector.X / 2f;
-                b.Bounds.Y += MinimumTranslationVector.Y / 2f;
-                b.Bounds.Z += MinimumTranslationVector.Z / 2f;
+                a.IsColliding = true;
+                b.IsColliding = true;
 
-                Console.WriteLine(MinimumTranslationVector);
+                b.Bounds.X += MinimumTranslationVector.X;
+                b.Bounds.Y += MinimumTranslationVector.Y;
+                b.Bounds.Z += MinimumTranslationVector.Z;
+                
+                //Console.WriteLine(MinimumTranslationVector);
 
                 // we can also just reject the new position
                 // and keep the old one, but this has a problem

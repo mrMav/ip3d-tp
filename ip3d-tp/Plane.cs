@@ -174,7 +174,7 @@ namespace ip3d_tp
 
             Game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, IndicesList.Length / 3);
             
-            if (((Game1)Game).showHelp)
+            if (Global.ShowHelp)
             {
 
                 if (ShowWireframe)

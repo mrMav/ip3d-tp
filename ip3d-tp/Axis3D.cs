@@ -63,7 +63,7 @@ namespace ip3d_tp
         {
             base.Draw(gameTime);
             
-            if(((Game1)Game).showHelp)
+            if(Global.ShowHelp)
             {
 
                 effect.CurrentTechnique.Passes[0].Apply();

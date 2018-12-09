@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 
-namespace Physics3DBedTest.Physics3D
+namespace ip3d_tp.Physics3D
 {
     /// <summary>
     /// Represents an oriented bounding box.
@@ -266,6 +266,10 @@ namespace Physics3DBedTest.Physics3D
             {
                 return _worldTransform;
             }
+            set
+            {
+                _worldTransform = value;
+            }
         }
 
         public OBB(float x, float y, float z, float width, float height, float depth)
@@ -283,22 +287,23 @@ namespace Physics3DBedTest.Physics3D
             _halfdepth = depth / 2;
 
             // default
-            UpdateMatrices(Vector3.Up);
+            _up = Vector3.Up;
+            UpdateMatrices();
 
         }
 
         // TODO: don't forget that this value, will have 
         // to be passed by when calling this update method on the tanks
-        public void UpdateMatrices(Vector3 up)
+        public void UpdateMatrices()
         {
 
             // create the rotation matrix:
             Matrix rotation = Matrix.CreateFromYawPitchRoll(_yaw, _pitch, _roll);
             
             // Up vector must be already updated
-            _up    = Vector3.Normalize(Vector3.Transform(Vector3.Up, rotation));
-            _right = Vector3.Normalize(Vector3.Transform(Vector3.Right, rotation));
-            _front = Vector3.Normalize(Vector3.Transform(Vector3.Forward, rotation));
+            //_up    = Vector3.Normalize(Vector3.Transform(Vector3.Up, rotation));            
+            _right = Vector3.Normalize(Vector3.Cross(_up, Vector3.Transform(Vector3.Right, rotation)));
+            _front = Vector3.Normalize(Vector3.Cross(_up, Vector3.Transform(Vector3.Forward, rotation)));
 
             // creates the world matrix
             _worldTransform = Matrix.CreateWorld(_position, _front, _up);
@@ -332,6 +337,35 @@ namespace Physics3DBedTest.Physics3D
 
             return projWidth + projHeight + projDepth;
 
+        }
+
+        public void SetPosition(Vector3 pos)
+        {
+            _x = pos.X;
+            _y = pos.Y;
+            _z = pos.Z;
+        }
+
+        public void SetRotation(Vector3 rot)
+        {
+            _pitch = rot.X;
+            _yaw   = rot.Y;
+            _roll  = rot.Z;
+        }
+
+        public void SetFront(Vector3 front)
+        {
+            _front = front;
+        }
+
+        public void SetRight(Vector3 right)
+        {
+            _right = right;
+        }
+
+        public void SetUp(Vector3 up)
+        {
+            _up = up;
         }
 
     }
