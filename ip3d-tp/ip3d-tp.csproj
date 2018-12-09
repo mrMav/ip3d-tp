@@ -45,6 +45,9 @@
     <Compile Include="BasicCamera.cs" />
     <Compile Include="Camera.cs" />
     <Compile Include="OrbitCamera.cs" />
+    <Compile Include="Physics\Body.cs" />
+    <Compile Include="Physics\OBB.cs" />
+    <Compile Include="Physics\Physics.cs" />
     <Compile Include="ThirdPersonCamera.cs" />
     <Compile Include="FrameRate.cs" />
     <Compile Include="Controls.cs" />
