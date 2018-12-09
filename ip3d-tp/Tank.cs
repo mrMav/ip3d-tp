@@ -44,6 +44,15 @@ namespace ip3d_tp
         // array to store the Bones Transformations
         Matrix[] BoneTransforms;
 
+        // create references to the wheels
+        ModelBone LFrontWheel;
+        ModelBone LBackWheel;
+        ModelBone RFrontWheel;
+        ModelBone RBackWheel;
+
+        // current wheels angle
+        float WheelsAngle = 0f;
+
         // an array containing the needed textures
         Texture2D[] Textures;
 
@@ -89,6 +98,11 @@ namespace ip3d_tp
 
             BoneTransforms = new Matrix[Model.Bones.Count];
 
+            LFrontWheel = Model.Bones["l_front_wheel_geo"];
+            LBackWheel = Model.Bones["l_back_wheel_geo"];
+            RFrontWheel = Model.Bones["r_front_wheel_geo"];
+            RBackWheel = Model.Bones["r_back_wheel_geo"];
+
             Textures = new Texture2D[Model.Meshes.Count];
 
             // this texture indexing will work. for now.
@@ -133,17 +147,14 @@ namespace ip3d_tp
             // controls rotation
             if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Left]))
             {
-                Body.Bounds.Yaw += YawStep * dt;
+                Body.Bounds.Yaw += YawStep * Velocity.Length() * (Speed >= 0f ? -2f : 2f) * dt;
 
             }
             else if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Right]))
             {
-                Body.Bounds.Yaw -= YawStep * dt;
+                Body.Bounds.Yaw -= YawStep * Velocity.Length() * (Speed >= 0f ? -2f : 2f) * dt;
             }
-            
-            // update the orientation vectors of the tank
-            UpdateDirectionVectors(surface);
-
+          
             // update the model position, based on the updated vectors
             if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Up]))
             {
@@ -159,14 +170,23 @@ namespace ip3d_tp
                 Body.Speed = 0f;
             }
 
+            // update the orientation vectors of the tank
+            UpdateDirectionVectors(surface);
+
             // moves the body
             Body.UpdateMotion(gameTime);
-
+          
+            // update wheels angle
+            WheelsAngle += Velocity.Length() * MathHelper.ToRadians(25f) * (Speed >= 0f ? -1f : 1f);  // last bit is to get the sign of the speed
+          
             // keep the tank in the surface
             ConstrainToPlane(surface);
 
             // adjust height from the terrain surface
             SetHeightFromSurface(surface);
+
+            // animate wheels
+            RotateWheels(gameTime);
 
             // update the bones matrices
             UpdateMatrices();
@@ -346,6 +366,21 @@ namespace ip3d_tp
                 Body.Z = halfSurfaceDepth - surface.SubHeight;
 
             }
+        }
+
+        private void RotateWheels(GameTime gameTime)
+        {
+            // rotation based on velocity
+
+            // the resulting matrix
+            Matrix rotationMatrix = Matrix.CreateRotationX(WheelsAngle);
+
+            // apply
+            LFrontWheel.Transform = rotationMatrix * Matrix.CreateTranslation(LFrontWheel.Transform.Translation);
+            LBackWheel.Transform = rotationMatrix * Matrix.CreateTranslation(LBackWheel.Transform.Translation);
+            RFrontWheel.Transform = rotationMatrix * Matrix.CreateTranslation(RFrontWheel.Transform.Translation);
+            RBackWheel.Transform = rotationMatrix * Matrix.CreateTranslation(RBackWheel.Transform.Translation);
+
         }
 
         public string GetDebugInfo()
