@@ -71,7 +71,7 @@ namespace ip3d_tp
 
         // direction light properties
         // indicates the direction that the infinity light comes from
-        public Vector4 LightDirection = new Vector4(-1, -1, -1, 0);
+        public Vector3 LightDirection = new Vector3(-1, -2, -1);
 
         // the color of the light
         public Vector4 LightColor = Color.White.ToVector4();
@@ -132,7 +132,7 @@ namespace ip3d_tp
             Components.Add(worldAxis);
 
             // initialize the plane with the prefered settings
-            plane = new Plane(this, "Textures/ground_diffuse", 128*2, 128*2, terrainHeightMap.Width - 1, terrainHeightMap.Height - 1, 0.5f);
+            plane = new Plane(this, "Textures/ground_diffuse", 128*2, 128*2, terrainHeightMap.Width - 1, terrainHeightMap.Height - 1, 0.2f);
             Components.Add(plane);
 
             // dispace the vertices of the plane, based on the given heightmap, and adjust by a scale
@@ -157,15 +157,18 @@ namespace ip3d_tp
             ThirdPersonCamera2 = new ThirdPersonCamera(this, tank2, plane, new Vector3(0, 15f, -15f));
             
             freeCamera = new FreeCamera(this, 45f);
-            freeCamera.Position.Y = 10;
-            freeCamera.Position.Z = 10;
+            freeCamera.Position.X = 100;
+            freeCamera.Position.Y = 100;
+            freeCamera.Position.Z = 100;
+            freeCamera.Yaw = -60f;
+            freeCamera.Pitch = -60f;
 
             surfaceFollowCamera = new SurfaceFollowCamera(this, 45f, plane, 1.76f); // my height 
             surfaceFollowCamera.MaxVelocity = 2.0f;
             surfaceFollowCamera.Acceleration = new Vector3(0.1f);
             
             // set the default camera
-            currentCamera = freeCamera;
+            currentCamera = ThirdPersonCamera1;
 
             // init controls
             Controls.Initilalize();
@@ -251,6 +254,10 @@ namespace ip3d_tp
 
             // every component will be updated after base update
             base.Update(gameTime);
+
+            // update light to see effects of shader
+            //LightDirection.X = (float)Math.Sin(gameTime.TotalGameTime.TotalSeconds);
+            //LightDirection.Z = (float)Math.Cos(gameTime.TotalGameTime.TotalSeconds);
 
             // updates the state of the current camera
             currentCamera.Update(gameTime);

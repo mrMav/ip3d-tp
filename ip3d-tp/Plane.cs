@@ -48,8 +48,8 @@ namespace ip3d_tp
 
         // reference to the textures
         public Texture2D DiffuseMap;
-
-        public Texture2D BumpMap;
+        public Texture2D NormalMap;
+        public Texture2D SpecularMap;
 
         // uv scale, for defining the texture scale
         // when updated, there is a need to flag the dirty geometry flag
@@ -61,6 +61,8 @@ namespace ip3d_tp
 
         // needed wile we have spritebatch messing around
         BlendState BlendState;
+
+        SamplerState SamplerState;
 
         // wireframe rendering toogle
         public bool ShowWireframe;
@@ -81,8 +83,9 @@ namespace ip3d_tp
 
             WorldTransform = Matrix.Identity;
 
-            DiffuseMap = Game.Content.Load<Texture2D>(textureKey);
-            BumpMap = Game.Content.Load<Texture2D>("Textures/ground_bump");
+            DiffuseMap = Game.Content.Load<Texture2D>("Textures/ground2_diffuse");
+            NormalMap = Game.Content.Load<Texture2D>("Textures/ground2_normal");
+            SpecularMap = Game.Content.Load<Texture2D>("Textures/ground2_specular");
             UVScale = uvscale;
 
             // in this phase, I want to stop everything if the texture is null
@@ -105,7 +108,7 @@ namespace ip3d_tp
             ColorShaderEffect.LightingEnabled = false;  // we won't be using light. we would need normals for that
 
             // load our custom effect from the content
-            CustomEffect = Game.Content.Load<Effect>("Effects/Specular2");
+            CustomEffect = Game.Content.Load<Effect>("Effects/Terrain");
 
             ShowWireframe = false;  // disable out of the box wireframe
             ShowNormals = false;
@@ -117,8 +120,15 @@ namespace ip3d_tp
             SolidRasterizerState.FillMode = FillMode.Solid;
             WireframeRasterizerState.FillMode = FillMode.WireFrame;
 
-            this.BlendState = new BlendState();
-            this.BlendState.AlphaBlendFunction = BlendFunction.Add;
+            BlendState = new BlendState();
+            BlendState.AlphaBlendFunction = BlendFunction.Add;
+
+            SamplerState = new SamplerState();
+            SamplerState.AddressU = TextureAddressMode.Wrap;
+            SamplerState.AddressV = TextureAddressMode.Wrap;            
+            SamplerState.MaxMipLevel = 8;
+            SamplerState.Filter = TextureFilter.Anisotropic;
+            SamplerState.MaxAnisotropy = 16;
 
             // create the geometry
             CreateGeometry();
@@ -134,11 +144,12 @@ namespace ip3d_tp
 
         }
 
-        public void DrawCustomShader(GameTime gameTime, Camera camera, Vector4 lightDirection, Vector4 lightColor, float lightIntensity)
+        public void DrawCustomShader(GameTime gameTime, Camera camera, Vector3 lightDirection, Vector4 lightColor, float lightIntensity)
         {
 
             Game.GraphicsDevice.RasterizerState = this.SolidRasterizerState;
             Game.GraphicsDevice.BlendState = this.BlendState;
+                       
 
             Game.GraphicsDevice.Indices = IndexBuffer;
             Game.GraphicsDevice.SetVertexBuffer(VertexBuffer);
@@ -148,7 +159,7 @@ namespace ip3d_tp
             CustomEffect.Parameters["World"].SetValue(WorldTransform);
             CustomEffect.Parameters["View"].SetValue(camera.ViewTransform);
             CustomEffect.Parameters["Projection"].SetValue(camera.ProjectionTransform);
-            CustomEffect.Parameters["WorldInverseTranspose"].SetValue(worldInverseTranspose);
+            //CustomEffect.Parameters["WorldInverseTranspose"].SetValue(worldInverseTranspose);
             CustomEffect.Parameters["ViewPosition"].SetValue(camera.Position);
 
             CustomEffect.Parameters["DirectionLightDirection"].SetValue(lightDirection);
@@ -156,7 +167,8 @@ namespace ip3d_tp
             //CustomEffect.Parameters["DiffuseIntensity"].SetValue(lightIntensity);
                        
             CustomEffect.Parameters["MaterialDiffuseTexture"].SetValue(DiffuseMap);
-            //CustomEffect.Parameters["BumpTexture"].SetValue(BumpMap);
+            CustomEffect.Parameters["NormalMapTexture"].SetValue(NormalMap);
+            CustomEffect.Parameters["SpecularMapTexture"].SetValue(SpecularMap);
 
             CustomEffect.CurrentTechnique.Passes[0].Apply();
 

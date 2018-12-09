@@ -29,12 +29,12 @@ namespace ip3d_tp
         public float MouseSensitivity = 0.1f;
 
         // minimum offset from the floor
-        public float OffsetFromFloor = 1.76f;
+        public float OffsetFromFloor = 5f;
 
         // yaw and pitch angles
         float Yaw;
 
-        float Pitch = 35;  // default;
+        float Pitch = -30;  // default;
         
         // the length of the offset
         float OffsetDistance;
@@ -65,6 +65,8 @@ namespace ip3d_tp
         public override void Update(GameTime gameTime)
         {
 
+            Target = TankToFollow.Position + new Vector3(0, OffsetFromFloor, 0);
+
             float midWidth = Game.GraphicsDevice.Viewport.Width / 2;
             float midHeight = Game.GraphicsDevice.Viewport.Height / 2;
 
@@ -93,22 +95,19 @@ namespace ip3d_tp
 
             } else if(Type == CameraType.MouseOrbit)
             {
-          
-                // calculate coordinates
-                // the camera will rotate around the tank
-                float x = (float)Math.Sin(MathHelper.ToRadians(Yaw)) * OffsetDistance;
-                float z = (float)Math.Cos(MathHelper.ToRadians(Yaw)) * OffsetDistance;
-                
-                float y = MathHelper.ToRadians(Pitch) * OffsetDistance;
+                               
+                float pushBack = (1f + TankToFollow.Velocity.Length() * 0.4f);
+                Vector3 position = new Vector3(0f, 0f, OffsetDistance * pushBack);
 
-                // the result will be an offset in the world space, offseted by the tank position
-                // the offset will also push back when accelerating
-                Position = new Vector3(x, y, z) * (1f + TankToFollow.Velocity.Length() * 0.4f) + TankToFollow.Position;
-                
+                position = Vector3.Transform(position, Matrix.CreateRotationX(MathHelper.ToRadians(Pitch)));
+                position = Vector3.Transform(position, Matrix.CreateRotationY(MathHelper.ToRadians(Yaw)));
+
+                Position = position + Target;
+
             }
 
             ConstrainToPlane();
-            
+
             // check if new height is under desired values
             // camera and ground colision
             float height = Surface.GetHeightFromSurface(Position) + OffsetFromFloor;  // this is the minimum possible height, at this point
@@ -121,8 +120,7 @@ namespace ip3d_tp
 
             }
 
-            // finally, update view transform
-            Target = TankToFollow.Position + new Vector3(0, 1.76f, 0);
+            // finally, update view transform            
             ViewTransform = Matrix.CreateLookAt(Position, Target, Vector3.Up);
 
             base.Update(gameTime);
@@ -182,7 +180,7 @@ namespace ip3d_tp
             LastYaw = Yaw;
 
             Yaw -= xoffset;
-            Pitch += yoffset;  // here we can invert the Y
+            Pitch -= yoffset;  // here we can invert the Y
 
             if (constrainPitch)
             {

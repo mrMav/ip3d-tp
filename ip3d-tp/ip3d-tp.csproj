@@ -44,6 +44,7 @@
     <Compile Include="Axis3D.cs" />
     <Compile Include="BasicCamera.cs" />
     <Compile Include="Camera.cs" />
+    <Compile Include="OrbitCamera.cs" />
     <Compile Include="ThirdPersonCamera.cs" />
     <Compile Include="FrameRate.cs" />
     <Compile Include="Controls.cs" />
@@ -66,8 +67,13 @@
   <ItemGroup>
     <Content Include="Content\Effects\Ambient.fx" />
     <Content Include="Content\Effects\Bump.fx" />
+    <Content Include="Content\Effects\Tank.fx" />
+    <Content Include="Content\Effects\Terrain.fx" />
+    <Content Include="Content\Effects\Bump3.fx" />
+    <Content Include="Content\Effects\Bump2.fx" />
     <Content Include="Content\Effects\Diffuse.fx" />
     <Content Include="Content\Effects\Specular2.fx" />
+    <Content Include="Content\Effects\Specular3.fx" />
     <Content Include="Content\lh3d1.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

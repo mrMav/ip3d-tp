@@ -12,7 +12,7 @@ float3 ViewPosition; // camera position
 struct VertexShaderInput {
 
 	float4 Position : POSITION0;
-	float4 Normal : NORMAL0;
+	float3 Normal : NORMAL0;
 	float2 TextureCoord : TEXCOORD0;
 
 };
@@ -24,12 +24,12 @@ struct VertexShaderOutput {
 	float4 Normal : NORMAL0;
 	float2 TextureCoord : TEXCOORD0;
 
-	float4 PixelPosition : TEXCOORD1;  // TEXCOORD1 is just a  semantic
+	float4 ViewVector : TEXCOORD1;  // TEXCOORD1 is just a  semantic
 
 };
 
 // direction light variables
-float4 DirectionLightDirection;
+float3 DirectionLightDirection;
 float3 DirectionLightColor    = float3(1, 1, 1);
 float3 DirectionLightAmbient  = float3(0.5, 0.5, 0.5);
 float3 DirectionLightDiffuse  = float3(1, 1, 1);
@@ -60,9 +60,9 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input) {
 
 	// build the output structure
 	output.Position = mul(viewPosition, Projection);
-	output.Normal = mul(normalize(input.Normal), World);
+	output.Normal = mul(normalize(float4(input.Normal, 0.0)), World);
 	output.TextureCoord = input.TextureCoord;
-	output.PixelPosition = mul(input.Position, World);
+	output.ViewVector = normalize(float4(ViewPosition, 1.0) - worldPosition);
 
 	return output;
 }
@@ -70,76 +70,31 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input) {
 // pixel shader
 float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0{
 
-	//float3 norm = normalize(input.Normal);
-	//float3 viewDir = normalize(ViewPosition - input.PixelPosition);
-
-	//float3 result = CalcDirLight(norm, viewDir, input);
-	
-	// ****
-
-	//float3 texDiffuse = tex2D(MaterialTextureSampler, input.TextureCoord);
-
-	//float ambientStrength = 0.1;
-	//float3 ambient = ambientStrength * texDiffuse;
-
-	//float3 norm = normalize(input.Normal);
-	////float3 lightDir = normalize(DirectionLightPosition - input.PixelPosition);
-	//float3 lightDir = normalize(-DirectionLightDirection);
-	//float diff = max(dot(norm, lightDir), 0.0);
-	//float3 diffuse = DirectionLightColor * diff * texDiffuse;
-
-	//float3 viewDir = normalize(ViewPosition - input.PixelPosition);
-	//float3 reflectDir = reflect(-lightDir, norm);
-	//float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-	//float3 specular = 5 * spec * DirectionLightColor * texDiffuse;
-
-
-	//float3 result = (ambient + diffuse + specular);
-
-	// ****
-
-	// ----
-
+	// texture color
 	float4 texDiffuse = tex2D(MaterialTextureSampler, input.TextureCoord);
 
-	//Calculate local normalized normal vector
-	float4 Normal = normalize(input.Normal);
+	// position normal
+	float4 normal = input.Normal;
+	
+	// calculate the diffuse ammount
+	float4 diff = saturate(dot(-DirectionLightDirection, normal));
 
-	//Calculate local normalized view direction
-	float3 ViewDir = normalize(ViewPosition - input.PixelPosition);
+	// calculate reflection vector based on view direction
+	float4 reflect = normalize(2 * diff * normal - float4(DirectionLightDirection, 1));
 
-	//Calculate local normalized light direction
-	float3 LightDir = normalize(DirectionLightDirection);
+	// specular contribution calculation
+	float4 spec = pow(saturate(dot(reflect, input.ViewVector)), MaterialShininess);
+	
+	// calculate ambient light values
+	float4 ambient = texDiffuse * 0.1;
 
-	//Calculate the amount of diffuse light hitting this pixel
-	float Diff = saturate(dot(Normal, -LightDir));
+	// calculate diffuse light values
+	float4 diffuse = texDiffuse * 0.8 * diff;
 
-	//Calculate reflection vector of the light hitting this pixel
-	float4 Reflect = normalize(2 * Diff * Normal - float4(LightDir, 1.0f));
-
-	//Calculate the amount of specular at this pixel
-	float4 Specular = pow(saturate(dot(Reflect, ViewDir)), 32);
-
-	//If no light is hitting the pixel cut the specular power
-	if (Diff <= 0.0f)
-		Specular = 0.0f;
-
-	//Calculate ambient light values
-	float4 AmbientColour = texDiffuse * 0.1;
-
-	//Calculate diffuse light values
-	float4 DiffuseColour = texDiffuse * Diff;
-
-	//Calculate specular highlight colour
-	float4 SpecularColour = (DirectionLightSpecular * 2) * Specular;
-
-	return AmbientColour + DiffuseColour + SpecularColour;
-
-	// ----
-
-
-
-	//return float4(result, 1.0);
+	// calc specular contribution
+	float4 specular = DirectionLightSpecular * spec;
+		
+	return ambient + diffuse + specular;
 
 }
 
