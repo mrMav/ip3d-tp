@@ -32,9 +32,9 @@ namespace ip3d_tp
         public float OffsetFromFloor = 5f;
 
         // yaw and pitch angles
-        float Yaw;
+        public float Yaw = -64;
 
-        float Pitch = -30;  // default;
+        public float Pitch = -30;  // default;
         
         // the length of the offset
         float OffsetDistance;
@@ -198,7 +198,7 @@ namespace ip3d_tp
 
         public override string About()
         {
-            return "Follows the tank.\nRotate the mouse to look around.\nToogle 'C' to lock the angle.";
+            return $"Follows the tank.\nRotate the mouse to look around.\nToogle 'C' to lock the angle.\npicth: {Pitch}, yaw: {Yaw}";
         }
 
     }

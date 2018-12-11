@@ -31,6 +31,9 @@ namespace ip3d_tp
         public Vector3 Scale;
 
         float YawStep = MathHelper.ToRadians(180f);  // in degrees
+
+        float TurretYaw = 0f;
+        float CanonPitch = 0f;
         
         // the shader to render the tank
         Effect Shader;
@@ -49,11 +52,17 @@ namespace ip3d_tp
         ModelBone LBackWheel;
         ModelBone RFrontWheel;
         ModelBone RBackWheel;
-        
+
+        ModelBone Turret;
+        ModelBone Canon;
+
         Matrix LFrontWheelTransform;
         Matrix LBackWheelTransform;
         Matrix RFrontWheelTransform;
         Matrix RBackWheelTransform;
+
+        Matrix TurretTransform;
+        Matrix CanonTransform;
 
         // current wheels angle
         float WheelsAngle = 0f;
@@ -91,6 +100,8 @@ namespace ip3d_tp
             Body.SetSize(4.3f, 3.2f, 6.5f);
             Scale = new Vector3(1.00f);  // the importer is already scaling the model to our needed dimensions
 
+            Body.Bounds.Yaw = MathHelper.ToRadians(90f);
+
             BodyDebug = new Box(Game, Body.Offset, Body.CollisionRect.Width, Body.CollisionRect.Height, Body.CollisionRect.Depth);
             BodyDebug.ShowSolid = true;
             BodyDebug.ShowWireframe = true;
@@ -107,11 +118,15 @@ namespace ip3d_tp
             LBackWheel = Model.Bones["l_back_wheel_geo"];
             RFrontWheel = Model.Bones["r_front_wheel_geo"];
             RBackWheel = Model.Bones["r_back_wheel_geo"];
+            Turret = Model.Bones["turret_geo"];
+            Canon = Model.Bones["canon_geo"];
 
             LFrontWheelTransform = LFrontWheel.Transform;
             LBackWheelTransform = LBackWheel.Transform; 
             RFrontWheelTransform = RFrontWheel.Transform;
             RBackWheelTransform = RBackWheel.Transform;
+            TurretTransform = Turret.Transform;
+            CanonTransform = Canon.Transform;
 
             Textures = new Texture2D[Model.Meshes.Count];
 
@@ -219,6 +234,23 @@ namespace ip3d_tp
 
             // animate wheels
             RotateWheels(gameTime);
+
+            // update turret and canon direction based on camera direction
+            if(TankID == 0)
+            {
+                if(Global.AimMode == Global.PlayerAimMode.Camera)
+                {
+
+                    CanonPitch = ((ThirdPersonCamera)camera).Pitch;
+                    TurretYaw = ((ThirdPersonCamera)camera).Yaw;
+
+                } else
+                {
+                }
+
+            }
+
+            RotateTurret(gameTime, CanonPitch, TurretYaw);
 
             // recalculate
             PostMotionUpdate(gameTime, camera, surface);
@@ -401,7 +433,7 @@ namespace ip3d_tp
             // this is the true direction that the tank is moving.
             Vector3 delta = Body.Position - Body.PreviousPosition;
             float dot = Vector3.Dot(delta, Body.Bounds.Front);
-            Console.WriteLine(dot);
+            //Console.WriteLine(dot);
             WheelsAngle += delta.Length() * (dot > 0f ? -1 : 1);
             // last bit is to get the sign of the speed
 
@@ -414,6 +446,22 @@ namespace ip3d_tp
             RFrontWheel.Transform = rotationMatrix * RFrontWheelTransform;
             RBackWheel.Transform = rotationMatrix * RBackWheelTransform;
             
+        }
+
+        // handles rotation of the turret and canon
+        private void RotateTurret(GameTime gameTime, float pitch, float yaw)
+        {
+
+            // constrain pitch
+            float p = MathHelper.Clamp(pitch + 30f, -30f, 60f);
+
+            Matrix turretRotationMatrix = Matrix.CreateRotationY(MathHelper.ToRadians(yaw + 90f) - Body.Bounds.Yaw);
+            Matrix canonRotationMatrix = Matrix.CreateRotationX(MathHelper.ToRadians(-p));
+
+            // apply
+            Turret.Transform = turretRotationMatrix * Matrix.CreateTranslation(TurretTransform.Translation);
+            Canon.Transform = canonRotationMatrix * Matrix.CreateTranslation(CanonTransform.Translation);            
+
         }
 
         public string GetDebugInfo()

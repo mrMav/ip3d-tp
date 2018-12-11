@@ -15,6 +15,13 @@ namespace ip3d_tp
         // toggle for debug
         public static bool ShowHelp = true;
 
+        // aim mode
+        public enum PlayerAimMode
+        {
+            Camera,
+            Keys
+        }
+        public static PlayerAimMode AimMode = PlayerAimMode.Camera;
 
     }
 
