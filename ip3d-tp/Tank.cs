@@ -30,7 +30,7 @@ namespace ip3d_tp
 
         public Vector3 Scale;
 
-        float YawStep = MathHelper.ToRadians(90f);  // in degrees
+        float YawStep = MathHelper.ToRadians(180f);  // in degrees
         
         // the shader to render the tank
         Effect Shader;
@@ -49,6 +49,11 @@ namespace ip3d_tp
         ModelBone LBackWheel;
         ModelBone RFrontWheel;
         ModelBone RBackWheel;
+        
+        Matrix LFrontWheelTransform;
+        Matrix LBackWheelTransform;
+        Matrix RFrontWheelTransform;
+        Matrix RBackWheelTransform;
 
         // current wheels angle
         float WheelsAngle = 0f;
@@ -75,18 +80,18 @@ namespace ip3d_tp
 
             // create the physics body
             Body = new Body(0f, 0f, 0f, 5f, 5f, 7f);
-            Body.Acceleration = new Vector3(0.01f);
-            Body.MaxVelocity = 0.02f;
+            Body.Acceleration = new Vector3(0.1f);
+            Body.MaxVelocity = 0.5f;
             Body.Drag = new Vector3(0.8f);
 
             // init values
             Body.SetPosition(Vector3.Zero);
             Body.SetRotation(Vector3.Zero);
             Body.Offset = new Vector3(0f, 2f, 0f);
-            Body.SetSize(4.5f, 2f, 7f);
+            Body.SetSize(4f, 3.5f, 6f);
             Scale = new Vector3(1.00f);  // the importer is already scaling the model to our needed dimensions
 
-            BodyDebug = new Box(Game, Body.Offset, 4.5f, 2f, 7f);
+            BodyDebug = new Box(Game, Body.Offset, Body.CollisionRect.Width, Body.CollisionRect.Height, Body.CollisionRect.Depth);
             BodyDebug.ShowSolid = false;
             BodyDebug.ShowWireframe = true;
 
@@ -102,6 +107,11 @@ namespace ip3d_tp
             LBackWheel = Model.Bones["l_back_wheel_geo"];
             RFrontWheel = Model.Bones["r_front_wheel_geo"];
             RBackWheel = Model.Bones["r_back_wheel_geo"];
+
+            LFrontWheelTransform = LFrontWheel.Transform;
+            LBackWheelTransform = LBackWheel.Transform; 
+            RFrontWheelTransform = RFrontWheel.Transform;
+            RBackWheelTransform = RBackWheel.Transform;
 
             Textures = new Texture2D[Model.Meshes.Count];
 
@@ -143,27 +153,29 @@ namespace ip3d_tp
             // pre movement function, to store information
             // regarding previous frame
             Body.PreMovementUpdate(gameTime);
+                        
+            int dir = Body.Speed > 0f ? -1 : 1;
 
             // controls rotation
             if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Left]))
             {
-                Body.Bounds.Yaw += YawStep * Velocity.Length() * (Speed >= 0f ? -2f : 2f) * dt;
+                Body.Bounds.Yaw += YawStep * Body.Velocity.Length() * dir * dt;
 
             }
             else if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Right]))
             {
-                Body.Bounds.Yaw -= YawStep * Velocity.Length() * (Speed >= 0f ? -2f : 2f) * dt;
+                Body.Bounds.Yaw -= YawStep * Body.Velocity.Length() * dir * dt;
             }
           
             // update the model position, based on the updated vectors
             if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Up]))
             {
-                Body.Speed -= (Body.Acceleration.Z * dt);
+                Body.Speed -= (Body.Acceleration.Z);
 
             }
             else if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Down]))
             {
-                Body.Speed += (Body.Acceleration.Z * dt);
+                Body.Speed += (Body.Acceleration.Z);
                 
             } else
             {
@@ -175,18 +187,21 @@ namespace ip3d_tp
 
             // moves the body
             Body.UpdateMotion(gameTime);
-          
-            // update wheels angle
-            WheelsAngle += Velocity.Length() * MathHelper.ToRadians(25f) * (Speed >= 0f ? -1f : 1f);  // last bit is to get the sign of the speed
-          
+
+
+        }
+
+        public void PostMotionUpdate(GameTime gameTime, Camera camera, Plane surface)
+        {
+
             // keep the tank in the surface
             ConstrainToPlane(surface);
 
             // adjust height from the terrain surface
             SetHeightFromSurface(surface);
 
-            // animate wheels
-            RotateWheels(gameTime);
+            // update the orientation vectors of the tank
+            UpdateDirectionVectors(surface);
 
             // update the bones matrices
             UpdateMatrices();
@@ -195,7 +210,17 @@ namespace ip3d_tp
             //Axis.worldMatrix = Matrix.CreateScale(new Vector3(50f) / Scale) * Model.Root.Transform;
             Axis.worldMatrix = WorldTransform;
             Axis.UpdateShaderMatrices(camera.ViewTransform, camera.ProjectionTransform);
-            
+        }
+
+        public void CalculateAnimations(GameTime gameTime, Camera camera, Plane surface)
+        {
+
+            // animate wheels
+            RotateWheels(gameTime);
+
+            // recalculate
+            PostMotionUpdate(gameTime, camera, surface);
+
         }
 
         public void Draw(GameTime gameTime, Camera camera, Vector3 lightDirection, Vector4 lightColor, float lightIntensity)
@@ -229,7 +254,7 @@ namespace ip3d_tp
                     Shader.Parameters["View"].SetValue(camera.ViewTransform);
                     Shader.Parameters["Projection"].SetValue(camera.ProjectionTransform);
 
-                    //Shader.Parameters["WorldInverseTranspose"].SetValue(worldInverseTranspose);
+                    Shader.Parameters["WorldInverseTranspose"].SetValue(worldInverseTranspose);
                     Shader.Parameters["ViewPosition"].SetValue(camera.Position);
 
                     Shader.Parameters["MaterialDiffuseTexture"].SetValue(Textures[count]);                    
@@ -251,9 +276,10 @@ namespace ip3d_tp
 
         public void UpdateMatrices()
         {
-
+            // Up Vector must be already set
             Body.Bounds.UpdateMatrices();
-
+            Body.UpdateCollisionRect();
+            
             Model.Root.Transform = WorldTransform;
 
             Model.CopyAbsoluteBoneTransformsTo(BoneTransforms);
@@ -291,8 +317,7 @@ namespace ip3d_tp
             Body.Y = Utils.HeightBilinearInterpolation(Body.Position, v0.Position, v1.Position, v2.Position, v3.Position);
 
         }
-
-        // updates the vectors, using basic trigonometry
+                
         public void UpdateDirectionVectors(Plane surface)
         {
 
@@ -327,8 +352,6 @@ namespace ip3d_tp
 
             Body.Bounds.SetUp(Utils.NormalBilinearInterpolation(v0.Normal, v1.Normal, v2.Normal, v3.Normal, ratioX0, ratioX1, ratioZ));
 
-            // Up vector must be already updated
-            Body.Bounds.UpdateMatrices();
         }
 
         public void ConstrainToPlane(Plane surface)
@@ -371,26 +394,31 @@ namespace ip3d_tp
         private void RotateWheels(GameTime gameTime)
         {
             // rotation based on velocity
+            // update wheels angle
+            // this line calculates the sign of the moving direction based on the delta position
+            // this is the true direction that the tank is moving.
+            Vector3 delta = Body.Position - Body.PreviousPosition;
+            float dot = Vector3.Dot(delta, Body.Bounds.Front);
+            Console.WriteLine(dot);
+            WheelsAngle += delta.Length() * (dot > 0f ? -1 : 1);
+            // last bit is to get the sign of the speed
 
             // the resulting matrix
-            Matrix rotationMatrix = Matrix.CreateRotationX(WheelsAngle);
+            Matrix rotationMatrix = Matrix.CreateRotationX(this.WheelsAngle);
 
             // apply
-            LFrontWheel.Transform = rotationMatrix * Matrix.CreateTranslation(LFrontWheel.Transform.Translation);
-            LBackWheel.Transform = rotationMatrix * Matrix.CreateTranslation(LBackWheel.Transform.Translation);
-            RFrontWheel.Transform = rotationMatrix * Matrix.CreateTranslation(RFrontWheel.Transform.Translation);
-            RBackWheel.Transform = rotationMatrix * Matrix.CreateTranslation(RBackWheel.Transform.Translation);
-
+            LFrontWheel.Transform = rotationMatrix * LFrontWheelTransform;
+            LBackWheel.Transform = rotationMatrix * LBackWheelTransform;
+            RFrontWheel.Transform = rotationMatrix * RFrontWheelTransform;
+            RBackWheel.Transform = rotationMatrix * RBackWheelTransform;
+            
         }
 
         public string GetDebugInfo()
         {
 
             return $"TankID: {TankID}\n" +
-                   $"Position: {Body.Position}\n" +
-                   $"Rotation: {Body.Rotation}\n" +
-                   $"Velocity: {Math.Round(Body.Velocity.Length(), 4)}\n" +
-                   $"Speed: {Math.Round(Body.Speed, 4)}";
+                   $"Wheels: {WheelsAngle}";
 
         }
 

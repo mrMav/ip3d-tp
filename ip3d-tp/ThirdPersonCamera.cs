@@ -118,6 +118,9 @@ namespace ip3d_tp
 
                 Position.Y = height;
 
+            } else
+            {
+                //LastPitch = Pitch;                
             }
 
             // finally, update view transform            

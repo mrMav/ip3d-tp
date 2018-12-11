@@ -4,7 +4,7 @@
 float4x4 World;
 float4x4 View;
 float4x4 Projection;
-//float4x4 WorldInverseTranspose;  // we need to inverse and transpose to 'localize' the light vector
+float4x4 WorldInverseTranspose;  // we need to inverse and transpose to 'localize' the light vector
 float3 ViewPosition; // camera position
 
 // this is the struct for our VertexPositionNormalTexture
@@ -128,6 +128,8 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0{
 
 	// transform the normal to eye space 
 	normal = mul(normal, TBN);
+
+	//normal = mul(float4(normal, 0), World);
 	
 	//normal = input.Normal.xyz;
 	

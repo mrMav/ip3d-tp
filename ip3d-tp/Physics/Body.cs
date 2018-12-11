@@ -16,6 +16,7 @@ namespace ip3d_tp.Physics3D
         public Vector3 Origin;
         public float MaxVelocity;
         public float Speed;
+        public float Mass;
 
         public Vector3 PreviousPosition;
         public Vector3 PreviousRotation;
@@ -104,6 +105,7 @@ namespace ip3d_tp.Physics3D
             Acceleration = Vector3.Zero;
             Velocity = Vector3.Zero;
             Origin = new Vector3(0.5f);
+            Mass = 7.5f;
 
             Bounds = new OBB(x, y, z, width, height, depth);
             CollisionRect = new OBB(x, y, z, width, height, depth);
@@ -124,6 +126,9 @@ namespace ip3d_tp.Physics3D
         {
             PreviousPosition = Position;
             PreviousRotation = Rotation;
+
+            IsColliding = false;
+
         }
 
         /// <summary>
@@ -139,22 +144,7 @@ namespace ip3d_tp.Physics3D
             // update collision shape
             //UpdateCollisionRect();
 
-            IsColliding = false;
-
-            Velocity += Acceleration;
-
-            if(Velocity.Length() > MaxVelocity)
-            {
-                Velocity.Normalize();
-                Velocity *= MaxVelocity;
-            }
-
-            Bounds.X += Velocity.X * dt;
-            Bounds.Y += Velocity.Y * dt;
-            Bounds.Z += Velocity.Z * dt;
-
-            Velocity *= Drag;
-            Acceleration = Vector3.Zero;  // reset accelereration
+            //IsColliding = false;
 
         }
 
@@ -165,8 +155,12 @@ namespace ip3d_tp.Physics3D
         /// <param name="gameTime"></param>
         public void UpdateMotion(GameTime gameTime)
         {
+
+            // delta for time based calcs
+            float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
             // apply speed to velocity
-            Velocity += Bounds.Front * Speed;
+            Velocity += Bounds.Front * Speed * dt;
 
             // cap the velocity so we don't move faster than we should
             if (Velocity.Length() > MaxVelocity)
@@ -182,7 +176,6 @@ namespace ip3d_tp.Physics3D
             Velocity *= Drag;
 
             Update(gameTime);
-            UpdateCollisionRect();
         }
 
         public void UpdateCollisionRect()
@@ -206,6 +199,8 @@ namespace ip3d_tp.Physics3D
         {
 
             ResetMovingDirections();
+
+            UpdateCollisionRect();
 
             // determing which side the body is moving
             if (DeltaY() < 0)
@@ -306,8 +301,8 @@ namespace ip3d_tp.Physics3D
 
         public string GetDebugString()
         {
-            string debug = $"Moving:\n Up: {MovingUp}, Down: {MovingDown}, Right: {MovingRight}, Left: {MovingLeft}, Forward: {MovingForward}, Backward: {MovingBackward}\n";
-            debug += $"Colliding:\n: {IsColliding}";
+            string debug = $"";
+            debug += $"Colliding:: {IsColliding}\n";
             debug += $"Position: {Position}\n";
             debug += $"Prev Pos: {PreviousPosition}\n";
             debug += $"DeltaX: {DeltaX()}\n";

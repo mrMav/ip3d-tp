@@ -143,16 +143,22 @@ namespace ip3d_tp.Physics3D
                 a.Bounds.Y -= MinimumTranslationVector.Y;
                 a.Bounds.Z -= MinimumTranslationVector.Z;
 
+                b.Bounds.X += MinimumTranslationVector.X;
+                b.Bounds.Y += MinimumTranslationVector.Y;
+                b.Bounds.Z += MinimumTranslationVector.Z;
+                
                 //a.SetPosition(a.PreviousPosition);
                 //a.SetRotation(a.PreviousRotation);
 
                 a.IsColliding = true;
                 b.IsColliding = true;
 
-                b.Bounds.X += MinimumTranslationVector.X;
-                b.Bounds.Y += MinimumTranslationVector.Y;
-                b.Bounds.Z += MinimumTranslationVector.Z;
-                
+                //a.UpdateCollisionRect();
+                //b.UpdateCollisionRect();
+
+                a.Speed *= a.Mass / 10f;
+                b.Speed *= b.Mass / 10f;
+
                 //Console.WriteLine(MinimumTranslationVector);
 
                 // we can also just reject the new position

@@ -80,7 +80,7 @@ namespace ip3d_tp.Physics3D
             }
             set
             {
-                _pitch = value;
+                _pitch = MathHelper.Clamp(value, -89f, 89f);
             }
         }
 
@@ -94,7 +94,7 @@ namespace ip3d_tp.Physics3D
             {
                 // limit yaw so we don't gimball lock this thing
 
-                _yaw = MathHelper.Clamp(value, -89f, 89f);
+                _yaw = value;
             }
         }
 
@@ -108,7 +108,7 @@ namespace ip3d_tp.Physics3D
             {
                 // limit roll so we don't gimball lock this thing
 
-                _roll = MathHelper.Clamp(value, -89f, 89f);
+                _roll = value;
             }
         }
 
@@ -306,7 +306,7 @@ namespace ip3d_tp.Physics3D
             _front = Vector3.Normalize(Vector3.Cross(_up, Vector3.Transform(Vector3.Forward, rotation)));
 
             // creates the world matrix
-            _worldTransform = Matrix.CreateWorld(_position, _front, _up);
+            _worldTransform = Matrix.CreateWorld(Position, _front, _up);
 
         }
 
