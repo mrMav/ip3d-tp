@@ -331,12 +331,18 @@ namespace ip3d_tp.Physics3D
         public float HalfProjection(Vector3 axis)
         {
 
-            float projWidth = Math.Abs(Vector3.Dot(_halfwidth * _right, axis));
-            float projHeight = Math.Abs(Vector3.Dot(_halfheight * _up, axis));
-            float projDepth = Math.Abs(Vector3.Dot(_halfdepth * _front, axis));
+            float projWidth = Math.Abs(Vector3.Dot(_halfwidth * _worldTransform.Right, axis));
+            float projHeight = Math.Abs(Vector3.Dot(_halfheight * _worldTransform.Up, axis));
+            float projDepth = Math.Abs(Vector3.Dot(_halfdepth * _worldTransform.Forward, axis));
 
             return projWidth + projHeight + projDepth;
 
+        }
+
+        public void SetWorldTransform(Matrix world)
+        {
+            _worldTransform = world;
+            SetPosition(world.Translation);
         }
 
         public void SetPosition(Vector3 pos)

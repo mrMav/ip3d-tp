@@ -34,25 +34,25 @@ namespace ip3d_tp.Physics3D
             // calculate all the possible axes
             Vector3[] axes = new Vector3[15];
 
-            axes[0] = a.Bounds.Right;  // ax
-            axes[1] = a.Bounds.Up;     // ay
-            axes[2] = a.Bounds.Front;  // az
+            axes[0] = a.Bounds.WorldTransform.Right;  // ax
+            axes[1] = a.Bounds.WorldTransform.Up;     // ay
+            axes[2] = a.Bounds.WorldTransform.Forward;  // az
 
-            axes[3] = b.Bounds.Right;  // bx
-            axes[4] = b.Bounds.Up;     // by
-            axes[5] = b.Bounds.Front;  // bz
+            axes[3] = b.Bounds.WorldTransform.Right;  // bx
+            axes[4] = b.Bounds.WorldTransform.Up;     // by
+            axes[5] = b.Bounds.WorldTransform.Forward;  // bz
 
-            axes[6]  = Vector3.Cross(a.Bounds.Right, axes[3]);  // ax bx
-            axes[7]  = Vector3.Cross(a.Bounds.Right, axes[4]);  // ax by
-            axes[8]  = Vector3.Cross(a.Bounds.Right, axes[5]);  // ax bz
+            axes[6]  = Vector3.Cross(a.Bounds.WorldTransform.Right, axes[3]);  // ax bx
+            axes[7]  = Vector3.Cross(a.Bounds.WorldTransform.Right, axes[4]);  // ax by
+            axes[8]  = Vector3.Cross(a.Bounds.WorldTransform.Right, axes[5]);  // ax bz
                      
-            axes[9]  = Vector3.Cross(a.Bounds.Up, axes[3]);  // ay bx
-            axes[10] = Vector3.Cross(a.Bounds.Up, axes[4]);  // ay by
-            axes[11] = Vector3.Cross(a.Bounds.Up, axes[5]);  // ay bz
+            axes[9]  = Vector3.Cross(a.Bounds.WorldTransform.Up, axes[3]);  // ay bx
+            axes[10] = Vector3.Cross(a.Bounds.WorldTransform.Up, axes[4]);  // ay by
+            axes[11] = Vector3.Cross(a.Bounds.WorldTransform.Up, axes[5]);  // ay bz
 
-            axes[12] = Vector3.Cross(a.Bounds.Front, axes[3]);  // az bx
-            axes[13] = Vector3.Cross(a.Bounds.Front, axes[4]);  // az by
-            axes[14] = Vector3.Cross(a.Bounds.Front, axes[5]);  // az bz
+            axes[12] = Vector3.Cross(a.Bounds.WorldTransform.Forward, axes[3]);  // az bx
+            axes[13] = Vector3.Cross(a.Bounds.WorldTransform.Forward, axes[4]);  // az by
+            axes[14] = Vector3.Cross(a.Bounds.WorldTransform.Forward, axes[5]);  // az bz
 
             // test each possible separation axis
             for (int i = 0; i < 15; i++)

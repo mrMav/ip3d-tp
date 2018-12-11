@@ -87,12 +87,12 @@ namespace ip3d_tp
             // init values
             Body.SetPosition(Vector3.Zero);
             Body.SetRotation(Vector3.Zero);
-            Body.Offset = new Vector3(0f, 2f, 0f);
-            Body.SetSize(4f, 3.5f, 6f);
+            Body.Offset = new Vector3(0f, 2f, -0.25f);
+            Body.SetSize(4.3f, 3.2f, 6.5f);
             Scale = new Vector3(1.00f);  // the importer is already scaling the model to our needed dimensions
 
             BodyDebug = new Box(Game, Body.Offset, Body.CollisionRect.Width, Body.CollisionRect.Height, Body.CollisionRect.Depth);
-            BodyDebug.ShowSolid = false;
+            BodyDebug.ShowSolid = true;
             BodyDebug.ShowWireframe = true;
 
             // loading the shader
@@ -188,6 +188,8 @@ namespace ip3d_tp
             // moves the body
             Body.UpdateMotion(gameTime);
 
+            UpdateDirectionVectors(surface);
+            UpdateMatrices();
 
         }
 

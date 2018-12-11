@@ -186,7 +186,8 @@ namespace ip3d_tp.Physics3D
             CollisionRect.SetRotation(Rotation);
 
             CollisionRect.SetUp(Bounds.Up);
-            CollisionRect.UpdateMatrices();
+            CollisionRect.UpdateMatrices();  // transform needs to be updated based on the origin vector
+            CollisionRect.SetWorldTransform(Matrix.CreateTranslation(Offset) * Bounds.WorldTransform);
 
         }
 
