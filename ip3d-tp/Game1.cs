@@ -62,6 +62,8 @@ namespace ip3d_tp
         // the second tank
         Tank tank2;
 
+        Projectile shell;
+
         /*
          * cameras
          */
@@ -164,6 +166,8 @@ namespace ip3d_tp
             tank2.Body.X = -4f;
             tank2.TankID = 1;  // identify this tank as ID 1, used for the controls
 
+            shell = new Projectile(this);
+
             /*
              * cameras
              * 
@@ -175,9 +179,10 @@ namespace ip3d_tp
             ThirdPersonCamera2 = new ThirdPersonCamera(this, tank2, plane, 20f);
             
             freeCamera = new FreeCamera(this, 45f);
-            freeCamera.Position.X = 100;
-            freeCamera.Position.Y = 100;
-            freeCamera.Position.Z = 100;
+            freeCamera.AccelerationValue = 0.01f;
+            freeCamera.Position.X = 0;
+            freeCamera.Position.Y = 5;
+            freeCamera.Position.Z = 5;
             freeCamera.Yaw = -60f;
             freeCamera.Pitch = -60f;
 
@@ -222,18 +227,22 @@ namespace ip3d_tp
             if (Controls.IsKeyPressed(Keys.F1))
             {
                 currentCamera = ThirdPersonCamera1;
+                Global.AimMode = Global.PlayerAimMode.Camera;
 
             } else if(Controls.IsKeyPressed(Keys.F2))
             {
                 currentCamera = ThirdPersonCamera2;
+                Global.AimMode = Global.PlayerAimMode.Camera;
 
             } else if (Controls.IsKeyPressed(Keys.F3))
             {
                 currentCamera = surfaceFollowCamera;
+                Global.AimMode = Global.PlayerAimMode.Keys;
 
             } else if (Controls.IsKeyPressed(Keys.F4))
             {
                 currentCamera = freeCamera;
+                Global.AimMode = Global.PlayerAimMode.Keys;
 
             }
             
@@ -337,6 +346,7 @@ namespace ip3d_tp
             // draw the tanks with the light created
             tank1.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
             tank2.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
+            shell.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
 
             // render the gui text
             // notive the DepthStencilState, without default set in, depth will not 
