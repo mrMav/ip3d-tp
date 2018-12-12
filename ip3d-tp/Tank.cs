@@ -52,6 +52,8 @@ namespace ip3d_tp
         ModelBone LBackWheel;
         ModelBone RFrontWheel;
         ModelBone RBackWheel;
+        ModelBone RFrontSteer;
+        ModelBone LFrontSteer;
 
         ModelBone Turret;
         ModelBone Canon;
@@ -60,12 +62,16 @@ namespace ip3d_tp
         Matrix LBackWheelTransform;
         Matrix RFrontWheelTransform;
         Matrix RBackWheelTransform;
+        Matrix RFrontSteerTransform;
+        Matrix LFrontSteerTransform;
 
         Matrix TurretTransform;
         Matrix CanonTransform;
 
         // current wheels angle
         float WheelsAngle = 0f;
+        float SteerAngle = 0f;
+        float MaxSteerAngle = MathHelper.ToRadians(10f);
 
         // an array containing the needed textures
         Texture2D[] Textures;
@@ -103,7 +109,7 @@ namespace ip3d_tp
             Body.Bounds.Yaw = MathHelper.ToRadians(90f);
 
             BodyDebug = new Box(Game, Body.Offset, Body.CollisionRect.Width, Body.CollisionRect.Height, Body.CollisionRect.Depth);
-            BodyDebug.ShowSolid = true;
+            BodyDebug.ShowSolid = false;
             BodyDebug.ShowWireframe = true;
 
             // loading the shader
@@ -118,6 +124,8 @@ namespace ip3d_tp
             LBackWheel = Model.Bones["l_back_wheel_geo"];
             RFrontWheel = Model.Bones["r_front_wheel_geo"];
             RBackWheel = Model.Bones["r_back_wheel_geo"];
+            RFrontSteer = Model.Bones["r_steer_geo"];
+            LFrontSteer = Model.Bones["l_steer_geo"];
             Turret = Model.Bones["turret_geo"];
             Canon = Model.Bones["canon_geo"];
 
@@ -125,6 +133,8 @@ namespace ip3d_tp
             LBackWheelTransform = LBackWheel.Transform; 
             RFrontWheelTransform = RFrontWheel.Transform;
             RBackWheelTransform = RBackWheel.Transform;
+            RFrontSteerTransform = RFrontSteer.Transform;
+            LFrontSteerTransform = LFrontSteer.Transform;
             TurretTransform = Turret.Transform;
             CanonTransform = Canon.Transform;
 
@@ -175,12 +185,18 @@ namespace ip3d_tp
             if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Left]))
             {
                 Body.Bounds.Yaw += YawStep * Body.Velocity.Length() * dir * dt;
+                SteerAngle += YawStep * dir * dt;
 
             }
             else if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Right]))
             {
                 Body.Bounds.Yaw -= YawStep * Body.Velocity.Length() * dir * dt;
+                SteerAngle -= YawStep * dir * dt;
+            } else
+            {
+                SteerAngle *= 0.8f;
             }
+            SteerAngle = MathHelper.Clamp(SteerAngle, -MaxSteerAngle, MaxSteerAngle);
           
             // update the model position, based on the updated vectors
             if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Up]))
@@ -433,8 +449,9 @@ namespace ip3d_tp
             // this is the true direction that the tank is moving.
             Vector3 delta = Body.Position - Body.PreviousPosition;
             float dot = Vector3.Dot(delta, Body.Bounds.Front);
+            float sign = (dot > 0f ? -1 : 1);
             //Console.WriteLine(dot);
-            WheelsAngle += delta.Length() * (dot > 0f ? -1 : 1);
+            WheelsAngle += delta.Length() * sign;
             // last bit is to get the sign of the speed
 
             // the resulting matrix
@@ -445,7 +462,18 @@ namespace ip3d_tp
             LBackWheel.Transform = rotationMatrix * LBackWheelTransform;
             RFrontWheel.Transform = rotationMatrix * RFrontWheelTransform;
             RBackWheel.Transform = rotationMatrix * RBackWheelTransform;
+
+
+            // rotate the steers           
             
+            Matrix rotationRightSteer = Matrix.CreateRotationY(SteerAngle );
+            Matrix rotationLeftSteer = Matrix.CreateRotationY(SteerAngle);
+            
+
+            RFrontSteer.Transform = rotationRightSteer * RFrontSteerTransform;
+            LFrontSteer.Transform = rotationLeftSteer * LFrontSteerTransform;
+
+
         }
 
         // handles rotation of the turret and canon

@@ -170,9 +170,9 @@ namespace ip3d_tp
              */ 
 
             // create the various cameras
-            ThirdPersonCamera1 = new ThirdPersonCamera(this, tank1, plane, new Vector3(0, 15f, -15f));  // see definition for an understanding
+            ThirdPersonCamera1 = new ThirdPersonCamera(this, tank1, plane, 20f);  // see definition for an understanding
 
-            ThirdPersonCamera2 = new ThirdPersonCamera(this, tank2, plane, new Vector3(0, 15f, -15f));
+            ThirdPersonCamera2 = new ThirdPersonCamera(this, tank2, plane, 20f);
             
             freeCamera = new FreeCamera(this, 45f);
             freeCamera.Position.X = 100;

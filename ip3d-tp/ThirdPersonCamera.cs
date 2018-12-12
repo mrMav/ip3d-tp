@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using ip3d_tp.Physics3D;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using System;
 
@@ -27,6 +28,7 @@ namespace ip3d_tp
 
         // sensitivity
         public float MouseSensitivity = 0.1f;
+        public float ScrollSensitivity = 0.1f;
 
         // minimum offset from the floor
         public float OffsetFromFloor = 5f;
@@ -37,34 +39,49 @@ namespace ip3d_tp
         public float Pitch = -30;  // default;
         
         // the length of the offset
+        float MaxOffsetDistance;
+        float MinOffsetDistance;
         float OffsetDistance;
+        float TargetOffsetDistance;
 
         // holds the last value of the pitch
         float LastPitch;
 
+        // last position
+        Vector3 LastPosition;
+
         // holds the last value of the Yaw
         float LastYaw;
 
+        // the distance to the floor
+        float DistanceToTerrrain;
+
+        bool IsCollidingBottom = false;
+
         // constructor
-        public ThirdPersonCamera(Game game, Tank tankToFollow, Plane surface, Vector3 offset, float fieldOfView = 45f) : base(game, fieldOfView)
+        public ThirdPersonCamera(Game game, Tank tankToFollow, Plane surface, float offset, float fieldOfView = 45f) : base(game, fieldOfView)
         {
 
             Surface = surface;
 
             TankToFollow = tankToFollow;
 
-            Offset = offset;
-
             LastPitch = Pitch;
             LastYaw = Yaw;
 
-            OffsetDistance = offset.Length();
-            
+            MaxOffsetDistance = 50f;
+            MinOffsetDistance = 2f;
+            OffsetDistance = offset;
+            TargetOffsetDistance = offset;
+
         }
 
         public override void Update(GameTime gameTime)
         {
 
+            //Console.WriteLine("---");
+
+            LastPosition = Position;
             Target = TankToFollow.Body.Position + new Vector3(0, OffsetFromFloor, 0);
 
             float midWidth = Game.GraphicsDevice.Viewport.Width / 2;
@@ -74,54 +91,129 @@ namespace ip3d_tp
             // the mouse delta is calculated with the middle of the screen
             // because we will snap the mouse to it                
             ProcessMouseMovement(Controls.CurrMouseState.Position.X - midWidth, Controls.CurrMouseState.Position.Y - midHeight);
+            ProcessMouseScroll();
 
-            // get user input to listen for type change
-            if (Controls.IsKeyPressed(Keys.C))
-            {
-                if (Type == CameraType.HardFollow) Type = CameraType.MouseOrbit;
-                else Type = CameraType.HardFollow;
-            }
-
-            // update the camera logic based on type
-            if(Type == CameraType.HardFollow)
+            // update proximity with target
+            if (OffsetDistance != TargetOffsetDistance)
             {
 
-                // calculate a new offset based on original offset and current pitch value
-                Vector3 offset = new Vector3(Offset.X, MathHelper.ToRadians(Pitch) * OffsetDistance, Offset.Z);
-
-                // the result will be an offset in the tank world space
-                // the offset will also push back when accelerating
-                Position = Vector3.Transform(offset * (1f + TankToFollow.Body.Velocity.Length() * 0.4f), TankToFollow.WorldTransform);
-
-            } else if(Type == CameraType.MouseOrbit)
-            {
-                               
-                float pushBack = (1f + TankToFollow.Body.Velocity.Length() * 0.4f);
-                Vector3 position = new Vector3(0f, 0f, OffsetDistance * pushBack);
-
-                position = Vector3.Transform(position, Matrix.CreateRotationX(MathHelper.ToRadians(Pitch)));
-                position = Vector3.Transform(position, Matrix.CreateRotationY(MathHelper.ToRadians(Yaw)));
-
-                Position = position + Target;
+                OffsetDistance += (TargetOffsetDistance - OffsetDistance) * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             }
 
+
+
+            float pushBack = (1f + TankToFollow.Body.Velocity.Length() * 0.4f);
+
+            // the new possible position
+            Vector3 position = new Vector3(0f, 0f, OffsetDistance * pushBack);
+            position = Vector3.Transform(position, Matrix.CreateRotationX(MathHelper.ToRadians(Pitch)));
+            position = Vector3.Transform(position, Matrix.CreateRotationY(MathHelper.ToRadians(Yaw)));            
+
+            Position = position + Target;
             ConstrainToPlane();
 
-            // check if new height is under desired values
-            // camera and ground colision
-            float height = Surface.GetHeightFromSurface(Position) + OffsetFromFloor;  // this is the minimum possible height, at this point
-            if (Position.Y < height)
-            {
+            //Console.WriteLine("Calcs pos: " + Position);
 
-                Pitch = LastPitch;
+            // get the minimum height acceptable in the new position
+            float terrainHeight = Surface.GetHeightFromSurface(Position);  
+            float height = terrainHeight + OffsetFromFloor;  // this is the minimum possible height, at this point
+            DistanceToTerrrain = Position.Y - terrainHeight;
 
-                Position.Y = height;
+            //Position.Y = height;
 
-            } else
-            {
-                //LastPitch = Pitch;                
-            }
+            // calculate the minimum possible pitch angle at this position
+            //Vector3 a = Vector3.Normalize(new Vector3(Position.X - Target.X, height - Target.Y, Position.Z - Target.Z));
+            //Vector3 b = Vector3.Normalize(new Vector3(-(Position.X - Target.X), 0f, -(Position.Z - Target.Z)));
+
+            Vector3 a = Vector3.Normalize(new Vector3((Position.X - Target.X), height - Target.Y, (Position.Z - Target.Z)));
+            Vector3 b = Vector3.Normalize(new Vector3((Position.X - Target.X), 0f, (Position.Z - Target.Z)));
+            Vector3 n = Vector3.Cross(a, Vector3.Forward);
+            int sign = n.X < 0 ? -1 : 1;   // gets the sign of the angle, by crossing them. the cross direction tells the polarity
+            // help from https://www.mathworks.com/matlabcentral/answers/266282-negative-angle-between-vectors-planes
+
+            float angle = MathHelper.ToDegrees((float)Math.Acos(Vector3.Dot(a, b))) * sign;  // this is the maximum angle
+
+            Pitch = MathHelper.Clamp(Pitch, float.MinValue, angle);
+
+            position = new Vector3(0f, 0f, OffsetDistance * pushBack);
+            position = Vector3.Transform(position, Matrix.CreateRotationX(MathHelper.ToRadians(Pitch)));
+            position = Vector3.Transform(position, Matrix.CreateRotationY(MathHelper.ToRadians(Yaw)));
+
+            Position = position + Target;
+
+            //if(Pitch > angle)
+            //{
+            //    Pitch = angle;
+
+            //    position = new Vector3(0f, 0f, OffsetDistance * pushBack);
+            //    position = Vector3.Transform(position, Matrix.CreateRotationX(MathHelper.ToRadians(Pitch)));
+            //    position = Vector3.Transform(position, Matrix.CreateRotationY(MathHelper.ToRadians(Yaw)));
+
+            //    Position = position + Target;
+
+            //}
+
+
+            //Console.WriteLine("phys func deg:" + MathHelper.ToDegrees((float)Physics.VectorAngleBetween(a, b)));
+            //Console.WriteLine("dot product: " + Vector3.Dot(a, b));
+            //Console.WriteLine("dot sign: " + sign);
+            //Console.WriteLine("angle rad: " + (float)Math.Acos(Vector3.Dot(a, b)));
+            //Console.WriteLine("angle deg: " + angle);
+
+            
+
+
+            //if (Pitch > angle)
+            //{
+            //    // if the pitch value is minor than the new angle,
+            //    // wee need to raise the camera
+            //    Pitch = angle;
+
+            //}
+
+            // the new possible position
+            //position = new Vector3(0f, 0f, OffsetDistance * pushBack);
+            //position = Vector3.Transform(position, Matrix.CreateRotationX(MathHelper.ToRadians(angle)));
+            //position = Vector3.Transform(position, Matrix.CreateRotationY(MathHelper.ToRadians(Yaw)));
+
+            //Position = position + Target;
+
+            //Console.WriteLine("result pos: " + Position);
+
+            //Position.Y = MathHelper.Clamp(Position.Y, height, float.MaxValue);
+
+            //if (Position.Y < height)
+            //{
+            //    IsCollidingBottom = true;
+
+            //    // try to calculate new pitch
+            //    //Vector3 a = Vector3.Normalize(new Vector3(position.X, position.Y, position.Z));
+            //    //Vector3 b = Vector3.Normalize(new Vector3(position.X, 0f, position.Z));
+
+            //    //float angle = MathHelper.ToDegrees((float)Math.Acos(Vector3.Dot(a, b)));
+
+            //    //Console.WriteLine(angle);
+
+            //    //Pitch = angle;
+            //    //Position.Y = height;
+
+            //    //Position.Normalize();
+            //    //Position *= (OffsetDistance * pushBack);
+
+            //}
+            //else
+            //{
+            //    IsCollidingBottom = false;
+            //}
+
+
+
+            //Pitch = angle;
+            //Position.Y = height;
+
+
+
 
             // finally, update view transform            
             ViewTransform = Matrix.CreateLookAt(Position, Target, Vector3.Up);
@@ -183,7 +275,7 @@ namespace ip3d_tp
             LastYaw = Yaw;
 
             Yaw -= xoffset;
-            Pitch -= yoffset;  // here we can invert the Y
+            Pitch -= yoffset;
 
             if (constrainPitch)
             {
@@ -195,10 +287,29 @@ namespace ip3d_tp
 
         }
 
+        // used to update the camera zoom based on mouse scroll
+        // the code is self explanatory
+        private void ProcessMouseScroll()
+        {
+
+            float value = Controls.CurrMouseState.ScrollWheelValue - Controls.LastMouseState.ScrollWheelValue;
+            value *= ScrollSensitivity;
+
+            //if (TargetOffsetDistance >= MinOffsetDistance && TargetOffsetDistance <= MinOffsetDistance)
+            //{
+                TargetOffsetDistance -= value;
+            //}
+
+            if (TargetOffsetDistance <= MinOffsetDistance) TargetOffsetDistance = MinOffsetDistance;
+
+            if (TargetOffsetDistance >= MaxOffsetDistance) TargetOffsetDistance = MaxOffsetDistance;
+
+        }
+
 
         public override string About()
         {
-            return $"Follows the tank.\nRotate the mouse to look around.\nToogle 'C' to lock the angle.\npicth: {Pitch}, yaw: {Yaw}";
+            return $"Follows the tank.\nRotate the mouse to look around.\nToogle 'C' to lock the angle.\nposition: {Position}\npicth: {Pitch}, yaw: {Yaw}\nDistanceToTerrain: {DistanceToTerrrain}, collision: {IsCollidingBottom}";
         }
 
     }
