@@ -89,7 +89,7 @@ namespace ip3d_tp
 
         // projectiles
         float LastShot = 0f;
-        float ProjectilePower = 0.5f;
+        float ProjectilePower = 1f;
         float ShootRate = 150f;
 
         public List<Projectile> Bullets;
@@ -298,8 +298,17 @@ namespace ip3d_tp
                         
                         b.Revive();
 
-                        b.Body.SetPosition(Body.Position + new Vector3(0f, 5f, 0f));
-                        b.SetVelocity(CanonPitch, MathHelper.ToRadians(TurretYaw) - Body.Bounds.Yaw);
+                        b.Body.SetPosition(Body.Position + Vector3.Transform(new Vector3(0f, 5f, 0f), WorldTransform.Rotation));
+                        //b.SetVelocity(CanonPitch, MathHelper.ToRadians(TurretYaw) - Body.Bounds.Yaw);
+
+                        b.Body.Velocity = new Vector3(
+                            ProjectilePower * (float)Math.Cos(MathHelper.ToRadians(TurretYaw) - Body.Bounds.Yaw),
+                            ProjectilePower * (float)Math.Sin(MathHelper.ToRadians(CanonPitch)),
+                            ProjectilePower * -(float)Math.Sin(MathHelper.ToRadians(TurretYaw) - Body.Bounds.Yaw)
+                        );
+
+                        b.Body.Velocity = Vector3.Transform(b.Body.Velocity, WorldTransform.Rotation);
+
 
                     }
                 }
@@ -326,10 +335,14 @@ namespace ip3d_tp
                 {
 
                     CanonPitch = ((ThirdPersonCamera)camera).Pitch;
+                    // constrain pitch
+                    CanonPitch = MathHelper.Clamp(CanonPitch + 30f, -30f, 60f);
+
                     TurretYaw = ((ThirdPersonCamera)camera).Yaw;
 
                 } else
                 {
+                    
                 }
 
             }
@@ -553,8 +566,7 @@ namespace ip3d_tp
         private void RotateTurret(GameTime gameTime, float pitch, float yaw)
         {
 
-            // constrain pitch
-            CanonPitch = MathHelper.Clamp(pitch + 30f, -30f, 60f);
+            
 
             Matrix turretRotationMatrix = Matrix.CreateRotationY(MathHelper.ToRadians(yaw + 90f) - Body.Bounds.Yaw);
             Matrix canonRotationMatrix = Matrix.CreateRotationX(MathHelper.ToRadians(-CanonPitch));

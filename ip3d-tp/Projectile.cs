@@ -117,6 +117,8 @@ namespace ip3d_tp
         {
             Alive = false;
             Body.Velocity = Vector3.Zero;
+            //Body.SetRotation(Vector3.Zero);
+            //Body.SetPosition(Vector3.Zero);
         }
 
         public void Revive()
@@ -141,6 +143,11 @@ namespace ip3d_tp
 
                 CheckOutOfBounds(surface);
 
+                if(!Alive)
+                {
+                    return;
+                }
+
                 // calculate projectile angle
                 Vector3 a = Vector3.Normalize(new Vector3(Body.DeltaX(), Body.DeltaY(), Body.DeltaZ()));
                 Vector3 b = Vector3.Normalize(new Vector3(Body.DeltaX(), 0f, Body.DeltaZ()));
@@ -150,7 +157,14 @@ namespace ip3d_tp
 
                 float angle = ((float)Math.Acos(Vector3.Dot(a, b))) * sign;  // this is the maximum angle
 
-                Body.Bounds.Pitch = angle;
+                //Body.Bounds.Pitch = angle;
+
+                // what if I just set the front to be equal to the delta?
+                Vector3 front = Vector3.Normalize(Body.Position - Body.PreviousPosition);
+                Vector3 right = Vector3.Normalize(Vector3.Cross(front, Vector3.Up));
+                Vector3 up = Vector3.Normalize(Vector3.Cross(front, right));
+                right = Vector3.Normalize(Vector3.Cross(front, up));
+
 
                 float groundHeight = surface.GetHeightFromSurface(Body.Position);
 
@@ -161,7 +175,8 @@ namespace ip3d_tp
                     Console.WriteLine($"Killed at {groundHeight}");
                 }
 
-                Body.Bounds.UpdateMatrices();
+                //Body.Bounds.UpdateMatrices();
+                Body.Bounds.SetWorldTransform(Matrix.CreateWorld(Body.Position, front, up));
 
             }
         }
