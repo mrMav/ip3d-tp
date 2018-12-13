@@ -22,7 +22,7 @@ namespace ip3d_tp
             Keys
         }
         public static PlayerAimMode AimMode = PlayerAimMode.Camera;
-
+               
     }
 
     public class Game1 : Game
@@ -166,7 +166,7 @@ namespace ip3d_tp
             tank2.Body.X = -4f;
             tank2.TankID = 1;  // identify this tank as ID 1, used for the controls
 
-            shell = new Projectile(this);
+            shell = new Projectile(this, 0f);
 
             /*
              * cameras
@@ -179,7 +179,7 @@ namespace ip3d_tp
             ThirdPersonCamera2 = new ThirdPersonCamera(this, tank2, plane, 20f);
             
             freeCamera = new FreeCamera(this, 45f);
-            freeCamera.AccelerationValue = 0.01f;
+            freeCamera.AccelerationValue = 1f;
             freeCamera.Position.X = 0;
             freeCamera.Position.Y = 5;
             freeCamera.Position.Z = 5;
@@ -269,6 +269,7 @@ namespace ip3d_tp
             if (Controls.IsKeyPressed(Keys.H))
             {
                 Global.ShowHelp = !Global.ShowHelp;
+                shell = new Projectile(this, 5f);
             }
 
             #endregion
@@ -297,31 +298,34 @@ namespace ip3d_tp
             tank1.Update(gameTime, currentCamera, plane);
             tank2.Update(gameTime, currentCamera, plane);
 
+            shell.Update(gameTime, plane);
+
             // collision needs to run on a fairly high speed in order
             // to be accurate. The implication of this is the
             // method that we are defining the tanks height.
             // the tanks are glued to the ground, and fetch the new height
             // every frame. This leads to 'teleporting' and oder glitchs when 
             // applying the collision resolution.
-            for(int i = 0; i < 4; i++)  // sampling 4 times for acuracy
+            //for(int i = 0; i < 1; i++)  // sampling 4 times for acuracy
+            
+
+            if (Physics.SATCollide(tank1.Body, tank2.Body))
             {
 
-                if (Physics.SATCollide(tank1.Body, tank2.Body))
-                {
-
-                    tank1.BodyDebug.MaterialColor = Color.Red;
-
-                }
-                else
-                {
-                    tank1.BodyDebug.MaterialColor = Color.Blue;
-
-                };
-
-                tank1.PostMotionUpdate(gameTime, currentCamera, plane);
-                tank2.PostMotionUpdate(gameTime, currentCamera, plane);
+                tank1.BodyDebug.MaterialColor = Color.Red;
 
             }
+            else
+            {
+                tank1.BodyDebug.MaterialColor = Color.Blue;
+
+            };
+
+            tank1.PostMotionUpdate(gameTime, currentCamera, plane);
+            tank2.PostMotionUpdate(gameTime, currentCamera, plane);
+
+            tank1.UpdateProjectiles(gameTime, plane);
+            tank2.UpdateProjectiles(gameTime, plane);
 
             tank1.CalculateAnimations(gameTime, currentCamera, plane);
             tank2.CalculateAnimations(gameTime, currentCamera, plane);
@@ -337,7 +341,8 @@ namespace ip3d_tp
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(new Color(0.20f, 0.20f, 0.20f));
+            //GraphicsDevice.Clear(new Color(0.20f, 0.20f, 0.20f));
+            GraphicsDevice.Clear(Color.White);
 
             // we need to call the draw manually for the plane
             // it extends component, and not drawable

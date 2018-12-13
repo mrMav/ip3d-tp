@@ -17,6 +17,7 @@ namespace ip3d_tp.Physics3D
         public float MaxVelocity;
         public float Speed;
         public float Mass;
+        public float Gravity = Physics.Gravity;
 
         public Vector3 PreviousPosition;
         public Vector3 PreviousRotation;
@@ -161,6 +162,39 @@ namespace ip3d_tp.Physics3D
 
             // apply speed to velocity
             Velocity += Bounds.Front * Speed * dt;
+
+            // cap the velocity so we don't move faster than we should
+            if (Velocity.Length() > MaxVelocity)
+            {
+                Velocity.Normalize();
+                Velocity *= MaxVelocity;
+            }
+
+            // apply the velocity to the position
+            SetPosition(Position + Velocity);
+
+            // add some sexy drag
+            Velocity *= Drag;
+
+            Update(gameTime);
+        }
+
+        /// <summary>
+        /// Same as UpdateMotion but instead of being based in the front vector,
+        /// it uses the acceleration variable to calculate motion.
+        /// </summary>
+        /// <param name="gameTime"></param>
+        public void UpdateMotionAcceleration(GameTime gameTime)
+        {
+            // delta for time based calcs
+            float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            // calculate acceleraion
+            Vector3 accel = Acceleration;
+            accel.Y += Gravity;
+
+            // apply speed to velocity
+            Velocity += accel * dt;
 
             // cap the velocity so we don't move faster than we should
             if (Velocity.Length() > MaxVelocity)

@@ -1,7 +1,9 @@
 ﻿using ip3d_tp.Physics3D;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using System;
+using System.Collections.Generic;
 
 namespace ip3d_tp
 {
@@ -67,6 +69,7 @@ namespace ip3d_tp
 
         Matrix TurretTransform;
         Matrix CanonTransform;
+        Matrix CanonTransform2;
 
         // current wheels angle
         float WheelsAngle = 0f;
@@ -83,6 +86,13 @@ namespace ip3d_tp
 
         // this tank ID for controls
         public short TankID;
+
+        // projectiles
+        float LastShot = 0f;
+        float ProjectilePower = 0.5f;
+        float ShootRate = 150f;
+
+        public List<Projectile> Bullets;
 
         // constructor
         public Tank(Game game)
@@ -164,6 +174,18 @@ namespace ip3d_tp
             // default the ID to 0
             TankID = 0;
 
+            // create a few bullets
+            Bullets = new List<Projectile>();
+            for (int i = 0; i < 50; i++)
+            {
+                Projectile p = new Projectile(Game, ProjectilePower);
+                
+                // init settings here
+
+                Bullets.Add(p);
+            }
+
+
             // create the axis for debug
             Axis = new Axis3D(Game, Body.Position, 50f);
             Game.Components.Add(Axis);
@@ -185,13 +207,13 @@ namespace ip3d_tp
             if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Left]))
             {
                 Body.Bounds.Yaw += YawStep * Body.Velocity.Length() * dir * dt;
-                SteerAngle += YawStep * dir * dt;
+                SteerAngle += YawStep * dt;
 
             }
             else if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Right]))
             {
                 Body.Bounds.Yaw -= YawStep * Body.Velocity.Length() * dir * dt;
-                SteerAngle -= YawStep * dir * dt;
+                SteerAngle -= YawStep * dt;
             } else
             {
                 SteerAngle *= 0.8f;
@@ -214,13 +236,13 @@ namespace ip3d_tp
             }
 
             // update the orientation vectors of the tank
-            UpdateDirectionVectors(surface);
+            //UpdateDirectionVectors(surface);
 
             // moves the body
             Body.UpdateMotion(gameTime);
 
-            UpdateDirectionVectors(surface);
-            UpdateMatrices();
+            //UpdateDirectionVectors(surface);
+            UpdateMatrices(surface);
 
         }
 
@@ -234,15 +256,61 @@ namespace ip3d_tp
             SetHeightFromSurface(surface);
 
             // update the orientation vectors of the tank
-            UpdateDirectionVectors(surface);
+            //UpdateDirectionVectors(surface);
 
             // update the bones matrices
-            UpdateMatrices();
+            UpdateMatrices(surface);
 
             // update the debug axis
             //Axis.worldMatrix = Matrix.CreateScale(new Vector3(50f) / Scale) * Model.Root.Transform;
             Axis.worldMatrix = WorldTransform;
             Axis.UpdateShaderMatrices(camera.ViewTransform, camera.ProjectionTransform);
+        }
+
+        public void UpdateProjectiles(GameTime gameTime, Plane surface)
+        {
+            // user input
+            if (TankID == 0 && Controls.CurrMouseState.LeftButton == ButtonState.Pressed)
+            {
+                
+                // check shooting rate
+                if (LastShot < gameTime.TotalGameTime.TotalMilliseconds)
+                {
+
+                    // update the shooting rate to now
+                    LastShot = (float)gameTime.TotalGameTime.TotalMilliseconds + this.ShootRate;
+
+                    // get the first dead bullet from the pool
+                    Projectile b = null;
+                    for (int i = 0; i < Bullets.Count; i++)
+                    {
+                        if (!Bullets[i].Alive)
+                        {
+                            b = Bullets[i];
+                            break;
+                        }
+
+                    }
+
+                    // if b not null, we have a bullet
+                    if (b != null)
+                    {
+                        
+                        b.Revive();
+
+                        b.Body.SetPosition(Body.Position + new Vector3(0f, 5f, 0f));
+                        b.SetVelocity(CanonPitch, MathHelper.ToRadians(TurretYaw) - Body.Bounds.Yaw);
+
+                    }
+                }
+
+            }
+
+            foreach (Projectile b in Bullets)
+            {
+                b.Update(gameTime, surface);
+            }
+
         }
 
         public void CalculateAnimations(GameTime gameTime, Camera camera, Plane surface)
@@ -319,15 +387,20 @@ namespace ip3d_tp
 
             }
 
+            // render projectiles
+            foreach (Projectile b in Bullets)
+                b.Draw(gameTime, camera, lightDirection, lightColor, lightIntensity);
+
+
             if(Global.ShowHelp)
                 BodyDebug.Draw(gameTime, camera);
 
         }
 
-        public void UpdateMatrices()
+        public void UpdateMatrices(Plane surface)
         {
             // Up Vector must be already set
-            Body.Bounds.UpdateMatrices();
+            Body.Bounds.UpdateMatrices(GetUpVectorFromTerrain(surface));
             Body.UpdateCollisionRect();
             
             Model.Root.Transform = WorldTransform;
@@ -368,7 +441,7 @@ namespace ip3d_tp
 
         }
                 
-        public void UpdateDirectionVectors(Plane surface)
+        public Vector3 GetUpVectorFromTerrain(Plane surface)
         {
 
             // get the nearest vertice from the plane
@@ -400,7 +473,7 @@ namespace ip3d_tp
             float ratioX1 = 1f - (v3.Position.X - Body.Position.X) / (v3.Position.X - v2.Position.X);
             float ratioZ = 1f - (v3.Position.Z - Body.Position.Z) / (v2.Position.Z - v0.Position.Z);
 
-            Body.Bounds.SetUp(Utils.NormalBilinearInterpolation(v0.Normal, v1.Normal, v2.Normal, v3.Normal, ratioX0, ratioX1, ratioZ));
+            return Utils.NormalBilinearInterpolation(v0.Normal, v1.Normal, v2.Normal, v3.Normal, ratioX0, ratioX1, ratioZ);
 
         }
 
@@ -481,10 +554,10 @@ namespace ip3d_tp
         {
 
             // constrain pitch
-            float p = MathHelper.Clamp(pitch + 30f, -30f, 60f);
+            CanonPitch = MathHelper.Clamp(pitch + 30f, -30f, 60f);
 
             Matrix turretRotationMatrix = Matrix.CreateRotationY(MathHelper.ToRadians(yaw + 90f) - Body.Bounds.Yaw);
-            Matrix canonRotationMatrix = Matrix.CreateRotationX(MathHelper.ToRadians(-p));
+            Matrix canonRotationMatrix = Matrix.CreateRotationX(MathHelper.ToRadians(-CanonPitch));
 
             // apply
             Turret.Transform = turretRotationMatrix * Matrix.CreateTranslation(TurretTransform.Translation);
@@ -496,7 +569,7 @@ namespace ip3d_tp
         {
 
             return $"TankID: {TankID}\n" +
-                   $"Wheels: {WheelsAngle}";
+                   $"Wheels: {WheelsAngle}, TurretYaw: {TurretYaw}, CanonPitch: {CanonPitch}";
 
         }
 

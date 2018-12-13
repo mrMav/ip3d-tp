@@ -82,7 +82,8 @@ namespace ip3d_tp
             //Console.WriteLine("---");
 
             LastPosition = Position;
-            Target = TankToFollow.Body.Position + new Vector3(0, OffsetFromFloor, 0);
+            //Target = TankToFollow.Body.Position + new Vector3(0, OffsetFromFloor, 0);
+            Target = TankToFollow.Body.Position + Vector3.Transform(new Vector3(0, OffsetFromFloor, 0), TankToFollow.WorldTransform.Rotation);
 
             float midWidth = Game.GraphicsDevice.Viewport.Width / 2;
             float midHeight = Game.GraphicsDevice.Viewport.Height / 2;
@@ -117,7 +118,7 @@ namespace ip3d_tp
 
             // get the minimum height acceptable in the new position
             float terrainHeight = Surface.GetHeightFromSurface(Position);  
-            float height = terrainHeight + OffsetFromFloor;  // this is the minimum possible height, at this point
+            float height = terrainHeight + 0.5f;  // this is the minimum possible height, at this point
             DistanceToTerrrain = Position.Y - terrainHeight;
 
             //Position.Y = height;
@@ -161,7 +162,7 @@ namespace ip3d_tp
             //Console.WriteLine("angle rad: " + (float)Math.Acos(Vector3.Dot(a, b)));
             //Console.WriteLine("angle deg: " + angle);
 
-            
+
 
 
             //if (Pitch > angle)
@@ -216,6 +217,7 @@ namespace ip3d_tp
 
 
             // finally, update view transform            
+            //ViewTransform = Matrix.CreateLookAt(Position, Target, Vector3.Up);
             ViewTransform = Matrix.CreateLookAt(Position, Target, Vector3.Up);
 
             base.Update(gameTime);
