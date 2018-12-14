@@ -12,6 +12,9 @@ texture Texture;
 //alpha value
 float Alpha;
 
+// tint
+float4 Tint = float4(1, 1, 1, 1);
+
 /*
 Definition of the texture sampler, which states how 
 we will 'sample' the texture. In this case we will LinearInterpolate the pixel
@@ -75,6 +78,8 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0 {
 	//// sample texture, and get the color
 	float4 textureColor = tex2D(TextureSampler, input.TextureCoord);
 	textureColor.a -= Alpha;
+
+	textureColor *= Tint;
 
 	/*if (textureColor.a < 0.99f)
 		discard;*/

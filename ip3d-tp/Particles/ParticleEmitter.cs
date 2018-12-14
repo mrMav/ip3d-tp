@@ -147,6 +147,8 @@ namespace ip3d_tp.Particles
         public float InitialScale;
         public float FinalScale;
 
+        public Color ParticleTint;
+
         #endregion
 
 
@@ -180,6 +182,8 @@ namespace ip3d_tp.Particles
             XVelocityVariationRange = Vector2.Zero;
             YVelocityVariationRange = Vector2.Zero;
             ZVelocityVariationRange = Vector2.Zero;
+
+            ParticleTint = Color.White;
 
             ParticlesPerBurst = 5;
             Burst = false;
@@ -315,6 +319,8 @@ namespace ip3d_tp.Particles
         public virtual void DrawParticle(GameTime gameTime, Camera camera, Particle p)
         {
 
+
+
         }
 
         /// <summary>
@@ -384,6 +390,8 @@ namespace ip3d_tp.Particles
 
             p.InitialScale = InitialScale;
             p.FinalScale = FinalScale;
+
+            p.Tint = ParticleTint;
 
             // update lifespans and age
             p.SpawnedAtMilliseconds = gameTime.TotalGameTime.TotalMilliseconds;

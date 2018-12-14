@@ -35,6 +35,8 @@ namespace ip3d_tp.Particles
 
         public float Alpha = 1f;
 
+        public Color Tint = Color.White;
+
         // boolean to specify if this particle is enabled or not
         public bool Alive;
 

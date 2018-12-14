@@ -237,8 +237,8 @@ namespace ip3d_tp
             DustParticles.ParticleLifespanMilliseconds = 5000f;
             DustParticles.ParticleLifespanVariationMilliseconds = 500f;
             DustParticles.Activated = true;
-            DustParticles.InitialScale = 3f;
-            DustParticles.FinalScale = 8f;
+            DustParticles.InitialScale = 8f;
+            DustParticles.FinalScale = 14f;
             ParticleManager.AddParticleEmitter(DustParticles);
 
             // create the axis for debug
@@ -640,14 +640,18 @@ namespace ip3d_tp
         /// </summary>
         public void SetFullThrottleEngineParticles()
         {
-            int n = 2;
+            int n = 4;
             float t = 60f;
 
             SmokeParticlesLeft.ParticlesPerBurst = n;
             SmokeParticlesLeft.SpawnRate = t;
+            SmokeParticlesLeft.ParticleTint = Color.Black;
 
             SmokeParticlesRight.ParticlesPerBurst = n;
             SmokeParticlesRight.SpawnRate = t;
+            SmokeParticlesRight.ParticleTint = Color.Black;
+
+
         }
 
         /// <summary>
@@ -656,13 +660,15 @@ namespace ip3d_tp
         public void SetIdleEngineParticles()
         {
             int n = 1;
-            float t = 360f;
+            float t = 120f;
 
             SmokeParticlesLeft.ParticlesPerBurst = n;
             SmokeParticlesLeft.SpawnRate = t;
+            SmokeParticlesLeft.ParticleTint = Color.White;
 
             SmokeParticlesRight.ParticlesPerBurst = n;
             SmokeParticlesRight.SpawnRate = t;
+            SmokeParticlesRight.ParticleTint = Color.White;
 
         }
 

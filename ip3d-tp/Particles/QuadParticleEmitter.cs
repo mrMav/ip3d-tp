@@ -74,6 +74,7 @@ namespace ip3d_tp.Particles
                 Shader.Parameters["View"].SetValue(camera.ViewTransform);
                 Shader.Parameters["Projection"].SetValue(camera.ProjectionTransform);
                 Shader.Parameters["Alpha"].SetValue(p.Alpha);
+                Shader.Parameters["Tint"].SetValue(p.Tint.ToVector4());
                 Shader.Parameters["Texture"].SetValue(Texture);
 
                 // prepare for render

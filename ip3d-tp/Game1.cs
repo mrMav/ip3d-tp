@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace ip3d_tp
 {
@@ -106,6 +107,14 @@ namespace ip3d_tp
 
         // the intensity of said light
         public float LightIntensity = 1.0f;
+
+        Stopwatch stopwatch;
+
+        long tickCount = 0;
+        double sumOfMilliseconds = 0;
+        double averageMilliseconds = 0;
+        double maxMills = double.MinValue;
+        double minMills = double.MaxValue;
 
         public Game1()
         {
@@ -225,6 +234,9 @@ namespace ip3d_tp
 
         protected override void Update(GameTime gameTime)
         {
+
+            stopwatch = Stopwatch.StartNew();
+
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Controls.IsKeyDown(Keys.Escape))
                 Exit();
 
@@ -363,6 +375,22 @@ namespace ip3d_tp
 
             // update the last keyboard state
             Controls.UpdateLastStates();
+
+
+            stopwatch.Stop();
+
+            ++tickCount;
+
+            sumOfMilliseconds += stopwatch.Elapsed.TotalMilliseconds;
+            averageMilliseconds = sumOfMilliseconds / tickCount;
+
+            maxMills = stopwatch.Elapsed.TotalMilliseconds > maxMills && tickCount > 20 ? stopwatch.Elapsed.TotalMilliseconds : maxMills;
+            minMills = stopwatch.Elapsed.TotalMilliseconds < minMills && tickCount > 20 ? stopwatch.Elapsed.TotalMilliseconds : minMills;
+
+            Console.WriteLine(
+                $"RealTime: {stopwatch.Elapsed.TotalMilliseconds:0.0000}, Avg: {averageMilliseconds:0.0000}, Min: {minMills}, Max: {maxMills} "
+            );
+
         }
 
         protected override void Draw(GameTime gameTime)
