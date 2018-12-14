@@ -9,7 +9,7 @@ namespace ip3d_tp.Physics3D
         /// gravity constant to perform physics calculations that require it.
         /// this value will be the default value in each body
         /// </summary>
-        public static float Gravity = -2f;
+        public static float Gravity = -2.1f;
 
         /// <summary>
         /// This member will be used to store the MTV for all the SAT intersects

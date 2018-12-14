@@ -89,7 +89,7 @@ namespace ip3d_tp
 
         // projectiles
         float LastShot = 0f;
-        float ProjectilePower = 1f;
+        float ProjectilePower = 2.8f;
         float ShootRate = 150f;
 
         public List<Projectile> Bullets;
@@ -244,6 +244,8 @@ namespace ip3d_tp
             //UpdateDirectionVectors(surface);
             UpdateMatrices(surface);
 
+            Console.WriteLine(Canon.ModelTransform);
+
         }
 
         public void PostMotionUpdate(GameTime gameTime, Camera camera, Plane surface)
@@ -295,11 +297,29 @@ namespace ip3d_tp
                     // if b not null, we have a bullet
                     if (b != null)
                     {
-                        
+
                         b.Revive();
 
-                        b.Body.SetPosition(Body.Position + Vector3.Transform(new Vector3(0f, 5f, 0f), WorldTransform.Rotation));
+                        // calculate offset from tank origin
+                        Vector3 offset = new Vector3(
+                            (float)Math.Cos(MathHelper.ToRadians(TurretYaw) - Body.Bounds.Yaw) * 1.5f,
+                            (float)Math.Sin(MathHelper.ToRadians(CanonPitch)) * 1f + 3.5f,
+                            -(float)Math.Sin(MathHelper.ToRadians(TurretYaw) - Body.Bounds.Yaw) * 1.5f
+                        );
+
+                        Vector3 turretCenterOffset = new Vector3(0f, 0f, -0.35f);
+
+                        b.Body.SetPosition(Body.Position + Vector3.Transform(offset + turretCenterOffset, WorldTransform.Rotation));
                         //b.SetVelocity(CanonPitch, MathHelper.ToRadians(TurretYaw) - Body.Bounds.Yaw);
+
+                        //b.Body.SetPosition(Vector3.Transform(Vector3.Zero, Matrix.CreateFromQuaternion(BoneTransforms[9].Rotation) * Matrix.CreateTranslation(BoneTransforms[10].Translation)));
+                        //b.Body.SetPosition(Vector3.Transform(Vector3.Zero, Matrix.CreateRotationY(MathHelper.ToRadians(TurretYaw + 90f) - Body.Bounds.Yaw) * Matrix.CreateTranslation(BoneTransforms[10].Translation)));
+                        //b.Body.SetPosition(Vector3.Transform(new Vector3(0, 0, 1), WorldTransform));
+                        //b.Body.SetPosition(Vector3.Transform(new Vector3(0, 0, 0), Matrix.CreateRotationY(MathHelper.ToRadians(TurretYaw + 90f) - Body.Bounds.Yaw) * Matrix.CreateRotationX(MathHelper.ToRadians(-CanonPitch)) * WorldTransform));
+                        //b.Body.SetPosition(Vector3.Transform(CanonTransform.Translation, WorldTransform));
+                        //b.Body.SetPosition(Vector3.Transform(new Vector3(0.0f, 3.2f, 1), Matrix.CreateRotationY(MathHelper.ToRadians(TurretYaw + 90f) - Body.Bounds.Yaw) * WorldTransform));
+                        //b.Body.SetPosition(Vector3.Transform(new Vector3(0, 10, 0), WorldTransform));
+
 
                         b.Body.Velocity = new Vector3(
                             ProjectilePower * (float)Math.Cos(MathHelper.ToRadians(TurretYaw) - Body.Bounds.Yaw),
@@ -573,8 +593,8 @@ namespace ip3d_tp
 
             // apply
             Turret.Transform = turretRotationMatrix * Matrix.CreateTranslation(TurretTransform.Translation);
-            Canon.Transform = canonRotationMatrix * Matrix.CreateTranslation(CanonTransform.Translation);            
-
+            Canon.Transform = canonRotationMatrix * Matrix.CreateTranslation(CanonTransform.Translation);
+            
         }
 
         public string GetDebugInfo()

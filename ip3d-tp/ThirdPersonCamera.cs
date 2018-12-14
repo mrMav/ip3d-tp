@@ -31,7 +31,8 @@ namespace ip3d_tp
         public float ScrollSensitivity = 0.1f;
 
         // minimum offset from the floor
-        public float OffsetFromFloor = 5f;
+        public float OffsetFromFloor = 4f;
+        public float OffsetToBack = 4f;
 
         // yaw and pitch angles
         public float Yaw = -64;
@@ -83,7 +84,7 @@ namespace ip3d_tp
 
             LastPosition = Position;
             //Target = TankToFollow.Body.Position + new Vector3(0, OffsetFromFloor, 0);
-            Target = TankToFollow.Body.Position + Vector3.Transform(new Vector3(0, OffsetFromFloor, 0), TankToFollow.WorldTransform.Rotation);
+            Target = TankToFollow.Body.Position + Vector3.Transform(new Vector3(0, OffsetFromFloor, OffsetToBack), TankToFollow.WorldTransform.Rotation);
 
             float midWidth = Game.GraphicsDevice.Viewport.Width / 2;
             float midHeight = Game.GraphicsDevice.Viewport.Height / 2;

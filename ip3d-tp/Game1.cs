@@ -151,7 +151,7 @@ namespace ip3d_tp
             Components.Add(worldAxis);
 
             // initialize the plane with the prefered settings
-            plane = new Plane(this, "Textures/ground_diffuse", 128*2, 128*2, terrainHeightMap.Width - 1, terrainHeightMap.Height - 1, 0.2f);
+            plane = new Plane(this, "Textures/ground_diffuse", 128*3, 128*3, terrainHeightMap.Width - 1, terrainHeightMap.Height - 1, 0.2f);
             Components.Add(plane);
 
             // dispace the vertices of the plane, based on the given heightmap, and adjust by a scale
