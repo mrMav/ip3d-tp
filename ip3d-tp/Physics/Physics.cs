@@ -145,13 +145,13 @@ namespace ip3d_tp.Physics3D
 
                 // this works fine for the purpose.
                 // just subtract the MTV
-                a.Bounds.X -= MinimumTranslationVector.X;
-                a.Bounds.Y -= MinimumTranslationVector.Y;
-                a.Bounds.Z -= MinimumTranslationVector.Z;
+                a.Bounds.X -= MinimumTranslationVector.X / 2f;
+                a.Bounds.Y -= MinimumTranslationVector.Y / 2f;
+                a.Bounds.Z -= MinimumTranslationVector.Z / 2f;
 
-                b.Bounds.X += MinimumTranslationVector.X;
-                b.Bounds.Y += MinimumTranslationVector.Y;
-                b.Bounds.Z += MinimumTranslationVector.Z;
+                b.Bounds.X += MinimumTranslationVector.X / 2f;
+                b.Bounds.Y += MinimumTranslationVector.Y / 2f;
+                b.Bounds.Z += MinimumTranslationVector.Z / 2f;
                 
                 //a.SetPosition(a.PreviousPosition);
                 //a.SetRotation(a.PreviousRotation);

@@ -98,6 +98,7 @@ namespace ip3d_tp
         // particle emitters for some effects
         QuadParticleEmitter SmokeParticlesLeft;
         QuadParticleEmitter SmokeParticlesRight;
+        QuadParticleEmitter DustParticles;
 
         // constructor
         public Tank(Game game)
@@ -223,6 +224,23 @@ namespace ip3d_tp
             SmokeParticlesRight.FinalScale = 5f;
             ParticleManager.AddParticleEmitter(SmokeParticlesRight);
 
+            // init particles
+            DustParticles = new QuadParticleEmitter(Game, Body.Position, 0.5f, 0.5f, "Textures/dust_particle", 5f, 500, TankID + 4);
+            DustParticles.MakeParticles(1f, Color.White);
+            DustParticles.ParticleVelocity = new Vector3(0f, 1.5f, -2f);
+            DustParticles.SpawnRate = 20f;
+            DustParticles.Burst = false;
+            DustParticles.ParticlesPerBurst = 6;
+            DustParticles.XVelocityVariationRange = new Vector2(-300f, 300f);
+            DustParticles.YVelocityVariationRange = new Vector2(0f, 200f);
+            DustParticles.ZVelocityVariationRange = new Vector2(-300f, 50f);
+            DustParticles.ParticleLifespanMilliseconds = 5000f;
+            DustParticles.ParticleLifespanVariationMilliseconds = 500f;
+            DustParticles.Activated = true;
+            DustParticles.InitialScale = 3f;
+            DustParticles.FinalScale = 8f;
+            ParticleManager.AddParticleEmitter(DustParticles);
+
             // create the axis for debug
             Axis = new Axis3D(Game, Body.Position, 50f);
             Game.Components.Add(Axis);
@@ -262,17 +280,20 @@ namespace ip3d_tp
             {
                 Body.Speed -= (Body.Acceleration.Z);
                 SetFullThrottleEngineParticles();
+                DustParticles.Activated = true;
 
             }
             else if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Down]))
             {
                 Body.Speed += (Body.Acceleration.Z);
                 SetFullThrottleEngineParticles();
+                DustParticles.Activated = true;
 
             } else
             {
                 Body.Speed = 0f;
                 SetIdleEngineParticles();
+                DustParticles.Activated = false;
             }
 
             // update the orientation vectors of the tank
@@ -303,6 +324,10 @@ namespace ip3d_tp
             SmokeParticlesRight.Activated = true;
             SmokeParticlesRight.UpdateMatrices(particlesTransformRight);
             SmokeParticlesRight.Update(gameTime);
+
+            //DustParticles.Activated = true;
+            DustParticles.UpdateMatrices(WorldTransform);
+            DustParticles.Update(gameTime);
 
             //Console.WriteLine(Canon.ModelTransform);
 
@@ -615,8 +640,8 @@ namespace ip3d_tp
         /// </summary>
         public void SetFullThrottleEngineParticles()
         {
-            int n = 6;
-            int t = 0;
+            int n = 2;
+            float t = 60f;
 
             SmokeParticlesLeft.ParticlesPerBurst = n;
             SmokeParticlesLeft.SpawnRate = t;
@@ -631,7 +656,7 @@ namespace ip3d_tp
         public void SetIdleEngineParticles()
         {
             int n = 1;
-            int t = 360;
+            float t = 360f;
 
             SmokeParticlesLeft.ParticlesPerBurst = n;
             SmokeParticlesLeft.SpawnRate = t;

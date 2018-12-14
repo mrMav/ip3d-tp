@@ -326,8 +326,8 @@ namespace ip3d_tp
             // the tanks are glued to the ground, and fetch the new height
             // every frame. This leads to 'teleporting' and oder glitchs when 
             // applying the collision resolution.
-            //for (int i = 0; i < 4; i++)   // sampling 4 times for acuracy (revoked, needed to interpolate the result)
-            //{ 
+            for (int i = 0; i < 4; i++)   // sampling 4 times for acuracy 
+            { 
 
                 if (Physics.SATCollide(tank1.Body, tank2.Body))
                 {
@@ -340,11 +340,12 @@ namespace ip3d_tp
                     tank1.BodyDebug.MaterialColor = Color.Blue;
 
                 };
+                //Physics.SATCollide(tank2.Body, tank1.Body);
 
-            //}
+                tank1.PostMotionUpdate(gameTime, currentCamera, plane);
+                tank2.PostMotionUpdate(gameTime, currentCamera, plane);
+            }
 
-            tank1.PostMotionUpdate(gameTime, currentCamera, plane);
-            tank2.PostMotionUpdate(gameTime, currentCamera, plane);
 
             tank1.UpdateProjectiles(gameTime, plane);
             tank2.UpdateProjectiles(gameTime, plane);
