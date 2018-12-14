@@ -22,7 +22,10 @@ namespace ip3d_tp
             Keys
         }
         public static PlayerAimMode AimMode = PlayerAimMode.Camera;
-               
+
+        // count particles alive particles in game
+        public static int AliveParticles = 0;
+
     }
 
     public class Game1 : Game
@@ -343,8 +346,8 @@ namespace ip3d_tp
 
         protected override void Draw(GameTime gameTime)
         {
-            //GraphicsDevice.Clear(new Color(0.20f, 0.20f, 0.20f));
-            GraphicsDevice.Clear(Color.White);
+            GraphicsDevice.Clear(new Color(0.20f, 0.20f, 0.20f));
+            //GraphicsDevice.Clear(Color.White);
 
             // we need to call the draw manually for the plane
             // it extends component, and not drawable

@@ -45,6 +45,8 @@
     <Compile Include="BasicCamera.cs" />
     <Compile Include="Camera.cs" />
     <Compile Include="OrbitCamera.cs" />
+    <Compile Include="Particles\LineParticle.cs" />
+    <Compile Include="Particles\LineParticleEmitter.cs" />
     <Compile Include="Physics\Body.cs" />
     <Compile Include="Box.cs" />
     <Compile Include="Physics\OBB.cs" />

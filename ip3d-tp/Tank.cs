@@ -1,4 +1,5 @@
-﻿using ip3d_tp.Physics3D;
+﻿using ip3d_tp.Particles;
+using ip3d_tp.Physics3D;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -69,7 +70,6 @@ namespace ip3d_tp
 
         Matrix TurretTransform;
         Matrix CanonTransform;
-        Matrix CanonTransform2;
 
         // current wheels angle
         float WheelsAngle = 0f;
@@ -92,7 +92,11 @@ namespace ip3d_tp
         float ProjectilePower = 2.8f;
         float ShootRate = 150f;
 
+        // bullets pool
         public List<Projectile> Bullets;
+
+        // particle emitters for some effects
+        LineParticleEmitter Particles;
 
         // constructor
         public Tank(Game game)
@@ -185,6 +189,15 @@ namespace ip3d_tp
                 Bullets.Add(p);
             }
 
+            // init particles
+            Particles = new LineParticleEmitter(Game, Body.Position, 0.5f, 5000);
+
+            Particles.MakeParticles(0.5f, Color.Yellow);
+            Particles.ParticleVelocity = new Vector3(0f, 3f, 0f);
+            Particles.SpawnRate = 0f;
+            Particles.ParticleLifespanMilliseconds = 200f;
+            Particles.ParticleLifespanVariationMilliseconds = 50f;
+            Particles.Activated = true;
 
             // create the axis for debug
             Axis = new Axis3D(Game, Body.Position, 50f);
@@ -224,15 +237,18 @@ namespace ip3d_tp
             if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Up]))
             {
                 Body.Speed -= (Body.Acceleration.Z);
+                Particles.Activated = true;
 
             }
             else if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Down]))
             {
                 Body.Speed += (Body.Acceleration.Z);
+                Particles.Activated = true;
                 
             } else
             {
                 Body.Speed = 0f;
+                Particles.Activated = false;
             }
 
             // update the orientation vectors of the tank
@@ -243,6 +259,19 @@ namespace ip3d_tp
 
             //UpdateDirectionVectors(surface);
             UpdateMatrices(surface);
+
+            // calculate the particle system position
+            // we calculate an offset and a rotation in model space
+            // then we transform to world space
+            Vector3 offset = new Vector3(1.67f, 2.8f, -3f);
+            float pitch = -35f;
+
+            // now we build the particles system own transform
+            Matrix particlesTransform = Matrix.CreateRotationX(MathHelper.ToRadians(pitch)) * Matrix.CreateTranslation(offset) * WorldTransform;
+
+            // finally, set the transform and update
+            Particles.UpdateMatrices(particlesTransform);
+            Particles.Update(gameTime);
 
             //Console.WriteLine(Canon.ModelTransform);
 
@@ -426,6 +455,7 @@ namespace ip3d_tp
             foreach (Projectile b in Bullets)
                 b.Draw(gameTime, camera, lightDirection, lightColor, lightIntensity);
 
+            Particles.Draw(gameTime, camera);
 
             if(Global.ShowHelp)
                 BodyDebug.Draw(gameTime, camera);
