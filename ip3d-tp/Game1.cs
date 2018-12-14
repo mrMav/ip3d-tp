@@ -1,8 +1,11 @@
-﻿using ip3d_tp.Physics3D;
+﻿using ip3d_tp.Particles;
+using ip3d_tp.Physics3D;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace ip3d_tp
 {
@@ -22,7 +25,13 @@ namespace ip3d_tp
             Keys
         }
         public static PlayerAimMode AimMode = PlayerAimMode.Camera;
-               
+
+        // container for all the particle systems
+        public static List<ParticleEmitter> ParticleEmitters = new List<ParticleEmitter>();
+
+        // count particles alive particles in game
+        public static int AliveParticles = 0;
+
     }
 
     public class Game1 : Game
@@ -64,6 +73,8 @@ namespace ip3d_tp
 
         Projectile shell;
 
+        QuadParticleEmitter Particles;
+
         /*
          * cameras
          */
@@ -96,6 +107,14 @@ namespace ip3d_tp
 
         // the intensity of said light
         public float LightIntensity = 1.0f;
+
+        Stopwatch stopwatch;
+
+        long tickCount = 0;
+        double sumOfMilliseconds = 0;
+        double averageMilliseconds = 0;
+        double maxMills = double.MinValue;
+        double minMills = double.MaxValue;
 
         public Game1()
         {
@@ -168,10 +187,20 @@ namespace ip3d_tp
 
             shell = new Projectile(this, 0f);
 
+            Particles = new QuadParticleEmitter(this, new Vector3(0f, 10f, 0f), 0.5f, 0.5f, "Textures/smoke_particle", 0.5f);
+            Particles.MakeParticles(1f, Color.White);
+            Particles.ParticleVelocity = new Vector3(0f, 5f, 0f);
+            Particles.SpawnRate = 0f;
+            Particles.YVelocityVariationRange = new Vector2(-2f, 2f);
+            Particles.ParticleLifespanMilliseconds = 2000f;
+            Particles.ParticleLifespanVariationMilliseconds = 1500f;
+            Particles.Activated = true;
+            ParticleManager.AddParticleEmitter(Particles);
+
             /*
              * cameras
              * 
-             */ 
+             */
 
             // create the various cameras
             ThirdPersonCamera1 = new ThirdPersonCamera(this, tank1, plane, 20f);  // see definition for an understanding
@@ -205,6 +234,9 @@ namespace ip3d_tp
 
         protected override void Update(GameTime gameTime)
         {
+
+            stopwatch = Stopwatch.StartNew();
+
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Controls.IsKeyDown(Keys.Escape))
                 Exit();
 
@@ -306,7 +338,7 @@ namespace ip3d_tp
             // the tanks are glued to the ground, and fetch the new height
             // every frame. This leads to 'teleporting' and oder glitchs when 
             // applying the collision resolution.
-            for (int i = 0; i < 1; i++)   // sampling 4 times for acuracy
+            for (int i = 0; i < 4; i++)   // sampling 4 times for acuracy 
             { 
 
                 if (Physics.SATCollide(tank1.Body, tank2.Body))
@@ -320,11 +352,12 @@ namespace ip3d_tp
                     tank1.BodyDebug.MaterialColor = Color.Blue;
 
                 };
+                //Physics.SATCollide(tank2.Body, tank1.Body);
 
+                tank1.PostMotionUpdate(gameTime, currentCamera, plane);
+                tank2.PostMotionUpdate(gameTime, currentCamera, plane);
             }
 
-            tank1.PostMotionUpdate(gameTime, currentCamera, plane);
-            tank2.PostMotionUpdate(gameTime, currentCamera, plane);
 
             tank1.UpdateProjectiles(gameTime, plane);
             tank2.UpdateProjectiles(gameTime, plane);
@@ -336,15 +369,34 @@ namespace ip3d_tp
             // so it can perform the space calculations on the vertices
             plane.UpdateShaderMatrices(currentCamera.ViewTransform, currentCamera.ProjectionTransform);
             worldAxis.UpdateShaderMatrices(currentCamera.ViewTransform, currentCamera.ProjectionTransform);
-            
+
+            Particles.SetWorldTransform(Matrix.CreateTranslation(Particles.Position));
+            Particles.Update(gameTime);
+
             // update the last keyboard state
             Controls.UpdateLastStates();
+
+
+            stopwatch.Stop();
+
+            ++tickCount;
+
+            sumOfMilliseconds += stopwatch.Elapsed.TotalMilliseconds;
+            averageMilliseconds = sumOfMilliseconds / tickCount;
+
+            maxMills = stopwatch.Elapsed.TotalMilliseconds > maxMills && tickCount > 20 ? stopwatch.Elapsed.TotalMilliseconds : maxMills;
+            minMills = stopwatch.Elapsed.TotalMilliseconds < minMills && tickCount > 20 ? stopwatch.Elapsed.TotalMilliseconds : minMills;
+
+            Console.WriteLine(
+                $"RealTime: {stopwatch.Elapsed.TotalMilliseconds:0.0000}, Avg: {averageMilliseconds:0.0000}, Min: {minMills}, Max: {maxMills} "
+            );
+
         }
 
         protected override void Draw(GameTime gameTime)
         {
-            //GraphicsDevice.Clear(new Color(0.20f, 0.20f, 0.20f));
-            GraphicsDevice.Clear(Color.White);
+            GraphicsDevice.Clear(new Color(0.20f, 0.20f, 0.20f));
+            //GraphicsDevice.Clear(Color.White);
 
             // we need to call the draw manually for the plane
             // it extends component, and not drawable
@@ -354,6 +406,15 @@ namespace ip3d_tp
             tank1.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
             tank2.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
             shell.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
+
+            //foreach(ParticleEmitter e in Global.ParticleEmitters)
+            //{
+            //    e.Draw(gameTime, currentCamera);
+            //}
+
+            ParticleManager.DrawEmitters(gameTime, currentCamera);
+
+            //Particles.Draw(gameTime, currentCamera);
 
             // render the gui text
             // notive the DepthStencilState, without default set in, depth will not 

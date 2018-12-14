@@ -5,7 +5,7 @@ namespace ip3d_tp
     /*
      * Cameras Base Class
      */
-    class Camera
+    public class Camera
     {
 
         // game reference
@@ -23,7 +23,10 @@ namespace ip3d_tp
 
         // the camera field of view
         public float FieldOfView;
-        
+
+        public float Pitch;
+        public float Yaw;
+
         // class constructor
         public Camera(Game game, float fieldOfView = 45f)
         {

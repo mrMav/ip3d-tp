@@ -8,7 +8,7 @@ namespace ip3d_tp
     /// The plane class creates a plane primitive in the XZ plane.
     /// There are options to define the size and number of subdivisions.
     /// </summary>
-    class Plane : GameComponent
+    public class Plane : GameComponent
     {
 
         // basic dimensions

@@ -1,4 +1,5 @@
-﻿using ip3d_tp.Physics3D;
+﻿using ip3d_tp.Particles;
+using ip3d_tp.Physics3D;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace ip3d_tp
 {
-    class Projectile
+    public class Projectile
     {
 
         Game Game;
@@ -32,6 +33,8 @@ namespace ip3d_tp
         Texture2D BurrsMap;
         Texture2D SpecularMap;
         Texture2D NormalMap;
+
+        public QuadParticleEmitter SmokeParticles;
 
         // gameplay vars
         public bool Alive;
@@ -81,6 +84,21 @@ namespace ip3d_tp
             BlendState = new BlendState();
             BlendState.AlphaBlendFunction = BlendFunction.Add;
 
+            // smoke trail
+            SmokeParticles = new QuadParticleEmitter(Game, Body.Position, 0.5f, 0.5f, "Textures/white_particle", 0.5f, 100, 3);
+            SmokeParticles.MakeParticles(1f, Color.White);
+            SmokeParticles.ParticleVelocity = new Vector3(0f, 0f, 0f);
+            SmokeParticles.SpawnRate = 0f;
+            SmokeParticles.XVelocityVariationRange = new Vector2(-50f, 50f);
+            SmokeParticles.YVelocityVariationRange = new Vector2(0f, 50f);
+            SmokeParticles.ZVelocityVariationRange = new Vector2(-50f, 50f);
+            SmokeParticles.ParticleLifespanMilliseconds = 2000f;
+            SmokeParticles.ParticleLifespanVariationMilliseconds = 1500f;
+            SmokeParticles.Activated = true;
+            SmokeParticles.InitialScale = 0.1f;
+            SmokeParticles.FinalScale = 3f;
+            ParticleManager.AddParticleEmitter(SmokeParticles);
+
 
 
         }
@@ -119,11 +137,16 @@ namespace ip3d_tp
             Body.Velocity = Vector3.Zero;
             //Body.SetRotation(Vector3.Zero);
             //Body.SetPosition(Vector3.Zero);
+
+            SmokeParticles.Activated = false;
+
         }
 
         public void Revive()
         {
             Alive = true;
+
+            SmokeParticles.Activated = true;
         }
 
         public void Update(GameTime gameTime, Plane surface)
@@ -142,20 +165,27 @@ namespace ip3d_tp
                 Body.UpdateMotionAcceleration(gameTime);
 
                 CheckOutOfBounds(surface);
+                
+                float groundHeight = surface.GetHeightFromSurface(Body.Position);
+                if (Body.Position.Y <= groundHeight)
+                {
+                    // explode
+                    Kill();
+                }
 
-                if(!Alive)
+                if (!Alive)
                 {
                     return;
                 }
 
-                // calculate projectile angle
-                Vector3 a = Vector3.Normalize(new Vector3(Body.DeltaX(), Body.DeltaY(), Body.DeltaZ()));
-                Vector3 b = Vector3.Normalize(new Vector3(Body.DeltaX(), 0f, Body.DeltaZ()));
-                Vector3 n = Vector3.Cross(a, Vector3.Forward);
-                int sign = n.X < 0 ? -1 : 1;   // gets the sign of the angle, by crossing them. the cross direction tells the polarity
-                                               // help from https://www.mathworks.com/matlabcentral/answers/266282-negative-angle-between-vectors-planes
+                //// calculate projectile angle
+                //Vector3 a = Vector3.Normalize(new Vector3(Body.DeltaX(), Body.DeltaY(), Body.DeltaZ()));
+                //Vector3 b = Vector3.Normalize(new Vector3(Body.DeltaX(), 0f, Body.DeltaZ()));
+                //Vector3 n = Vector3.Cross(a, Vector3.Forward);
+                //int sign = n.X < 0 ? -1 : 1;   // gets the sign of the angle, by crossing them. the cross direction tells the polarity
+                //                               // help from https://www.mathworks.com/matlabcentral/answers/266282-negative-angle-between-vectors-planes
 
-                float angle = ((float)Math.Acos(Vector3.Dot(a, b))) * sign;  // this is the maximum angle
+                //float angle = ((float)Math.Acos(Vector3.Dot(a, b))) * sign;  // this is the maximum angle
 
                 //Body.Bounds.Pitch = angle;
 
@@ -165,20 +195,15 @@ namespace ip3d_tp
                 Vector3 up = Vector3.Normalize(Vector3.Cross(front, right));
                 right = Vector3.Normalize(Vector3.Cross(front, up));
 
-
-                float groundHeight = surface.GetHeightFromSurface(Body.Position);
-
-                if (Body.Position.Y <= groundHeight)
-                {
-                    // explode
-                    Alive = false;
-                    Console.WriteLine($"Killed at {groundHeight}");
-                }
-
                 //Body.Bounds.UpdateMatrices();
                 Body.Bounds.SetWorldTransform(Matrix.CreateWorld(Body.Position, front, up));
-
+                SmokeParticles.Activated = true;
+                               
             }
+
+            SmokeParticles.UpdateMatrices(Body.Bounds.WorldTransform);
+            SmokeParticles.Update(gameTime);
+
         }
 
 

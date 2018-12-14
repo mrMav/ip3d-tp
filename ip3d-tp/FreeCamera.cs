@@ -6,7 +6,7 @@ namespace ip3d_tp
     /*
      * A free camera to explore the world.
      */
-    class FreeCamera : Camera
+    public class FreeCamera : Camera
     {
         // the camera vectors
         public Vector3 Front;

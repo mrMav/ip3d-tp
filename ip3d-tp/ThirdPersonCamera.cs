@@ -5,7 +5,7 @@ using System;
 
 namespace ip3d_tp
 {
-    class ThirdPersonCamera : Camera
+    public class ThirdPersonCamera : Camera
     {
         // the terrain surface for collisions
         Plane Surface;

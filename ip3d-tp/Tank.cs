@@ -1,4 +1,5 @@
-﻿using ip3d_tp.Physics3D;
+﻿using ip3d_tp.Particles;
+using ip3d_tp.Physics3D;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -7,7 +8,7 @@ using System.Collections.Generic;
 
 namespace ip3d_tp
 {
-    class Tank
+    public class Tank
     {
         // game reference
         Game Game;
@@ -69,7 +70,6 @@ namespace ip3d_tp
 
         Matrix TurretTransform;
         Matrix CanonTransform;
-        Matrix CanonTransform2;
 
         // current wheels angle
         float WheelsAngle = 0f;
@@ -90,9 +90,15 @@ namespace ip3d_tp
         // projectiles
         float LastShot = 0f;
         float ProjectilePower = 2.8f;
-        float ShootRate = 150f;
+        float ShootRate = 500f;
 
+        // bullets pool
         public List<Projectile> Bullets;
+
+        // particle emitters for some effects
+        QuadParticleEmitter SmokeParticlesLeft;
+        QuadParticleEmitter SmokeParticlesRight;
+        QuadParticleEmitter DustParticles;
 
         // constructor
         public Tank(Game game)
@@ -176,7 +182,7 @@ namespace ip3d_tp
 
             // create a few bullets
             Bullets = new List<Projectile>();
-            for (int i = 0; i < 50; i++)
+            for (int i = 0; i < 10; i++)
             {
                 Projectile p = new Projectile(Game, ProjectilePower);
                 
@@ -185,6 +191,55 @@ namespace ip3d_tp
                 Bullets.Add(p);
             }
 
+            // init particles
+            SmokeParticlesLeft = new QuadParticleEmitter(Game, Body.Position, 0.5f, 0.5f, "Textures/smoke_particle", 0.5f, 100, TankID + 1);
+            SmokeParticlesLeft.MakeParticles(1f, Color.White);
+            SmokeParticlesLeft.ParticleVelocity = new Vector3(0f, 5f, 0f);
+            SmokeParticlesLeft.SpawnRate = 250f;
+            SmokeParticlesLeft.Burst = true;
+            SmokeParticlesLeft.ParticlesPerBurst = 3;
+            SmokeParticlesLeft.XVelocityVariationRange = new Vector2(-200f, 200f);
+            SmokeParticlesLeft.YVelocityVariationRange = new Vector2(0f, 100f);
+            SmokeParticlesLeft.ZVelocityVariationRange = new Vector2(-200f, 200f);
+            SmokeParticlesLeft.ParticleLifespanMilliseconds = 1000f;
+            SmokeParticlesLeft.ParticleLifespanVariationMilliseconds = 500f;
+            SmokeParticlesLeft.Activated = true;
+            SmokeParticlesLeft.InitialScale = 0.5f;
+            SmokeParticlesLeft.FinalScale = 5f;
+            ParticleManager.AddParticleEmitter(SmokeParticlesLeft);
+
+            SmokeParticlesRight = new QuadParticleEmitter(Game, Body.Position, 0.5f, 0.5f, "Textures/smoke_particle", 0.5f, 100, TankID + 2);
+            SmokeParticlesRight.MakeParticles(1f, Color.White);
+            SmokeParticlesRight.ParticleVelocity = new Vector3(0f, 5f, 0f);
+            SmokeParticlesRight.SpawnRate = 250f;
+            SmokeParticlesRight.Burst = true;
+            SmokeParticlesRight.ParticlesPerBurst = 3;
+            SmokeParticlesRight.XVelocityVariationRange = new Vector2(-200f, 200f);
+            SmokeParticlesRight.YVelocityVariationRange = new Vector2(0f, 100f);
+            SmokeParticlesRight.ZVelocityVariationRange = new Vector2(-200f, 200f);
+            SmokeParticlesRight.ParticleLifespanMilliseconds = 1000f;
+            SmokeParticlesRight.ParticleLifespanVariationMilliseconds = 500f;
+            SmokeParticlesRight.Activated = true;
+            SmokeParticlesRight.InitialScale = 0.5f;
+            SmokeParticlesRight.FinalScale = 5f;
+            ParticleManager.AddParticleEmitter(SmokeParticlesRight);
+
+            // init particles
+            DustParticles = new QuadParticleEmitter(Game, Body.Position, 0.5f, 0.5f, "Textures/dust_particle", 5f, 500, TankID + 4);
+            DustParticles.MakeParticles(1f, Color.White);
+            DustParticles.ParticleVelocity = new Vector3(0f, 1.5f, -2f);
+            DustParticles.SpawnRate = 20f;
+            DustParticles.Burst = false;
+            DustParticles.ParticlesPerBurst = 6;
+            DustParticles.XVelocityVariationRange = new Vector2(-300f, 300f);
+            DustParticles.YVelocityVariationRange = new Vector2(0f, 200f);
+            DustParticles.ZVelocityVariationRange = new Vector2(-300f, 50f);
+            DustParticles.ParticleLifespanMilliseconds = 5000f;
+            DustParticles.ParticleLifespanVariationMilliseconds = 500f;
+            DustParticles.Activated = true;
+            DustParticles.InitialScale = 8f;
+            DustParticles.FinalScale = 14f;
+            ParticleManager.AddParticleEmitter(DustParticles);
 
             // create the axis for debug
             Axis = new Axis3D(Game, Body.Position, 50f);
@@ -224,15 +279,21 @@ namespace ip3d_tp
             if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Up]))
             {
                 Body.Speed -= (Body.Acceleration.Z);
+                SetFullThrottleEngineParticles();
+                DustParticles.Activated = true;
 
             }
             else if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Down]))
             {
                 Body.Speed += (Body.Acceleration.Z);
-                
+                SetFullThrottleEngineParticles();
+                DustParticles.Activated = true;
+
             } else
             {
                 Body.Speed = 0f;
+                SetIdleEngineParticles();
+                DustParticles.Activated = false;
             }
 
             // update the orientation vectors of the tank
@@ -243,6 +304,30 @@ namespace ip3d_tp
 
             //UpdateDirectionVectors(surface);
             UpdateMatrices(surface);
+
+            // calculate the particle system position
+            // we calculate an offset and a rotation in model space
+            // then we transform to world space
+            Vector3 offsetLeft  = new Vector3(1.67f, 2.8f, -3f);
+            Vector3 offsetRight = new Vector3(-1.67f, 2.8f, -3f);
+            float pitch = -35f;
+
+            // now we build the particles system own transform
+            Matrix particlesTransformLeft  = Matrix.CreateRotationX(MathHelper.ToRadians(pitch)) * Matrix.CreateTranslation(offsetLeft) * WorldTransform;
+            Matrix particlesTransformRight = Matrix.CreateRotationX(MathHelper.ToRadians(pitch)) * Matrix.CreateTranslation(offsetRight) * WorldTransform;
+
+            // finally, set the transform and update
+            SmokeParticlesLeft.Activated = true;
+            SmokeParticlesLeft.UpdateMatrices(particlesTransformLeft);
+            SmokeParticlesLeft.Update(gameTime);
+
+            SmokeParticlesRight.Activated = true;
+            SmokeParticlesRight.UpdateMatrices(particlesTransformRight);
+            SmokeParticlesRight.Update(gameTime);
+
+            //DustParticles.Activated = true;
+            DustParticles.UpdateMatrices(WorldTransform);
+            DustParticles.Update(gameTime);
 
             //Console.WriteLine(Canon.ModelTransform);
 
@@ -321,7 +406,7 @@ namespace ip3d_tp
                         //b.Body.SetPosition(Vector3.Transform(CanonTransform.Translation, WorldTransform));
                         //b.Body.SetPosition(Vector3.Transform(new Vector3(0.0f, 3.2f, 1), Matrix.CreateRotationY(MathHelper.ToRadians(TurretYaw + 90f) - Body.Bounds.Yaw) * WorldTransform));
                         //b.Body.SetPosition(Vector3.Transform(new Vector3(0, 10, 0), WorldTransform));
-                        Console.WriteLine($"when need  {BoneTransforms[9].Translation}");
+                        
 
                         b.Body.Velocity = new Vector3(
                             ProjectilePower * (float)Math.Cos(MathHelper.ToRadians(TurretYaw) - Body.Bounds.Yaw),
@@ -426,6 +511,7 @@ namespace ip3d_tp
             foreach (Projectile b in Bullets)
                 b.Draw(gameTime, camera, lightDirection, lightColor, lightIntensity);
 
+            //SmokeParticlesLeft.Draw(gameTime, camera);
 
             if(Global.ShowHelp)
                 BodyDebug.Draw(gameTime, camera);
@@ -440,9 +526,7 @@ namespace ip3d_tp
             
             Model.Root.Transform = WorldTransform;
 
-            Console.WriteLine($"before copy {BoneTransforms[9].Translation}");
             Model.CopyAbsoluteBoneTransformsTo(BoneTransforms);
-            Console.WriteLine($"after copy {BoneTransforms[9].Translation}");
 
             BodyDebug.WorldTransform = Body.CollisionRect.WorldTransform;
 
@@ -549,6 +633,43 @@ namespace ip3d_tp
                 Body.Z = halfSurfaceDepth - surface.SubHeight;
 
             }
+        }
+
+        /// <summary>
+        /// Set particles state for the full throttle engine
+        /// </summary>
+        public void SetFullThrottleEngineParticles()
+        {
+            int n = 4;
+            float t = 60f;
+
+            SmokeParticlesLeft.ParticlesPerBurst = n;
+            SmokeParticlesLeft.SpawnRate = t;
+            SmokeParticlesLeft.ParticleTint = Color.Black;
+
+            SmokeParticlesRight.ParticlesPerBurst = n;
+            SmokeParticlesRight.SpawnRate = t;
+            SmokeParticlesRight.ParticleTint = Color.Black;
+
+
+        }
+
+        /// <summary>
+        /// Set particles state for the idle engine
+        /// </summary>
+        public void SetIdleEngineParticles()
+        {
+            int n = 1;
+            float t = 120f;
+
+            SmokeParticlesLeft.ParticlesPerBurst = n;
+            SmokeParticlesLeft.SpawnRate = t;
+            SmokeParticlesLeft.ParticleTint = Color.White;
+
+            SmokeParticlesRight.ParticlesPerBurst = n;
+            SmokeParticlesRight.SpawnRate = t;
+            SmokeParticlesRight.ParticleTint = Color.White;
+
         }
 
         private void RotateWheels(GameTime gameTime)
