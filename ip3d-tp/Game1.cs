@@ -209,7 +209,7 @@ namespace ip3d_tp
                 Exit();
 
             #region UtilsUpdate
-            
+
             // frame delta value, for calculations based on time
             float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
@@ -229,7 +229,7 @@ namespace ip3d_tp
                 currentCamera = ThirdPersonCamera1;
                 Global.AimMode = Global.PlayerAimMode.Camera;
 
-            } else if(Controls.IsKeyPressed(Keys.F2))
+            } else if (Controls.IsKeyPressed(Keys.F2))
             {
                 currentCamera = ThirdPersonCamera2;
                 Global.AimMode = Global.PlayerAimMode.Camera;
@@ -245,7 +245,7 @@ namespace ip3d_tp
                 Global.AimMode = Global.PlayerAimMode.Keys;
 
             }
-            
+
             // toggle wireframe
             if (Controls.IsKeyPressed(Keys.F) && Global.ShowHelp)
             {
@@ -259,7 +259,7 @@ namespace ip3d_tp
             }
 
             // toogle mouse capture
-            if(Controls.IsKeyPressed(Keys.M))
+            if (Controls.IsKeyPressed(Keys.M))
             {
                 IsMouseVisible = captureMouse;
                 captureMouse = !captureMouse;
@@ -306,20 +306,22 @@ namespace ip3d_tp
             // the tanks are glued to the ground, and fetch the new height
             // every frame. This leads to 'teleporting' and oder glitchs when 
             // applying the collision resolution.
-            //for(int i = 0; i < 1; i++)  // sampling 4 times for acuracy
-            
+            for (int i = 0; i < 1; i++)   // sampling 4 times for acuracy
+            { 
 
-            if (Physics.SATCollide(tank1.Body, tank2.Body))
-            {
+                if (Physics.SATCollide(tank1.Body, tank2.Body))
+                {
 
-                tank1.BodyDebug.MaterialColor = Color.Red;
+                    tank1.BodyDebug.MaterialColor = Color.Red;
+
+                }
+                else
+                {
+                    tank1.BodyDebug.MaterialColor = Color.Blue;
+
+                };
 
             }
-            else
-            {
-                tank1.BodyDebug.MaterialColor = Color.Blue;
-
-            };
 
             tank1.PostMotionUpdate(gameTime, currentCamera, plane);
             tank2.PostMotionUpdate(gameTime, currentCamera, plane);

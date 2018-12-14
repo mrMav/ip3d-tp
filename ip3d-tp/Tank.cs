@@ -244,7 +244,7 @@ namespace ip3d_tp
             //UpdateDirectionVectors(surface);
             UpdateMatrices(surface);
 
-            Console.WriteLine(Canon.ModelTransform);
+            //Console.WriteLine(Canon.ModelTransform);
 
         }
 
@@ -310,6 +310,8 @@ namespace ip3d_tp
                         Vector3 turretCenterOffset = new Vector3(0f, 0f, -0.35f);
 
                         b.Body.SetPosition(Body.Position + Vector3.Transform(offset + turretCenterOffset, WorldTransform.Rotation));
+                        
+                        
                         //b.SetVelocity(CanonPitch, MathHelper.ToRadians(TurretYaw) - Body.Bounds.Yaw);
 
                         //b.Body.SetPosition(Vector3.Transform(Vector3.Zero, Matrix.CreateFromQuaternion(BoneTransforms[9].Rotation) * Matrix.CreateTranslation(BoneTransforms[10].Translation)));
@@ -319,7 +321,7 @@ namespace ip3d_tp
                         //b.Body.SetPosition(Vector3.Transform(CanonTransform.Translation, WorldTransform));
                         //b.Body.SetPosition(Vector3.Transform(new Vector3(0.0f, 3.2f, 1), Matrix.CreateRotationY(MathHelper.ToRadians(TurretYaw + 90f) - Body.Bounds.Yaw) * WorldTransform));
                         //b.Body.SetPosition(Vector3.Transform(new Vector3(0, 10, 0), WorldTransform));
-
+                        Console.WriteLine($"when need  {BoneTransforms[9].Translation}");
 
                         b.Body.Velocity = new Vector3(
                             ProjectilePower * (float)Math.Cos(MathHelper.ToRadians(TurretYaw) - Body.Bounds.Yaw),
@@ -438,7 +440,9 @@ namespace ip3d_tp
             
             Model.Root.Transform = WorldTransform;
 
+            Console.WriteLine($"before copy {BoneTransforms[9].Translation}");
             Model.CopyAbsoluteBoneTransformsTo(BoneTransforms);
+            Console.WriteLine($"after copy {BoneTransforms[9].Translation}");
 
             BodyDebug.WorldTransform = Body.CollisionRect.WorldTransform;
 

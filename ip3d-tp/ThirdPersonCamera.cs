@@ -31,8 +31,8 @@ namespace ip3d_tp
         public float ScrollSensitivity = 0.1f;
 
         // minimum offset from the floor
-        public float OffsetFromFloor = 4f;
-        public float OffsetToBack = 4f;
+        public float OffsetFromFloor = 6f;
+        public float OffsetToBack = -0.35f;
 
         // yaw and pitch angles
         public float Yaw = -64;
