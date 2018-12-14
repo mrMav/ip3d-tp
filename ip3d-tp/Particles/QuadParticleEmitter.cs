@@ -4,7 +4,7 @@ using System;
 
 namespace ip3d_tp.Particles
 {
-    class QuadParticleEmitter : ParticleEmitter
+    public class QuadParticleEmitter : ParticleEmitter
     {
 
         float ParticleWidth;
@@ -62,7 +62,7 @@ namespace ip3d_tp.Particles
 
                 Game.GraphicsDevice.SetVertexBuffer(VertexBuffer);
                 Game.GraphicsDevice.Indices = IndexBuffer;
-                Game.GraphicsDevice.BlendState = BlendState.Additive;
+                Game.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
 
                 // create a matrix to always face the camera
                 Matrix world = Matrix.CreateWorld(p.Position, Vector3.Normalize(camera.Position - p.Position), camera.ViewTransform.Up);
