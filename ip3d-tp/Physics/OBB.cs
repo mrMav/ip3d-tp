@@ -80,7 +80,8 @@ namespace ip3d_tp.Physics3D
             }
             set
             {
-                _pitch = MathHelper.Clamp(value, -89f, 89f);
+                //_pitch = MathHelper.Clamp(value, -89f, 89f);
+                _pitch = value;
             }
         }
 
@@ -301,7 +302,26 @@ namespace ip3d_tp.Physics3D
             Matrix rotation = Matrix.CreateFromYawPitchRoll(_yaw, _pitch, _roll);
             
             // Up vector must be already updated
-            //_up    = Vector3.Normalize(Vector3.Transform(Vector3.Up, rotation));            
+            _up    = rotation.Up;
+            _right = rotation.Right;
+            _front = rotation.Forward;
+            //_up = Vector3.Normalize(Vector3.Cross(_right, _front));
+
+            // creates the world matrix
+            _worldTransform = Matrix.CreateWorld(Position, rotation.Forward, rotation.Up);
+
+        }
+
+        // TODO: don't forget that this value, will have 
+        // to be passed by when calling this update method on the tanks
+        public void UpdateMatrices(Vector3 up)
+        {
+
+            // create the rotation matrix:
+            Matrix rotation = Matrix.CreateFromYawPitchRoll(_yaw, _pitch, _roll);
+            
+            // Up vector must be already updated
+            _up = up;
             _right = Vector3.Normalize(Vector3.Cross(_up, Vector3.Transform(Vector3.Right, rotation)));
             _front = Vector3.Normalize(Vector3.Cross(_up, Vector3.Transform(Vector3.Forward, rotation)));
 

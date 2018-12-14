@@ -22,7 +22,7 @@ namespace ip3d_tp
             Keys
         }
         public static PlayerAimMode AimMode = PlayerAimMode.Camera;
-
+               
     }
 
     public class Game1 : Game
@@ -61,6 +61,8 @@ namespace ip3d_tp
         
         // the second tank
         Tank tank2;
+
+        Projectile shell;
 
         /*
          * cameras
@@ -149,7 +151,7 @@ namespace ip3d_tp
             Components.Add(worldAxis);
 
             // initialize the plane with the prefered settings
-            plane = new Plane(this, "Textures/ground_diffuse", 128*2, 128*2, terrainHeightMap.Width - 1, terrainHeightMap.Height - 1, 0.2f);
+            plane = new Plane(this, "Textures/ground_diffuse", 128*3, 128*3, terrainHeightMap.Width - 1, terrainHeightMap.Height - 1, 0.2f);
             Components.Add(plane);
 
             // dispace the vertices of the plane, based on the given heightmap, and adjust by a scale
@@ -164,6 +166,8 @@ namespace ip3d_tp
             tank2.Body.X = -4f;
             tank2.TankID = 1;  // identify this tank as ID 1, used for the controls
 
+            shell = new Projectile(this, 0f);
+
             /*
              * cameras
              * 
@@ -175,9 +179,10 @@ namespace ip3d_tp
             ThirdPersonCamera2 = new ThirdPersonCamera(this, tank2, plane, 20f);
             
             freeCamera = new FreeCamera(this, 45f);
-            freeCamera.Position.X = 100;
-            freeCamera.Position.Y = 100;
-            freeCamera.Position.Z = 100;
+            freeCamera.AccelerationValue = 1f;
+            freeCamera.Position.X = 0;
+            freeCamera.Position.Y = 5;
+            freeCamera.Position.Z = 5;
             freeCamera.Yaw = -60f;
             freeCamera.Pitch = -60f;
 
@@ -204,7 +209,7 @@ namespace ip3d_tp
                 Exit();
 
             #region UtilsUpdate
-            
+
             // frame delta value, for calculations based on time
             float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
@@ -222,21 +227,25 @@ namespace ip3d_tp
             if (Controls.IsKeyPressed(Keys.F1))
             {
                 currentCamera = ThirdPersonCamera1;
+                Global.AimMode = Global.PlayerAimMode.Camera;
 
-            } else if(Controls.IsKeyPressed(Keys.F2))
+            } else if (Controls.IsKeyPressed(Keys.F2))
             {
                 currentCamera = ThirdPersonCamera2;
+                Global.AimMode = Global.PlayerAimMode.Camera;
 
             } else if (Controls.IsKeyPressed(Keys.F3))
             {
                 currentCamera = surfaceFollowCamera;
+                Global.AimMode = Global.PlayerAimMode.Keys;
 
             } else if (Controls.IsKeyPressed(Keys.F4))
             {
                 currentCamera = freeCamera;
+                Global.AimMode = Global.PlayerAimMode.Keys;
 
             }
-            
+
             // toggle wireframe
             if (Controls.IsKeyPressed(Keys.F) && Global.ShowHelp)
             {
@@ -250,7 +259,7 @@ namespace ip3d_tp
             }
 
             // toogle mouse capture
-            if(Controls.IsKeyPressed(Keys.M))
+            if (Controls.IsKeyPressed(Keys.M))
             {
                 IsMouseVisible = captureMouse;
                 captureMouse = !captureMouse;
@@ -260,6 +269,7 @@ namespace ip3d_tp
             if (Controls.IsKeyPressed(Keys.H))
             {
                 Global.ShowHelp = !Global.ShowHelp;
+                shell = new Projectile(this, 5f);
             }
 
             #endregion
@@ -288,14 +298,16 @@ namespace ip3d_tp
             tank1.Update(gameTime, currentCamera, plane);
             tank2.Update(gameTime, currentCamera, plane);
 
+            shell.Update(gameTime, plane);
+
             // collision needs to run on a fairly high speed in order
             // to be accurate. The implication of this is the
             // method that we are defining the tanks height.
             // the tanks are glued to the ground, and fetch the new height
             // every frame. This leads to 'teleporting' and oder glitchs when 
             // applying the collision resolution.
-            for(int i = 0; i < 4; i++)  // sampling 4 times for acuracy
-            {
+            for (int i = 0; i < 1; i++)   // sampling 4 times for acuracy
+            { 
 
                 if (Physics.SATCollide(tank1.Body, tank2.Body))
                 {
@@ -309,10 +321,13 @@ namespace ip3d_tp
 
                 };
 
-                tank1.PostMotionUpdate(gameTime, currentCamera, plane);
-                tank2.PostMotionUpdate(gameTime, currentCamera, plane);
-
             }
+
+            tank1.PostMotionUpdate(gameTime, currentCamera, plane);
+            tank2.PostMotionUpdate(gameTime, currentCamera, plane);
+
+            tank1.UpdateProjectiles(gameTime, plane);
+            tank2.UpdateProjectiles(gameTime, plane);
 
             tank1.CalculateAnimations(gameTime, currentCamera, plane);
             tank2.CalculateAnimations(gameTime, currentCamera, plane);
@@ -328,7 +343,8 @@ namespace ip3d_tp
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(new Color(0.20f, 0.20f, 0.20f));
+            //GraphicsDevice.Clear(new Color(0.20f, 0.20f, 0.20f));
+            GraphicsDevice.Clear(Color.White);
 
             // we need to call the draw manually for the plane
             // it extends component, and not drawable
@@ -337,6 +353,7 @@ namespace ip3d_tp
             // draw the tanks with the light created
             tank1.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
             tank2.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
+            shell.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
 
             // render the gui text
             // notive the DepthStencilState, without default set in, depth will not 

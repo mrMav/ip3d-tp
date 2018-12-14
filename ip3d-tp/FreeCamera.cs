@@ -25,7 +25,7 @@ namespace ip3d_tp
         protected float Zoom = 45f;
 
         // movement variables
-        float AccelerationValue = 0.2f;
+        public float AccelerationValue = 0.2f;
         public float MaxVelocity = 4f;
         public Vector3 Acceleration;
         public Vector3 Velocity;
