@@ -144,6 +144,9 @@ namespace ip3d_tp.Particles
          */
         public Vector2 ZVelocityVariationRange;
 
+        public float InitialScale;
+        public float FinalScale;
+
         #endregion
 
 
@@ -309,6 +312,11 @@ namespace ip3d_tp.Particles
 
         }
 
+        public virtual void DrawParticle(GameTime gameTime, Camera camera, Particle p)
+        {
+
+        }
+
         /// <summary>
         /// Draw method
         /// </summary>
@@ -373,6 +381,9 @@ namespace ip3d_tp.Particles
             // reset and revive
             p.Reset();
             p.Revive();
+
+            p.InitialScale = InitialScale;
+            p.FinalScale = FinalScale;
 
             // update lifespans and age
             p.SpawnedAtMilliseconds = gameTime.TotalGameTime.TotalMilliseconds;

@@ -55,6 +55,44 @@ namespace ip3d_tp.Particles
 
         }
 
+        public override void DrawParticle(GameTime gameTime, Camera camera, Particle p)
+        {
+            if (p.Alive)
+            {
+
+                Game.GraphicsDevice.SetVertexBuffer(VertexBuffer);
+                Game.GraphicsDevice.Indices = IndexBuffer;
+                Game.GraphicsDevice.BlendState = BlendState.Additive;
+
+                // create a matrix to always face the camera
+                Matrix world = Matrix.CreateWorld(p.Position, Vector3.Normalize(camera.Position - p.Position), camera.ViewTransform.Up);
+                world = Matrix.CreateRotationX(MathHelper.ToRadians(90f)) * world;
+                world = Matrix.CreateScale(p.Scale) * world;
+
+                //Shader.Parameters["World"].SetValue(Matrix.CreateTranslation(Particles[i].Position));
+                Shader.Parameters["World"].SetValue(world);
+                Shader.Parameters["View"].SetValue(camera.ViewTransform);
+                Shader.Parameters["Projection"].SetValue(camera.ProjectionTransform);
+                Shader.Parameters["Alpha"].SetValue(p.Alpha);
+                Shader.Parameters["Texture"].SetValue(Texture);
+
+                // prepare for render
+                Game.GraphicsDevice.RasterizerState = RasterizerState;
+                Shader.CurrentTechnique.Passes[0].Apply();
+
+                //ColorShaderEffect.World = Matrix.CreateTranslation(Particles[i].Position);
+                //ColorShaderEffect.View = camera.ViewTransform;
+                //ColorShaderEffect.Projection = camera.ProjectionTransform;
+                //ColorShaderEffect.Texture = Texture;
+
+                //Game.GraphicsDevice.RasterizerState = RasterizerState;
+                //ColorShaderEffect.CurrentTechnique.Passes[0].Apply();
+
+                // draw with a triangle list
+                Game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, 2);
+            }
+        }
+
         public override void Draw(GameTime gameTime, Camera camera)
         {
             Game.GraphicsDevice.SetVertexBuffer(VertexBuffer);
@@ -102,12 +140,13 @@ namespace ip3d_tp.Particles
                     // create a matrix to always face the camera
                     Matrix world = Matrix.CreateWorld(Particles[i].Position, Vector3.Normalize(camera.Position - Particles[i].Position), camera.ViewTransform.Up);
                     world = Matrix.CreateRotationX(MathHelper.ToRadians(90f)) * world;
+                    world = Matrix.CreateScale(Particles[i].Scale) * world;
 
                     //Shader.Parameters["World"].SetValue(Matrix.CreateTranslation(Particles[i].Position));
                     Shader.Parameters["World"].SetValue(world);
                     Shader.Parameters["View"].SetValue(camera.ViewTransform);
                     Shader.Parameters["Projection"].SetValue(camera.ProjectionTransform);
-
+                    Shader.Parameters["Alpha"].SetValue(Particles[i].Alpha);
                     Shader.Parameters["Texture"].SetValue(Texture);
 
                     // prepare for render

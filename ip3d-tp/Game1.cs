@@ -186,7 +186,7 @@ namespace ip3d_tp
             Particles.ParticleLifespanMilliseconds = 2000f;
             Particles.ParticleLifespanVariationMilliseconds = 1500f;
             Particles.Activated = true;
-            Global.ParticleEmitters.Add(Particles);
+            ParticleManager.AddParticleEmitter(Particles);
 
             /*
              * cameras
@@ -326,8 +326,8 @@ namespace ip3d_tp
             // the tanks are glued to the ground, and fetch the new height
             // every frame. This leads to 'teleporting' and oder glitchs when 
             // applying the collision resolution.
-            for (int i = 0; i < 1; i++)   // sampling 4 times for acuracy
-            { 
+            //for (int i = 0; i < 4; i++)   // sampling 4 times for acuracy (revoked, needed to interpolate the result)
+            //{ 
 
                 if (Physics.SATCollide(tank1.Body, tank2.Body))
                 {
@@ -341,7 +341,7 @@ namespace ip3d_tp
 
                 };
 
-            }
+            //}
 
             tank1.PostMotionUpdate(gameTime, currentCamera, plane);
             tank2.PostMotionUpdate(gameTime, currentCamera, plane);
@@ -378,10 +378,12 @@ namespace ip3d_tp
             tank2.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
             shell.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
 
-            foreach(ParticleEmitter e in Global.ParticleEmitters)
-            {
-                e.Draw(gameTime, currentCamera);
-            }
+            //foreach(ParticleEmitter e in Global.ParticleEmitters)
+            //{
+            //    e.Draw(gameTime, currentCamera);
+            //}
+
+            ParticleManager.DrawEmitters(gameTime, currentCamera);
 
             //Particles.Draw(gameTime, currentCamera);
 

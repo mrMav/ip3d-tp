@@ -29,7 +29,11 @@ namespace ip3d_tp.Particles
         public Vector3 Velocity;
         public Vector3 Drag;
 
-        public float Size;
+        public float Scale = 1f;
+        public float InitialScale = 1f;
+        public float FinalScale = 1f;
+
+        public float Alpha = 1f;
 
         // boolean to specify if this particle is enabled or not
         public bool Alive;
@@ -37,7 +41,7 @@ namespace ip3d_tp.Particles
         /*
          * Constructor
          */
-        public Particle(Game game, Color color, Vector3 position, float size)
+        public Particle(Game game, Color color, Vector3 position, float scale)
         {
             Game = game;
 
@@ -50,7 +54,7 @@ namespace ip3d_tp.Particles
             Position = position;
             InitialPosition = position;
 
-            Size = size;
+            Scale = scale;
 
             // make sure it is dead by default
             Kill();
@@ -64,6 +68,13 @@ namespace ip3d_tp.Particles
             {
                 // updates timer
                 MillisecondsAfterSpawn += gameTime.ElapsedGameTime.TotalMilliseconds;
+
+                double percent = MillisecondsAfterSpawn / LifespanMilliseconds;
+
+                if(InitialScale != FinalScale)
+                    Scale = Utils.Map((float)MillisecondsAfterSpawn, 0f, (float)LifespanMilliseconds, InitialScale, FinalScale);
+
+                Alpha = (float)percent;
 
                 // we won't be implementing acceleration yet
                 //Velocity += Acceleration * (float)gameTime.ElapsedGameTime.TotalSeconds;

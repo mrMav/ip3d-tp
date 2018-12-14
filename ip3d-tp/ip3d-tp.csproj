@@ -49,6 +49,7 @@
     <Compile Include="Particles\LineParticleEmitter.cs" />
     <Compile Include="Particles\Particle.cs" />
     <Compile Include="Particles\ParticleEmitter.cs" />
+    <Compile Include="Particles\ParticleManager.cs" />
     <Compile Include="Particles\QuadParticle.cs" />
     <Compile Include="Particles\QuadParticleEmitter.cs" />
     <Compile Include="Physics\Body.cs" />

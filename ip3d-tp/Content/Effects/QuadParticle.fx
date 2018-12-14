@@ -9,6 +9,9 @@ float4x4 Projection;
 // this is the diffuse texture
 texture Texture;
 
+//alpha value
+float Alpha;
+
 /*
 Definition of the texture sampler, which states how 
 we will 'sample' the texture. In this case we will LinearInterpolate the pixel
@@ -71,7 +74,7 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0 {
 
 	//// sample texture, and get the color
 	float4 textureColor = tex2D(TextureSampler, input.TextureCoord);
-	//textureColor.a = 1;
+	textureColor.a -= Alpha;
 
 	/*if (textureColor.a < 0.99f)
 		discard;*/
