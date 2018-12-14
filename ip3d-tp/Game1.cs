@@ -1,8 +1,10 @@
-﻿using ip3d_tp.Physics3D;
+﻿using ip3d_tp.Particles;
+using ip3d_tp.Physics3D;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
+using System.Collections.Generic;
 
 namespace ip3d_tp
 {
@@ -22,6 +24,9 @@ namespace ip3d_tp
             Keys
         }
         public static PlayerAimMode AimMode = PlayerAimMode.Camera;
+
+        // container for all the particle systems
+        public static List<ParticleEmitter> ParticleEmitters = new List<ParticleEmitter>();
 
         // count particles alive particles in game
         public static int AliveParticles = 0;
@@ -66,6 +71,8 @@ namespace ip3d_tp
         Tank tank2;
 
         Projectile shell;
+
+        QuadParticleEmitter Particles;
 
         /*
          * cameras
@@ -171,10 +178,20 @@ namespace ip3d_tp
 
             shell = new Projectile(this, 0f);
 
+            Particles = new QuadParticleEmitter(this, new Vector3(0f, 10f, 0f), 0.5f, 0.5f, "Textures/smoke_particle", 0.5f);
+            Particles.MakeParticles(1f, Color.White);
+            Particles.ParticleVelocity = new Vector3(0f, 5f, 0f);
+            Particles.SpawnRate = 0f;
+            Particles.YVelocityVariationRange = new Vector2(-2f, 2f);
+            Particles.ParticleLifespanMilliseconds = 2000f;
+            Particles.ParticleLifespanVariationMilliseconds = 1500f;
+            Particles.Activated = true;
+            Global.ParticleEmitters.Add(Particles);
+
             /*
              * cameras
              * 
-             */ 
+             */
 
             // create the various cameras
             ThirdPersonCamera1 = new ThirdPersonCamera(this, tank1, plane, 20f);  // see definition for an understanding
@@ -339,7 +356,10 @@ namespace ip3d_tp
             // so it can perform the space calculations on the vertices
             plane.UpdateShaderMatrices(currentCamera.ViewTransform, currentCamera.ProjectionTransform);
             worldAxis.UpdateShaderMatrices(currentCamera.ViewTransform, currentCamera.ProjectionTransform);
-            
+
+            Particles.SetWorldTransform(Matrix.CreateTranslation(Particles.Position));
+            Particles.Update(gameTime);
+
             // update the last keyboard state
             Controls.UpdateLastStates();
         }
@@ -357,6 +377,13 @@ namespace ip3d_tp
             tank1.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
             tank2.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
             shell.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
+
+            foreach(ParticleEmitter e in Global.ParticleEmitters)
+            {
+                e.Draw(gameTime, currentCamera);
+            }
+
+            //Particles.Draw(gameTime, currentCamera);
 
             // render the gui text
             // notive the DepthStencilState, without default set in, depth will not 

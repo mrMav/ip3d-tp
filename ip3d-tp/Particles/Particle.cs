@@ -6,38 +6,41 @@ namespace ip3d_tp.Particles
     /// <summary>
     /// Represents a single Particle. This particle will render a line on the screen.
     /// </summary>
-    class LineParticle
+    public class Particle
     {
+        // running game
+        protected Game Game;
+
         // reference to the parent spawner
-        public LineParticleEmitter Spawner;
+        public ParticleEmitter Spawner;
 
         /*
          * Bellow properties are self explanatory
-         */ 
+         */
 
         public double SpawnedAtMilliseconds = 0f;
         public double MillisecondsAfterSpawn = 0f;
         public double LifespanMilliseconds = 0f;
-        
+
         public Vector3 Position;
-        public Vector3 Rotation;
         public Vector3 InitialPosition;
-        
+
         public Vector3 Acceleration;
         public Vector3 Velocity;
         public Vector3 Drag;
 
         public float Size;
-        
+
         // boolean to specify if this particle is enabled or not
         public bool Alive;
-        
+
         /*
          * Constructor
          */
-        public LineParticle(Game game, Color color, Vector3 position, float size)
+        public Particle(Game game, Color color, Vector3 position, float size)
         {
-            
+            Game = game;
+
             Acceleration = Vector3.Zero;
             Velocity = Vector3.Zero;
 
@@ -45,7 +48,6 @@ namespace ip3d_tp.Particles
             Drag = new Vector3(1f);
 
             Position = position;
-            Rotation = Vector3.Zero;
             InitialPosition = position;
 
             Size = size;
@@ -88,7 +90,7 @@ namespace ip3d_tp.Particles
         public void Kill()
         {
 
-            if(Alive)
+            if (Alive)
                 Global.AliveParticles--;
 
             Alive = false;
@@ -102,7 +104,7 @@ namespace ip3d_tp.Particles
         /// </summary>
         public void Revive()
         {
-            if(!Alive)
+            if (!Alive)
                 Global.AliveParticles++;
 
             Alive = true;

@@ -8,7 +8,7 @@ namespace ip3d_tp
     /// <summary>
     /// Simple box
     /// </summary>
-    class Box
+    public class Box
     {
         // reference to the game 
         Game Game;

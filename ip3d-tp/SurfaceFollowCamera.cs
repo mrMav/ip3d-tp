@@ -8,7 +8,7 @@ namespace ip3d_tp
      * This camera will be constrained to a certain height from the given surface 
      * it extends the freecamera
      */
-    class SurfaceFollowCamera : FreeCamera
+    public class SurfaceFollowCamera : FreeCamera
     {
 
         // reference to the surface

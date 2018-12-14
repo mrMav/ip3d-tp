@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace ip3d_tp
 {
-    class Tank
+    public class Tank
     {
         // game reference
         Game Game;
@@ -96,7 +96,7 @@ namespace ip3d_tp
         public List<Projectile> Bullets;
 
         // particle emitters for some effects
-        LineParticleEmitter Particles;
+        QuadParticleEmitter SmokeParticlesLeft;
 
         // constructor
         public Tank(Game game)
@@ -190,14 +190,19 @@ namespace ip3d_tp
             }
 
             // init particles
-            Particles = new LineParticleEmitter(Game, Body.Position, 0.5f, 5000);
-
-            Particles.MakeParticles(0.5f, Color.Yellow);
-            Particles.ParticleVelocity = new Vector3(0f, 3f, 0f);
-            Particles.SpawnRate = 0f;
-            Particles.ParticleLifespanMilliseconds = 200f;
-            Particles.ParticleLifespanVariationMilliseconds = 50f;
-            Particles.Activated = true;
+            SmokeParticlesLeft = new QuadParticleEmitter(Game, Body.Position, 0.5f, 0.5f, "Textures/smoke_particle", 0.5f);
+            SmokeParticlesLeft.MakeParticles(1f, Color.White);
+            SmokeParticlesLeft.ParticleVelocity = new Vector3(0f, 5f, 0f);
+            SmokeParticlesLeft.SpawnRate = 0f;
+            SmokeParticlesLeft.Burst = true;
+            SmokeParticlesLeft.ParticlesPerBurst = 10;
+            SmokeParticlesLeft.XVelocityVariationRange = new Vector2(-200f, 200f);
+            SmokeParticlesLeft.YVelocityVariationRange = new Vector2(-200f, 200f);
+            SmokeParticlesLeft.ZVelocityVariationRange = new Vector2(-200f, 200f);
+            SmokeParticlesLeft.ParticleLifespanMilliseconds = 2000f;
+            SmokeParticlesLeft.ParticleLifespanVariationMilliseconds = 1500f;
+            SmokeParticlesLeft.Activated = true;
+            Global.ParticleEmitters.Add(SmokeParticlesLeft);
 
             // create the axis for debug
             Axis = new Axis3D(Game, Body.Position, 50f);
@@ -237,18 +242,18 @@ namespace ip3d_tp
             if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Up]))
             {
                 Body.Speed -= (Body.Acceleration.Z);
-                Particles.Activated = true;
+                SmokeParticlesLeft.Activated = true;
 
             }
             else if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Down]))
             {
                 Body.Speed += (Body.Acceleration.Z);
-                Particles.Activated = true;
+                SmokeParticlesLeft.Activated = true;
                 
             } else
             {
                 Body.Speed = 0f;
-                Particles.Activated = false;
+                SmokeParticlesLeft.Activated = false;
             }
 
             // update the orientation vectors of the tank
@@ -270,8 +275,8 @@ namespace ip3d_tp
             Matrix particlesTransform = Matrix.CreateRotationX(MathHelper.ToRadians(pitch)) * Matrix.CreateTranslation(offset) * WorldTransform;
 
             // finally, set the transform and update
-            Particles.UpdateMatrices(particlesTransform);
-            Particles.Update(gameTime);
+            SmokeParticlesLeft.UpdateMatrices(particlesTransform);
+            SmokeParticlesLeft.Update(gameTime);
 
             //Console.WriteLine(Canon.ModelTransform);
 
@@ -455,7 +460,7 @@ namespace ip3d_tp
             foreach (Projectile b in Bullets)
                 b.Draw(gameTime, camera, lightDirection, lightColor, lightIntensity);
 
-            Particles.Draw(gameTime, camera);
+            //SmokeParticlesLeft.Draw(gameTime, camera);
 
             if(Global.ShowHelp)
                 BodyDebug.Draw(gameTime, camera);
@@ -470,9 +475,7 @@ namespace ip3d_tp
             
             Model.Root.Transform = WorldTransform;
 
-            Console.WriteLine($"before copy {BoneTransforms[9].Translation}");
             Model.CopyAbsoluteBoneTransformsTo(BoneTransforms);
-            Console.WriteLine($"after copy {BoneTransforms[9].Translation}");
 
             BodyDebug.WorldTransform = Body.CollisionRect.WorldTransform;
 

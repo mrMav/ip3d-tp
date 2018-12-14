@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ip3d_tp
 {
-    class Projectile
+    public class Projectile
     {
 
         Game Game;
