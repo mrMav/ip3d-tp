@@ -382,8 +382,6 @@ namespace ip3d_tp
             //       I hope in the future of this project to develop our own
             //       node based object structure. Let's see how that goes. If I have the time.
             tank1.Update(gameTime, currentCamera, plane);
-            //tank2.Update(gameTime, currentCamera, plane);
-            //tank3.Update(gameTime, currentCamera, plane);
 
             for(int i = 0; i < Global.Bots.Length; i++)
             {
@@ -410,7 +408,6 @@ namespace ip3d_tp
                 //    tank1.BodyDebug.MaterialColor = Color.Blue;
 
                 //};
-                //Physics.SATCollide(tank2.Body, tank1.Body);
 
                 for(int j = 0; j < Global.Bots.Length; j++)
                 {
@@ -436,12 +433,7 @@ namespace ip3d_tp
                     }
 
                 }
-
-
-                //Physics.SATCollide(tank1.Body, tank2.Body);
-                //Physics.SATCollide(tank1.Body, tank3.Body);
-                //Physics.SATCollide(tank2.Body, tank3.Body);
-
+                
                 tank1.PostMotionUpdate(gameTime, currentCamera, plane);
                 for (int j = 0; j < Global.Bots.Length; j++)
                 {
@@ -451,13 +443,6 @@ namespace ip3d_tp
                 }
             }
 
-
-            //for (int j = 0; j < Global.Bots.Length; j++)
-            //{
-
-            //    Global.Bots[j].UpdateProjectiles(gameTime, plane, currentCamera);
-
-            //}
 
             // tet projectile collision
             for(int i = 0; i < tank1.Bullets.Count; i++)

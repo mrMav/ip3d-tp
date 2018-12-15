@@ -121,13 +121,8 @@ namespace ip3d_tp
             float terrainHeight = Surface.GetHeightFromSurface(Position);
             float height = terrainHeight + 0.5f;  // this is the minimum possible height, at this point
             DistanceToTerrrain = Position.Y - terrainHeight;
-
-            //Position.Y = height;
-
+            
             // calculate the minimum possible pitch angle at this position
-            //Vector3 a = Vector3.Normalize(new Vector3(Position.X - Target.X, height - Target.Y, Position.Z - Target.Z));
-            //Vector3 b = Vector3.Normalize(new Vector3(-(Position.X - Target.X), 0f, -(Position.Z - Target.Z)));
-
             Vector3 a = Vector3.Normalize(new Vector3((Position.X - Target.X), height - Target.Y, (Position.Z - Target.Z)));
             Vector3 b = Vector3.Normalize(new Vector3((Position.X - Target.X), 0f, (Position.Z - Target.Z)));
             Vector3 n = Vector3.Cross(a, Vector3.Forward);
@@ -144,84 +139,9 @@ namespace ip3d_tp
 
             Position = position + Target;
 
-            //if(Pitch > angle)
-            //{
-            //    Pitch = angle;
-
-            //    position = new Vector3(0f, 0f, OffsetDistance * pushBack);
-            //    position = Vector3.Transform(position, Matrix.CreateRotationX(MathHelper.ToRadians(Pitch)));
-            //    position = Vector3.Transform(position, Matrix.CreateRotationY(MathHelper.ToRadians(Yaw)));
-
-            //    Position = position + Target;
-
-            //}
-
-
-            //Console.WriteLine("phys func deg:" + MathHelper.ToDegrees((float)Physics.VectorAngleBetween(a, b)));
-            //Console.WriteLine("dot product: " + Vector3.Dot(a, b));
-            //Console.WriteLine("dot sign: " + sign);
-            //Console.WriteLine("angle rad: " + (float)Math.Acos(Vector3.Dot(a, b)));
-            //Console.WriteLine("angle deg: " + angle);
-
-
-
-
-            //if (Pitch > angle)
-            //{
-            //    // if the pitch value is minor than the new angle,
-            //    // wee need to raise the camera
-            //    Pitch = angle;
-
-            //}
-
-            // the new possible position
-            //position = new Vector3(0f, 0f, OffsetDistance * pushBack);
-            //position = Vector3.Transform(position, Matrix.CreateRotationX(MathHelper.ToRadians(angle)));
-            //position = Vector3.Transform(position, Matrix.CreateRotationY(MathHelper.ToRadians(Yaw)));
-
-            //Position = position + Target;
-
-            //Console.WriteLine("result pos: " + Position);
-
-            //Position.Y = MathHelper.Clamp(Position.Y, height, float.MaxValue);
-
-            //if (Position.Y < height)
-            //{
-            //    IsCollidingBottom = true;
-
-            //    // try to calculate new pitch
-            //    //Vector3 a = Vector3.Normalize(new Vector3(position.X, position.Y, position.Z));
-            //    //Vector3 b = Vector3.Normalize(new Vector3(position.X, 0f, position.Z));
-
-            //    //float angle = MathHelper.ToDegrees((float)Math.Acos(Vector3.Dot(a, b)));
-
-            //    //Console.WriteLine(angle);
-
-            //    //Pitch = angle;
-            //    //Position.Y = height;
-
-            //    //Position.Normalize();
-            //    //Position *= (OffsetDistance * pushBack);
-
-            //}
-            //else
-            //{
-            //    IsCollidingBottom = false;
-            //}
-
-
-
-            //Pitch = angle;
-            //Position.Y = height;
-
-
-
-
-            // finally, update view transform            
-            //ViewTransform = Matrix.CreateLookAt(Position, Target, Vector3.Up);
-
             base.Update(gameTime);
 
+            // finally, update view transform            
             ViewTransform = Matrix.CreateLookAt(Position, Target, Vector3.Up);
         }
 

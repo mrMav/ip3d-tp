@@ -566,19 +566,7 @@ namespace ip3d_tp
                         Vector3 turretCenterOffset = new Vector3(0f, 0f, -0.35f);
 
                         b.Body.SetPosition(Body.Position + Vector3.Transform(offset + turretCenterOffset, WorldTransform.Rotation));
-                        
-                        
-                        //b.SetVelocity(CanonPitch, MathHelper.ToRadians(TurretYaw) - Body.Bounds.Yaw);
-
-                        //b.Body.SetPosition(Vector3.Transform(Vector3.Zero, Matrix.CreateFromQuaternion(BoneTransforms[9].Rotation) * Matrix.CreateTranslation(BoneTransforms[10].Translation)));
-                        //b.Body.SetPosition(Vector3.Transform(Vector3.Zero, Matrix.CreateRotationY(MathHelper.ToRadians(TurretYaw + 90f) - Body.Bounds.Yaw) * Matrix.CreateTranslation(BoneTransforms[10].Translation)));
-                        //b.Body.SetPosition(Vector3.Transform(new Vector3(0, 0, 1), WorldTransform));
-                        //b.Body.SetPosition(Vector3.Transform(new Vector3(0, 0, 0), Matrix.CreateRotationY(MathHelper.ToRadians(TurretYaw + 90f) - Body.Bounds.Yaw) * Matrix.CreateRotationX(MathHelper.ToRadians(-CanonPitch)) * WorldTransform));
-                        //b.Body.SetPosition(Vector3.Transform(CanonTransform.Translation, WorldTransform));
-                        //b.Body.SetPosition(Vector3.Transform(new Vector3(0.0f, 3.2f, 1), Matrix.CreateRotationY(MathHelper.ToRadians(TurretYaw + 90f) - Body.Bounds.Yaw) * WorldTransform));
-                        //b.Body.SetPosition(Vector3.Transform(new Vector3(0, 10, 0), WorldTransform));
-                        
-
+                                               
                         b.Body.Velocity = new Vector3(
                             ProjectilePower * (float)Math.Cos(MathHelper.ToRadians(TurretYaw) - Body.Bounds.Yaw),
                             ProjectilePower * (float)Math.Sin(MathHelper.ToRadians(CanonPitch)),
