@@ -32,6 +32,9 @@ namespace ip3d_tp
         // count particles alive particles in game
         public static int AliveParticles = 0;
 
+        // define the player tank id
+        public static int PlayerID = 0;
+
     }
 
     public class Game1 : Game
@@ -175,12 +178,15 @@ namespace ip3d_tp
             // create the tanks 
             tank1 = new Tank(this);
             tank1.Body.Mass = 8.5f;
+            tank1.Body.MaxVelocity = 0.58f;
             tank1.Body.X = 4f;  // offset a bit so the two don't overlap
 
             tank2 = new Tank(this);
             tank2.Body.X = -4f;
             tank2.TankID = 1;  // identify this tank as ID 1, used for the controls
-            
+
+            tank2.TargetBody = tank1.Body;
+
             /*
              * cameras
              * 

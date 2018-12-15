@@ -19,6 +19,9 @@ namespace ip3d_tp
         // defines a physics body
         public Body Body;
         public Box BodyDebug;
+
+        // define a target Body, used for Bot control
+        public Body TargetBody;
         
         public Matrix WorldTransform
         {
@@ -255,52 +258,21 @@ namespace ip3d_tp
             // pre movement function, to store information
             // regarding previous frame
             Body.PreMovementUpdate(gameTime);
-                        
-            int dir = Body.Speed > 0f ? -1 : 1;
-
-            // controls rotation
-            if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Left]))
+            
+            // update tank motion logic
+            if(TankID == Global.PlayerID)
             {
-                Body.Bounds.Yaw += YawStep * Body.Velocity.Length() * dir * dt;
-                SteerAngle += YawStep * dt;
-
-            }
-            else if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Right]))
-            {
-                Body.Bounds.Yaw -= YawStep * Body.Velocity.Length() * dir * dt;
-                SteerAngle -= YawStep * dt;
+                UpdatePlayerControlled(dt);
             } else
             {
-                SteerAngle *= 0.8f;
-            }
-            SteerAngle = MathHelper.Clamp(SteerAngle, -MaxSteerAngle, MaxSteerAngle);
-          
-            // update the model position, based on the updated vectors
-            if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Up]))
-            {
-                Body.Speed -= (Body.Acceleration.Z);
-                SetFullThrottleEngineParticles();
-                DustParticles.Activated = true;
-
-            }
-            else if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Down]))
-            {
-                Body.Speed += (Body.Acceleration.Z);
-                SetFullThrottleEngineParticles();
-                DustParticles.Activated = true;
-
-            } else
-            {
-                Body.Speed = 0f;
-                SetIdleEngineParticles();
-                DustParticles.Activated = false;
+                UpdateAutonomousMovement(TargetBody);
             }
 
             // update the orientation vectors of the tank
             //UpdateDirectionVectors(surface);
 
             // moves the body
-            Body.UpdateMotion(gameTime);
+            Body.UpdateMotion(gameTime);  // same for player and bot
 
             //UpdateDirectionVectors(surface);
             UpdateMatrices(surface);
@@ -325,11 +297,84 @@ namespace ip3d_tp
             SmokeParticlesRight.UpdateMatrices(particlesTransformRight);
             SmokeParticlesRight.Update(gameTime);
 
-            //DustParticles.Activated = true;
             DustParticles.UpdateMatrices(WorldTransform);
             DustParticles.Update(gameTime);
 
-            //Console.WriteLine(Canon.ModelTransform);
+
+        }
+
+        public void MoveForward()
+        {
+            Body.Speed -= (Body.Acceleration.Z);
+            SetFullThrottleEngineParticles();
+            DustParticles.Activated = true;
+        }
+
+        public void MoveBackward()
+        {
+            Body.Speed += (Body.Acceleration.Z);
+            SetFullThrottleEngineParticles();
+            DustParticles.Activated = true;
+        }
+
+        public void SetIdle()
+        {
+            Body.Speed = 0f;
+            SetIdleEngineParticles();
+            DustParticles.Activated = false;
+        }
+
+        public void UpdatePlayerControlled(float dt)
+        {
+            int dir = Body.Speed > 0f ? -1 : 1;
+
+            // controls rotation
+            if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Left]))
+            {
+                Body.Bounds.Yaw += YawStep * Body.Velocity.Length() * dir * dt;
+                SteerAngle += YawStep * dt;
+
+            }
+            else if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Right]))
+            {
+                Body.Bounds.Yaw -= YawStep * Body.Velocity.Length() * dir * dt;
+                SteerAngle -= YawStep * dt;
+            }
+            else
+            {
+                SteerAngle *= 0.8f;
+            }
+            SteerAngle = MathHelper.Clamp(SteerAngle, -MaxSteerAngle, MaxSteerAngle);
+
+            // update the model position, based on the updated vectors
+            if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Up]))
+            {
+                MoveForward();
+
+            }
+            else if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Down]))
+            {
+                MoveBackward();
+
+            }
+            else
+            {
+                SetIdle();
+            }
+        }
+
+        public void UpdateAutonomousMovement(Body target)
+        {
+            // behaviour based on steering behaviours by Craig W.Reynolds
+            // http://www.red3d.com/cwr/steer/gdc99/
+
+            // Seek Update 
+            Vector3 desiredVelocity = Vector3.Normalize(Body.Position - target.Position) * Body.MaxVelocity;
+            Vector3 steering = desiredVelocity - Body.Velocity;
+
+            Body.Bounds.SetFront(Vector3.Normalize(steering));
+
+            MoveForward();
 
         }
 
@@ -522,8 +567,19 @@ namespace ip3d_tp
 
         public void UpdateMatrices(Plane surface)
         {
+
+            // update matrices
+            if (TankID == Global.PlayerID)
+            {
+                Body.Bounds.UpdateMatrices(GetUpVectorFromTerrain(surface));
+            }
+            else
+            {
+                Body.Bounds.UpdateMatrices(GetUpVectorFromTerrain(surface), Body.Bounds.Front);
+            }
+
             // Up Vector must be already set
-            Body.Bounds.UpdateMatrices(GetUpVectorFromTerrain(surface));
+            //Body.Bounds.UpdateMatrices(GetUpVectorFromTerrain(surface));
             Body.UpdateCollisionRect();
             
             Model.Root.Transform = WorldTransform;
