@@ -211,7 +211,7 @@ namespace ip3d_tp
             SmokeParticlesLeft.ZVelocityVariationRange = new Vector2(-200f, 200f);
             SmokeParticlesLeft.ParticleLifespanMilliseconds = 1000f;
             SmokeParticlesLeft.ParticleLifespanVariationMilliseconds = 500f;
-            SmokeParticlesLeft.Activated = true;
+            SmokeParticlesLeft.Activated = false;
             SmokeParticlesLeft.InitialScale = 0.5f;
             SmokeParticlesLeft.FinalScale = 5f;
             ParticleManager.AddParticleEmitter(SmokeParticlesLeft);
@@ -227,7 +227,7 @@ namespace ip3d_tp
             SmokeParticlesRight.ZVelocityVariationRange = new Vector2(-200f, 200f);
             SmokeParticlesRight.ParticleLifespanMilliseconds = 1000f;
             SmokeParticlesRight.ParticleLifespanVariationMilliseconds = 500f;
-            SmokeParticlesRight.Activated = true;
+            SmokeParticlesRight.Activated = false;
             SmokeParticlesRight.InitialScale = 0.5f;
             SmokeParticlesRight.FinalScale = 5f;
             ParticleManager.AddParticleEmitter(SmokeParticlesRight);
@@ -244,7 +244,7 @@ namespace ip3d_tp
             DustParticles.ZVelocityVariationRange = new Vector2(-300f, 50f);
             DustParticles.ParticleLifespanMilliseconds = 5000f;
             DustParticles.ParticleLifespanVariationMilliseconds = 500f;
-            DustParticles.Activated = true;
+            DustParticles.Activated = false;
             DustParticles.InitialScale = 8f;
             DustParticles.FinalScale = 14f;
             ParticleManager.AddParticleEmitter(DustParticles);
@@ -288,29 +288,42 @@ namespace ip3d_tp
             //UpdateDirectionVectors(surface);
             UpdateMatrices(surface);
 
-            // calculate the particle system position
-            // we calculate an offset and a rotation in model space
-            // then we transform to world space
-            Vector3 offsetLeft  = new Vector3(1.67f, 2.8f, -3f);
-            Vector3 offsetRight = new Vector3(-1.67f, 2.8f, -3f);
-            float pitch = -35f;
 
-            // now we build the particles system own transform
-            Matrix particlesTransformLeft  = Matrix.CreateRotationX(MathHelper.ToRadians(pitch)) * Matrix.CreateTranslation(offsetLeft) * WorldTransform;
-            Matrix particlesTransformRight = Matrix.CreateRotationX(MathHelper.ToRadians(pitch)) * Matrix.CreateTranslation(offsetRight) * WorldTransform;
+            // due to lack of time for optmizing the particles
+            // we will only create projectiles and engine smoke for the 
+            // player controlled tank
+            if(TankID == Global.PlayerID)
+            {
+                // calculate the particle system position
+                // we calculate an offset and a rotation in model space
+                // then we transform to world space
+                Vector3 offsetLeft  = new Vector3(1.67f, 2.8f, -3f);
+                Vector3 offsetRight = new Vector3(-1.67f, 2.8f, -3f);
+                float pitch = -35f;
 
-            // finally, set the transform and update
-            SmokeParticlesLeft.Activated = true;
-            SmokeParticlesLeft.UpdateMatrices(particlesTransformLeft);
-            SmokeParticlesLeft.Update(gameTime);
+                // now we build the particles system own transform
+                Matrix particlesTransformLeft  = Matrix.CreateRotationX(MathHelper.ToRadians(pitch)) * Matrix.CreateTranslation(offsetLeft) * WorldTransform;
+                Matrix particlesTransformRight = Matrix.CreateRotationX(MathHelper.ToRadians(pitch)) * Matrix.CreateTranslation(offsetRight) * WorldTransform;
 
-            SmokeParticlesRight.Activated = true;
-            SmokeParticlesRight.UpdateMatrices(particlesTransformRight);
-            SmokeParticlesRight.Update(gameTime);
+                // finally, set the transform and update
+                SmokeParticlesLeft.Activated = true;
+                SmokeParticlesLeft.UpdateMatrices(particlesTransformLeft);
+                SmokeParticlesLeft.Update(gameTime);
 
+                SmokeParticlesRight.Activated = true;
+                SmokeParticlesRight.UpdateMatrices(particlesTransformRight);
+                SmokeParticlesRight.Update(gameTime);
+
+
+            } else
+            {
+                SmokeParticlesRight.Activated = false;
+                SmokeParticlesLeft.Activated = false;
+            }
+
+            // we do update all the tanks dust
             DustParticles.UpdateMatrices(WorldTransform);
             DustParticles.Update(gameTime);
-
 
         }
 

@@ -26,6 +26,9 @@ namespace ip3d_tp
         }
         public static PlayerAimMode AimMode = PlayerAimMode.Camera;
 
+        // should the world particles be rendered
+        public static bool RenderParticles = true;
+
         // container for all the particle systems
         public static List<ParticleEmitter> ParticleEmitters = new List<ParticleEmitter>();
 
@@ -46,7 +49,7 @@ namespace ip3d_tp
         }
 
         // bot population number
-        public static int nBots = 10;
+        public static int nBots = 3;
 
         // bots list
         public static Tank[] Bots = new Tank[nBots];
@@ -381,7 +384,7 @@ namespace ip3d_tp
             // the tanks are glued to the ground, and fetch the new height
             // every frame. This leads to 'teleporting' and oder glitchs when 
             // applying the collision resolution.
-            for (int i = 0; i < 1; i++)   // sampling 4 times for acuracy 
+            for (int i = 0; i < 2; i++)   // sampling 2 times for acuracy 
             {
 
                 //if (Physics.SATCollide(tank1.Body, tank2.Body))
@@ -404,23 +407,23 @@ namespace ip3d_tp
 
                 }
 
-                //for (int j = 0; j < Global.Bots.Length - 1; j++)
-                //{
+                for (int j = 0; j < Global.Bots.Length; j++)
+                {
 
-                //    for (int k = j; k < Global.Bots.Length - 1; k++)
-                //    {
+                    for (int k = 0; k < Global.Bots.Length; k++)
+                    {
 
-                //        if(Global.Bots[j].TankID != Global.Bots[k].TankID)
-                //        {
+                        if (Global.Bots[j].TankID != Global.Bots[k].TankID)
+                        {
 
-                //            Physics.SATCollide(Global.Bots[j].Body, Global.Bots[k].Body);
+                            Physics.SATCollide(Global.Bots[j].Body, Global.Bots[k].Body);
 
-                //        }
+                        }
 
 
-                //    }
+                    }
 
-                //}
+                }
 
 
                 //Physics.SATCollide(tank1.Body, tank2.Body);
@@ -428,11 +431,9 @@ namespace ip3d_tp
                 //Physics.SATCollide(tank2.Body, tank3.Body);
 
                 tank1.PostMotionUpdate(gameTime, currentCamera, plane);
-                tank1.PostMotionUpdate(gameTime, currentCamera, plane);
                 for (int j = 0; j < Global.Bots.Length; j++)
                 {
 
-                    Global.Bots[j].PostMotionUpdate(gameTime, currentCamera, plane);
                     Global.Bots[j].PostMotionUpdate(gameTime, currentCamera, plane);
 
                 }
@@ -440,12 +441,12 @@ namespace ip3d_tp
 
 
             tank1.UpdateProjectiles(gameTime, plane, currentCamera);
-            for (int j = 0; j < Global.Bots.Length; j++)
-            {
+            //for (int j = 0; j < Global.Bots.Length; j++)
+            //{
 
-                Global.Bots[j].UpdateProjectiles(gameTime, plane, currentCamera);
+            //    Global.Bots[j].UpdateProjectiles(gameTime, plane, currentCamera);
 
-            }
+            //}
 
             tank1.CalculateAnimations(gameTime, currentCamera, plane);
             for (int j = 0; j < Global.Bots.Length; j++)
@@ -503,7 +504,8 @@ namespace ip3d_tp
             //    e.Draw(gameTime, currentCamera);
             //}
 
-            ParticleManager.DrawEmitters(gameTime, currentCamera);
+            if(Global.RenderParticles)
+                ParticleManager.DrawEmitters(gameTime, currentCamera);
 
             //Particles.Draw(gameTime, currentCamera);
 
