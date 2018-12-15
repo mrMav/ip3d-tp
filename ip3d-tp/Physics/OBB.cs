@@ -330,6 +330,26 @@ namespace ip3d_tp.Physics3D
 
         }
 
+        // TODO: don't forget that this value, will have 
+        // to be passed by when calling this update method on the tanks
+        public void UpdateMatrices(Vector3 up, Vector3 velocity)
+        {
+
+            // create the rotation matrix:
+            //Matrix rotation = Matrix.CreateFromYawPitchRoll(_yaw, _pitch, _roll);
+
+            // Up vector must be already updated
+            _up = up;
+            _front = Vector3.Normalize(velocity);
+
+            _right = Vector3.Normalize(Vector3.Cross(_up, _front));
+            _front = Vector3.Normalize(Vector3.Cross(_up, _right));
+
+            // creates the world matrix
+            _worldTransform = Matrix.CreateWorld(Position, _front, _up);
+
+        }
+
         public void Resize(float width, float height, float depth)
         {
             _width = width;

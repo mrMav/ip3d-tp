@@ -19,6 +19,14 @@ namespace ip3d_tp
         // defines a physics body
         public Body Body;
         public Box BodyDebug;
+
+        // define a target Body, used for Bot control
+        public Body TargetBody;
+        public Vector3 Steering;
+
+        // type of autonomous movement
+        public Global.BotBehaviour BotBehaviour = Global.BotBehaviour.None;
+
         
         public Matrix WorldTransform
         {
@@ -203,7 +211,7 @@ namespace ip3d_tp
             SmokeParticlesLeft.ZVelocityVariationRange = new Vector2(-200f, 200f);
             SmokeParticlesLeft.ParticleLifespanMilliseconds = 1000f;
             SmokeParticlesLeft.ParticleLifespanVariationMilliseconds = 500f;
-            SmokeParticlesLeft.Activated = true;
+            SmokeParticlesLeft.Activated = false;
             SmokeParticlesLeft.InitialScale = 0.5f;
             SmokeParticlesLeft.FinalScale = 5f;
             ParticleManager.AddParticleEmitter(SmokeParticlesLeft);
@@ -219,24 +227,24 @@ namespace ip3d_tp
             SmokeParticlesRight.ZVelocityVariationRange = new Vector2(-200f, 200f);
             SmokeParticlesRight.ParticleLifespanMilliseconds = 1000f;
             SmokeParticlesRight.ParticleLifespanVariationMilliseconds = 500f;
-            SmokeParticlesRight.Activated = true;
+            SmokeParticlesRight.Activated = false;
             SmokeParticlesRight.InitialScale = 0.5f;
             SmokeParticlesRight.FinalScale = 5f;
             ParticleManager.AddParticleEmitter(SmokeParticlesRight);
 
             // init particles
-            DustParticles = new QuadParticleEmitter(Game, Body.Position, 0.5f, 0.5f, "Textures/dust_particle", 5f, 500, TankID + 4);
+            DustParticles = new QuadParticleEmitter(Game, Body.Position, 0.5f, 0.5f, "Textures/dust_particle", 5f, 100, TankID + 4);
             DustParticles.MakeParticles(1f, Color.White);
             DustParticles.ParticleVelocity = new Vector3(0f, 1.5f, -2f);
             DustParticles.SpawnRate = 20f;
             DustParticles.Burst = false;
-            DustParticles.ParticlesPerBurst = 6;
+            DustParticles.ParticlesPerBurst = 3;
             DustParticles.XVelocityVariationRange = new Vector2(-300f, 300f);
             DustParticles.YVelocityVariationRange = new Vector2(0f, 200f);
             DustParticles.ZVelocityVariationRange = new Vector2(-300f, 50f);
             DustParticles.ParticleLifespanMilliseconds = 5000f;
             DustParticles.ParticleLifespanVariationMilliseconds = 500f;
-            DustParticles.Activated = true;
+            DustParticles.Activated = false;
             DustParticles.InitialScale = 8f;
             DustParticles.FinalScale = 14f;
             ParticleManager.AddParticleEmitter(DustParticles);
@@ -255,7 +263,93 @@ namespace ip3d_tp
             // pre movement function, to store information
             // regarding previous frame
             Body.PreMovementUpdate(gameTime);
-                        
+
+            Steering = Vector3.Zero;
+
+            // update tank motion logic
+            if(TankID == Global.PlayerID)
+            {
+                UpdatePlayerControlled(dt);
+            } else
+            {
+                UpdateAutonomousMovement(dt, TargetBody);
+            }
+
+            // update the orientation vectors of the tank
+            //UpdateDirectionVectors(surface);
+
+            // moves the body
+            Body.UpdateMotion(gameTime);
+
+
+            // keep the tank in the surface
+            ConstrainToPlane(surface);
+
+            //UpdateDirectionVectors(surface);
+            UpdateMatrices(surface);
+
+
+            // due to lack of time for optmizing the particles
+            // we will only create projectiles and engine smoke for the 
+            // player controlled tank
+            if(TankID == Global.PlayerID)
+            {
+                // calculate the particle system position
+                // we calculate an offset and a rotation in model space
+                // then we transform to world space
+                Vector3 offsetLeft  = new Vector3(1.67f, 2.8f, -3f);
+                Vector3 offsetRight = new Vector3(-1.67f, 2.8f, -3f);
+                float pitch = -35f;
+
+                // now we build the particles system own transform
+                Matrix particlesTransformLeft  = Matrix.CreateRotationX(MathHelper.ToRadians(pitch)) * Matrix.CreateTranslation(offsetLeft) * WorldTransform;
+                Matrix particlesTransformRight = Matrix.CreateRotationX(MathHelper.ToRadians(pitch)) * Matrix.CreateTranslation(offsetRight) * WorldTransform;
+
+                // finally, set the transform and update
+                SmokeParticlesLeft.Activated = true;
+                SmokeParticlesLeft.UpdateMatrices(particlesTransformLeft);
+                SmokeParticlesLeft.Update(gameTime);
+
+                SmokeParticlesRight.Activated = true;
+                SmokeParticlesRight.UpdateMatrices(particlesTransformRight);
+                SmokeParticlesRight.Update(gameTime);
+
+
+            } else
+            {
+                SmokeParticlesRight.Activated = false;
+                SmokeParticlesLeft.Activated = false;
+            }
+
+            // we do update all the tanks dust
+            DustParticles.UpdateMatrices(WorldTransform);
+            DustParticles.Update(gameTime);
+
+        }
+
+        public void MoveForward()
+        {
+            Body.Speed -= (Body.Acceleration.Z);
+            SetFullThrottleEngineParticles();
+            DustParticles.Activated = true;
+        }
+
+        public void MoveBackward()
+        {
+            Body.Speed += (Body.Acceleration.Z);
+            SetFullThrottleEngineParticles();
+            DustParticles.Activated = true;
+        }
+
+        public void SetIdle()
+        {
+            Body.Speed = 0f;
+            SetIdleEngineParticles();
+            DustParticles.Activated = false;
+        }
+
+        public void UpdatePlayerControlled(float dt)
+        {
             int dir = Body.Speed > 0f ? -1 : 1;
 
             // controls rotation
@@ -269,67 +363,143 @@ namespace ip3d_tp
             {
                 Body.Bounds.Yaw -= YawStep * Body.Velocity.Length() * dir * dt;
                 SteerAngle -= YawStep * dt;
-            } else
+            }
+            else
             {
                 SteerAngle *= 0.8f;
             }
             SteerAngle = MathHelper.Clamp(SteerAngle, -MaxSteerAngle, MaxSteerAngle);
-          
+
             // update the model position, based on the updated vectors
             if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Up]))
             {
-                Body.Speed -= (Body.Acceleration.Z);
-                SetFullThrottleEngineParticles();
-                DustParticles.Activated = true;
+                MoveForward();
 
             }
             else if (Controls.IsKeyDown(Controls.MovementKeys[TankID, (int)Controls.Cursor.Down]))
             {
-                Body.Speed += (Body.Acceleration.Z);
-                SetFullThrottleEngineParticles();
-                DustParticles.Activated = true;
+                MoveBackward();
 
-            } else
+            }
+            else
             {
-                Body.Speed = 0f;
-                SetIdleEngineParticles();
-                DustParticles.Activated = false;
+                SetIdle();
+            }
+        }
+
+        public void UpdateAutonomousMovement(float dt, Body target)
+        {
+            // behaviour based on steering behaviours by Craig W.Reynolds
+            // http://www.red3d.com/cwr/steer/gdc99/
+
+            float repulsionWeight = 120f;
+
+            if(BotBehaviour == Global.BotBehaviour.Seek)
+            {
+                Vector3 desiredVelocity = Vector3.Normalize(Body.Position - target.Position) * Body.MaxVelocity;
+                Vector3 steering = desiredVelocity - Body.Velocity;
+
+                Steering -= steering;
+
+                repulsionWeight = 20f;
+
+
+            } else if(BotBehaviour == Global.BotBehaviour.Flee)
+            {
+                Vector3 desiredVelocity = Vector3.Normalize(target.Position - Body.Position) * Body.MaxVelocity;
+                Vector3 steering = desiredVelocity - Body.Velocity;
+
+                Steering -= steering;
+
+                repulsionWeight = 20f;
+
+
+            }
+            else if(BotBehaviour == Global.BotBehaviour.Pursuit)
+            {
+
+                // estimate prediction interval based on distance
+                float dist = Body.Position.Length() - target.Position.Length();
+                float c = MathHelper.ToRadians(20f);
+                float t = dist * c;
+
+                Vector3 predictedPosition = target.Position + (target.Bounds.Front * target.Speed * (dt * t));
+
+                Vector3 desiredVelocity = Vector3.Normalize(Body.Position - predictedPosition) * Body.MaxVelocity;
+                Vector3 steering = desiredVelocity - Body.Velocity;
+                
+                // limit steering
+                float maxforce = 0.1f;  // steering force towards target
+                if (steering.Length() > maxforce)
+                {
+                    steering.Normalize();
+                    steering *= maxforce;
+                }
+
+                Steering -= steering;
+
+                repulsionWeight = 120f;
+
+
+            }
+            else if (BotBehaviour == Global.BotBehaviour.Evade)
+            {
+
+                // estimate prediction interval based on distance
+                float dist = Body.Position.Length() - target.Position.Length();
+                float c = MathHelper.ToRadians(20f);
+                float t = dist * c;
+
+                Vector3 predictedPosition = target.Position + (target.Bounds.Front * target.Speed * (dt * t));
+
+                Vector3 desiredVelocity = Vector3.Normalize(Body.Position - predictedPosition) * Body.MaxVelocity;
+                Vector3 steering = desiredVelocity - Body.Velocity;
+
+                // limit steering
+                float maxforce = 0.6f;  // steering force towards target
+                if (steering.Length() > maxforce)
+                {
+                    steering.Normalize();
+                    steering *= maxforce;
+                }
+
+                Steering += steering;
+
+                repulsionWeight = 120f;
+            }
+            else
+            {
+                SetIdle();
+                return;
             }
 
-            // update the orientation vectors of the tank
-            //UpdateDirectionVectors(surface);
+            // separation from other tanks
+            float weight = 1f / repulsionWeight;
+            Vector3 repulsion = Vector3.Zero;
 
-            // moves the body
-            Body.UpdateMotion(gameTime);
+            for (int k = 0; k < Global.Bots.Length; k++)
+            {
 
-            //UpdateDirectionVectors(surface);
-            UpdateMatrices(surface);
+                if (TankID != Global.Bots[k].TankID)
+                {
 
-            // calculate the particle system position
-            // we calculate an offset and a rotation in model space
-            // then we transform to world space
-            Vector3 offsetLeft  = new Vector3(1.67f, 2.8f, -3f);
-            Vector3 offsetRight = new Vector3(-1.67f, 2.8f, -3f);
-            float pitch = -35f;
+                    // calculate repulsion to this tank
+                    Vector3 offset = Vector3.Normalize(Body.Position - Global.Bots[k].Body.Position);
+                    offset *= weight;
 
-            // now we build the particles system own transform
-            Matrix particlesTransformLeft  = Matrix.CreateRotationX(MathHelper.ToRadians(pitch)) * Matrix.CreateTranslation(offsetLeft) * WorldTransform;
-            Matrix particlesTransformRight = Matrix.CreateRotationX(MathHelper.ToRadians(pitch)) * Matrix.CreateTranslation(offsetRight) * WorldTransform;
+                    repulsion += offset;
 
-            // finally, set the transform and update
-            SmokeParticlesLeft.Activated = true;
-            SmokeParticlesLeft.UpdateMatrices(particlesTransformLeft);
-            SmokeParticlesLeft.Update(gameTime);
+                }
+                
 
-            SmokeParticlesRight.Activated = true;
-            SmokeParticlesRight.UpdateMatrices(particlesTransformRight);
-            SmokeParticlesRight.Update(gameTime);
+            }
 
-            //DustParticles.Activated = true;
-            DustParticles.UpdateMatrices(WorldTransform);
-            DustParticles.Update(gameTime);
+            Steering += repulsion;
+            
+            Body.Bounds.SetFront(Vector3.Normalize(Body.Bounds.Front - Steering));
 
-            //Console.WriteLine(Canon.ModelTransform);
+            MoveForward();
+
 
         }
 
@@ -341,6 +511,7 @@ namespace ip3d_tp
 
             // adjust height from the terrain surface
             SetHeightFromSurface(surface);
+            
 
             // update the orientation vectors of the tank
             //UpdateDirectionVectors(surface);
@@ -354,7 +525,7 @@ namespace ip3d_tp
             Axis.UpdateShaderMatrices(camera.ViewTransform, camera.ProjectionTransform);
         }
 
-        public void UpdateProjectiles(GameTime gameTime, Plane surface)
+        public void UpdateProjectiles(GameTime gameTime, Plane surface, Camera camera)
         {
             // user input
             if (TankID == 0 && Controls.CurrMouseState.LeftButton == ButtonState.Pressed)
@@ -416,6 +587,8 @@ namespace ip3d_tp
 
                         b.Body.Velocity = Vector3.Transform(b.Body.Velocity, WorldTransform.Rotation);
 
+                        // shaky shaky
+                        camera.ActivateShake(gameTime, 300f, 0.8f, 0.02f);
 
                     }
                 }
@@ -520,8 +693,19 @@ namespace ip3d_tp
 
         public void UpdateMatrices(Plane surface)
         {
+
+            // update matrices
+            if (TankID == Global.PlayerID)
+            {
+                Body.Bounds.UpdateMatrices(GetUpVectorFromTerrain(surface));
+            }
+            else
+            {
+                Body.Bounds.UpdateMatrices(GetUpVectorFromTerrain(surface), Body.Bounds.Front);
+            }
+
             // Up Vector must be already set
-            Body.Bounds.UpdateMatrices(GetUpVectorFromTerrain(surface));
+            //Body.Bounds.UpdateMatrices(GetUpVectorFromTerrain(surface));
             Body.UpdateCollisionRect();
             
             Model.Root.Transform = WorldTransform;
@@ -606,28 +790,30 @@ namespace ip3d_tp
             float halfSurfaceWidth = surface.Width / 2;
             float halfSurfaceDepth = surface.Depth / 2;
 
+            float offset = 2f;
+
             // because we know that the plane origin is at its center
             // we will have to calculate the bounds with that in mind, and add 
             // te width and depth divided by 2
-            if (Body.X < -halfSurfaceWidth + surface.SubWidth)
+            if (Body.X + offset < -halfSurfaceWidth + surface.SubWidth)
             {
 
                 Body.X = -halfSurfaceWidth + surface.SubWidth;
 
             }
-            if (Body.X > halfSurfaceWidth - surface.SubWidth)
+            if (Body.X - offset > halfSurfaceWidth - surface.SubWidth)
             {
 
                 Body.X = halfSurfaceWidth - surface.SubWidth;
 
             }
-            if (Body.Z < -halfSurfaceDepth + surface.SubHeight)
+            if (Body.Z + offset < -halfSurfaceDepth + surface.SubHeight)
             {
 
                 Body.Z = -halfSurfaceDepth + surface.SubHeight;
 
             }
-            if (Body.Z > halfSurfaceDepth - surface.SubHeight)
+            if (Body.Z - offset > halfSurfaceDepth - surface.SubHeight)
             {
 
                 Body.Z = halfSurfaceDepth - surface.SubHeight;

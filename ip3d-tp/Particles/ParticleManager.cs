@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 
@@ -9,6 +10,8 @@ namespace ip3d_tp.Particles
     /// </summary>
     public static class ParticleManager
     {
+
+        public static Game Game;
 
         public static List<ParticleEmitter> ParticleEmitters = new List<ParticleEmitter>();
 
@@ -39,6 +42,10 @@ namespace ip3d_tp.Particles
 
         public static void DrawEmitters(GameTime gameTime, Camera camera)
         {
+            // set a quad ready in the buffer
+            Game.GraphicsDevice.SetVertexBuffer(((QuadParticleEmitter)ParticleEmitters[0]).VertexBuffer);
+            Game.GraphicsDevice.Indices = ((QuadParticleEmitter)ParticleEmitters[0]).IndexBuffer;
+            Game.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
 
             // reorder particles so we can draw transparency
             // wee need to draw the bottom most first
@@ -63,9 +70,11 @@ namespace ip3d_tp.Particles
                 }
             });
 
+            // for performance, we should already have a quad in the buffer
             foreach (Particle p in AllParticles)
             {
-                p.Spawner.DrawParticle(gameTime, camera, p);
+                if(p.Alive)
+                    p.Spawner.DrawParticle(gameTime, camera, p);
             }            
         }
     }

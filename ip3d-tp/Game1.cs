@@ -26,11 +26,33 @@ namespace ip3d_tp
         }
         public static PlayerAimMode AimMode = PlayerAimMode.Camera;
 
+        // should the world particles be rendered
+        public static bool RenderParticles = true;
+
         // container for all the particle systems
         public static List<ParticleEmitter> ParticleEmitters = new List<ParticleEmitter>();
 
         // count particles alive particles in game
         public static int AliveParticles = 0;
+
+        // define the player tank id
+        public static short PlayerID = 0;
+
+        // bot behaviour 
+        public enum BotBehaviour
+        {
+            None,
+            Seek,
+            Flee,
+            Pursuit,
+            Evade
+        }
+
+        // bot population number
+        public static int nBots = 3;
+
+        // bots list
+        public static Tank[] Bots = new Tank[nBots];
 
     }
 
@@ -65,15 +87,9 @@ namespace ip3d_tp
         // texture to be applied to the terrain
         Texture2D terrainHeightMap;
         
-        // the tank
+        // the player tank
         Tank tank1;
         
-        // the second tank
-        Tank tank2;
-
-        Projectile shell;
-
-        QuadParticleEmitter Particles;
 
         /*
          * cameras
@@ -107,6 +123,8 @@ namespace ip3d_tp
 
         // the intensity of said light
         public float LightIntensity = 1.0f;
+
+        Random rnd = new Random(10);
 
         Stopwatch stopwatch;
 
@@ -156,6 +174,9 @@ namespace ip3d_tp
 
         protected override void LoadContent()
         {
+
+            ParticleManager.Game = this;
+
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
@@ -179,23 +200,45 @@ namespace ip3d_tp
             // create the tanks 
             tank1 = new Tank(this);
             tank1.Body.Mass = 8.5f;
+            tank1.Body.MaxVelocity = 0.58f;
             tank1.Body.X = 4f;  // offset a bit so the two don't overlap
+            tank1.TankID = Global.PlayerID;
 
-            tank2 = new Tank(this);
-            tank2.Body.X = -4f;
-            tank2.TankID = 1;  // identify this tank as ID 1, used for the controls
+            //tank2 = new Tank(this);
+            //tank2.Body.X = -40f;
+            //tank2.Body.Z =  40f;
+            //tank2.TankID = 1;  // identify this tank as ID 1, used for the controls
+            //tank2.BotBehaviour = Global.BotBehaviour.Pursuit;
+            //tank2.TargetBody = tank1.Body;
 
-            shell = new Projectile(this, 0f);
+            //tank3 = new Tank(this);
+            //tank3.Body.X = 40f;
+            //tank3.Body.Z = -40f;
+            //tank3.TankID = 2;  // identify this tank as ID 1, used for the controls
+            //tank3.BotBehaviour = Global.BotBehaviour.Pursuit;
+            //tank3.TargetBody = tank2.Body;
 
-            Particles = new QuadParticleEmitter(this, new Vector3(0f, 10f, 0f), 0.5f, 0.5f, "Textures/smoke_particle", 0.5f);
-            Particles.MakeParticles(1f, Color.White);
-            Particles.ParticleVelocity = new Vector3(0f, 5f, 0f);
-            Particles.SpawnRate = 0f;
-            Particles.YVelocityVariationRange = new Vector2(-2f, 2f);
-            Particles.ParticleLifespanMilliseconds = 2000f;
-            Particles.ParticleLifespanVariationMilliseconds = 1500f;
-            Particles.Activated = true;
-            ParticleManager.AddParticleEmitter(Particles);
+            for(int i = 0; i < Global.nBots; i++)
+            {
+                Tank b = new Tank(this);
+
+                b.Body.X = (float)Utils.RandomBetween(rnd, -60, 60);
+                b.Body.Y = (float)Utils.RandomBetween(rnd, -60, 60);
+                b.TankID = (short)(i + 1);
+                //b.BotBehaviour = (Global.BotBehaviour)(Utils.RandomBetween(rnd, 1.0, 5.0));
+                b.BotBehaviour = Global.BotBehaviour.Pursuit;
+
+                Global.Bots[i] = b;
+                
+
+            }
+            for (int i = 0; i < Global.nBots; i++)
+            {
+                Global.Bots[i].TargetBody = tank1.Body;
+
+            }
+
+
 
             /*
              * cameras
@@ -205,7 +248,7 @@ namespace ip3d_tp
             // create the various cameras
             ThirdPersonCamera1 = new ThirdPersonCamera(this, tank1, plane, 20f);  // see definition for an understanding
 
-            ThirdPersonCamera2 = new ThirdPersonCamera(this, tank2, plane, 20f);
+            //ThirdPersonCamera2 = new ThirdPersonCamera(this, tank2, plane, 20f);
             
             freeCamera = new FreeCamera(this, 45f);
             freeCamera.AccelerationValue = 1f;
@@ -301,7 +344,6 @@ namespace ip3d_tp
             if (Controls.IsKeyPressed(Keys.H))
             {
                 Global.ShowHelp = !Global.ShowHelp;
-                shell = new Projectile(this, 5f);
             }
 
             #endregion
@@ -328,9 +370,13 @@ namespace ip3d_tp
             //       I hope in the future of this project to develop our own
             //       node based object structure. Let's see how that goes. If I have the time.
             tank1.Update(gameTime, currentCamera, plane);
-            tank2.Update(gameTime, currentCamera, plane);
+            //tank2.Update(gameTime, currentCamera, plane);
+            //tank3.Update(gameTime, currentCamera, plane);
 
-            shell.Update(gameTime, plane);
+            for(int i = 0; i < Global.Bots.Length; i++)
+            {
+                Global.Bots[i].Update(gameTime, currentCamera, plane);
+            }
 
             // collision needs to run on a fairly high speed in order
             // to be accurate. The implication of this is the
@@ -338,41 +384,83 @@ namespace ip3d_tp
             // the tanks are glued to the ground, and fetch the new height
             // every frame. This leads to 'teleporting' and oder glitchs when 
             // applying the collision resolution.
-            for (int i = 0; i < 4; i++)   // sampling 4 times for acuracy 
-            { 
+            for (int i = 0; i < 2; i++)   // sampling 2 times for acuracy 
+            {
 
-                if (Physics.SATCollide(tank1.Body, tank2.Body))
-                {
+                //if (Physics.SATCollide(tank1.Body, tank2.Body))
+                //{
 
-                    tank1.BodyDebug.MaterialColor = Color.Red;
+                //    tank1.BodyDebug.MaterialColor = Color.Red;
 
-                }
-                else
-                {
-                    tank1.BodyDebug.MaterialColor = Color.Blue;
+                //}
+                //else
+                //{
+                //    tank1.BodyDebug.MaterialColor = Color.Blue;
 
-                };
+                //};
                 //Physics.SATCollide(tank2.Body, tank1.Body);
 
+                for(int j = 0; j < Global.Bots.Length; j++)
+                {
+
+                    Physics.SATCollide(tank1.Body, Global.Bots[j].Body);
+
+                }
+
+                for (int j = 0; j < Global.Bots.Length; j++)
+                {
+
+                    for (int k = 0; k < Global.Bots.Length; k++)
+                    {
+
+                        if (Global.Bots[j].TankID != Global.Bots[k].TankID)
+                        {
+
+                            Physics.SATCollide(Global.Bots[j].Body, Global.Bots[k].Body);
+
+                        }
+
+
+                    }
+
+                }
+
+
+                //Physics.SATCollide(tank1.Body, tank2.Body);
+                //Physics.SATCollide(tank1.Body, tank3.Body);
+                //Physics.SATCollide(tank2.Body, tank3.Body);
+
                 tank1.PostMotionUpdate(gameTime, currentCamera, plane);
-                tank2.PostMotionUpdate(gameTime, currentCamera, plane);
+                for (int j = 0; j < Global.Bots.Length; j++)
+                {
+
+                    Global.Bots[j].PostMotionUpdate(gameTime, currentCamera, plane);
+
+                }
             }
 
 
-            tank1.UpdateProjectiles(gameTime, plane);
-            tank2.UpdateProjectiles(gameTime, plane);
+            tank1.UpdateProjectiles(gameTime, plane, currentCamera);
+            //for (int j = 0; j < Global.Bots.Length; j++)
+            //{
+
+            //    Global.Bots[j].UpdateProjectiles(gameTime, plane, currentCamera);
+
+            //}
 
             tank1.CalculateAnimations(gameTime, currentCamera, plane);
-            tank2.CalculateAnimations(gameTime, currentCamera, plane);
+            for (int j = 0; j < Global.Bots.Length; j++)
+            {
+
+                Global.Bots[j].CalculateAnimations(gameTime, currentCamera, plane);
+
+            }
 
             // here we update the object shader(effect) matrices
             // so it can perform the space calculations on the vertices
             plane.UpdateShaderMatrices(currentCamera.ViewTransform, currentCamera.ProjectionTransform);
             worldAxis.UpdateShaderMatrices(currentCamera.ViewTransform, currentCamera.ProjectionTransform);
-
-            Particles.SetWorldTransform(Matrix.CreateTranslation(Particles.Position));
-            Particles.Update(gameTime);
-
+            
             // update the last keyboard state
             Controls.UpdateLastStates();
 
@@ -395,8 +483,8 @@ namespace ip3d_tp
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(new Color(0.20f, 0.20f, 0.20f));
-            //GraphicsDevice.Clear(Color.White);
+            //GraphicsDevice.Clear(new Color(0.20f, 0.20f, 0.20f));
+            GraphicsDevice.Clear(Color.DeepSkyBlue);
 
             // we need to call the draw manually for the plane
             // it extends component, and not drawable
@@ -404,15 +492,20 @@ namespace ip3d_tp
 
             // draw the tanks with the light created
             tank1.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
-            tank2.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
-            shell.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
+            for (int j = 0; j < Global.Bots.Length; j++)
+            {
+
+                Global.Bots[j].Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
+
+            }
 
             //foreach(ParticleEmitter e in Global.ParticleEmitters)
             //{
             //    e.Draw(gameTime, currentCamera);
             //}
 
-            ParticleManager.DrawEmitters(gameTime, currentCamera);
+            if(Global.RenderParticles)
+                ParticleManager.DrawEmitters(gameTime, currentCamera);
 
             //Particles.Draw(gameTime, currentCamera);
 
