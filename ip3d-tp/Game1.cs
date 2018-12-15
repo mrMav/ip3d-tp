@@ -306,15 +306,10 @@ namespace ip3d_tp
 
             } else if (Controls.IsKeyPressed(Keys.F2))
             {
-                currentCamera = ThirdPersonCamera2;
-                Global.AimMode = Global.PlayerAimMode.Camera;
-
-            } else if (Controls.IsKeyPressed(Keys.F3))
-            {
                 currentCamera = surfaceFollowCamera;
                 Global.AimMode = Global.PlayerAimMode.Keys;
 
-            } else if (Controls.IsKeyPressed(Keys.F4))
+            } else if (Controls.IsKeyPressed(Keys.F3))
             {
                 currentCamera = freeCamera;
                 Global.AimMode = Global.PlayerAimMode.Keys;

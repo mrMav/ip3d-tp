@@ -8,6 +8,11 @@ namespace ip3d_tp.Particles
     /// <summary>
     /// Class that manages particles and particles systems
     /// </summary>
+    /// <remarks>
+    /// This whole particle systems and managers are not very performative.
+    /// Due to the lack of time for optimization, Instancing rendering was
+    /// not studied or applied.
+    /// </remarks>
     public static class ParticleManager
     {
 

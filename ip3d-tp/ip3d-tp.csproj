@@ -45,12 +45,9 @@
     <Compile Include="BasicCamera.cs" />
     <Compile Include="Camera.cs" />
     <Compile Include="OrbitCamera.cs" />
-    <Compile Include="Particles\LineParticle.cs" />
-    <Compile Include="Particles\LineParticleEmitter.cs" />
     <Compile Include="Particles\Particle.cs" />
     <Compile Include="Particles\ParticleEmitter.cs" />
     <Compile Include="Particles\ParticleManager.cs" />
-    <Compile Include="Particles\QuadParticle.cs" />
     <Compile Include="Particles\QuadParticleEmitter.cs" />
     <Compile Include="Physics\Body.cs" />
     <Compile Include="Box.cs" />

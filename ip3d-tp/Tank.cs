@@ -605,27 +605,53 @@ namespace ip3d_tp
         public void CalculateAnimations(GameTime gameTime, Camera camera, Plane surface)
         {
 
+            float dt = (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+
             // animate wheels
             RotateWheels(gameTime);
 
             // update turret and canon direction based on camera direction
-            if(TankID == 0)
+            if(TankID == Global.PlayerID)
             {
                 if(Global.AimMode == Global.PlayerAimMode.Camera)
                 {
 
                     CanonPitch = ((ThirdPersonCamera)camera).Pitch;
-                    // constrain pitch
-                    CanonPitch = MathHelper.Clamp(CanonPitch + 30f, -30f, 60f);
+                    CanonPitch += 30f;
 
                     TurretYaw = ((ThirdPersonCamera)camera).Yaw;
 
-                } else
+                } else if(Global.AimMode == Global.PlayerAimMode.Keys)
                 {
+
+                    float ammount = 0.1f;
+                    
+                    if(Controls.IsKeyDown(Keys.Up))
+                    {
+                        CanonPitch += ammount * dt;
+                        //CanonPitch += 30f;
+                    } else if (Controls.IsKeyDown(Keys.Down))
+                    {
+                        CanonPitch -= ammount * dt;
+                    }
+
+                    if (Controls.IsKeyDown(Keys.Left))
+                    {
+                        TurretYaw += ammount * dt;
+                    }
+                    else if (Controls.IsKeyDown(Keys.Right))
+                    {
+                        TurretYaw -= ammount * dt;
+                    }
                     
                 }
-
+                
+                if (CanonPitch > 60f)
+                    CanonPitch = 60f;
+                else if (CanonPitch < -30f)
+                    CanonPitch = -30f;
             }
+
 
             RotateTurret(gameTime, CanonPitch, TurretYaw);
 
