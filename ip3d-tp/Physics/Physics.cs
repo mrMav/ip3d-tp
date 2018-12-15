@@ -163,11 +163,13 @@ namespace ip3d_tp.Physics3D
                 //b.UpdateCollisionRect();
 
                 // if both bodys are facing the same direction, cut their speed
-                if(Vector3.Dot(a.Bounds.Front, b.Bounds.Front) > 0)
+                if (Vector3.Dot(a.Bounds.Front, b.Bounds.Front) >= 0)
                 {
                     a.Speed *= a.Mass / 10f;
                     b.Speed *= b.Mass / 10f;
                 }
+                //b.Speed *= a.Mass / 10f;
+                //a.Speed *= a.Mass / 10f;
 
                 //Console.WriteLine(MinimumTranslationVector);
 

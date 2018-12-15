@@ -263,7 +263,9 @@ namespace ip3d_tp
             // pre movement function, to store information
             // regarding previous frame
             Body.PreMovementUpdate(gameTime);
-            
+
+            Steering = Vector3.Zero;
+
             // update tank motion logic
             if(TankID == Global.PlayerID)
             {
@@ -378,16 +380,16 @@ namespace ip3d_tp
                 Vector3 desiredVelocity = Vector3.Normalize(Body.Position - target.Position) * Body.MaxVelocity;
                 Vector3 steering = desiredVelocity - Body.Velocity;
 
-                Body.Bounds.SetFront(Vector3.Normalize(steering));
-                MoveForward();
+                Steering += steering;
+
 
             } else if(BotBehaviour == Global.BotBehaviour.Flee)
             {
                 Vector3 desiredVelocity = Vector3.Normalize(target.Position - Body.Position) * Body.MaxVelocity;
                 Vector3 steering = desiredVelocity - Body.Velocity;
 
-                Body.Bounds.SetFront(Vector3.Normalize(steering));
-                MoveForward();
+                Steering -= steering;
+
 
             } else if(BotBehaviour == Global.BotBehaviour.Pursuit)
             {
@@ -410,9 +412,8 @@ namespace ip3d_tp
                     steering *= maxforce;
                 }
 
-                Body.Bounds.SetFront(Vector3.Normalize(Body.Bounds.Front + steering));
+                Steering -= steering;
 
-                MoveForward();
             }
             else if (BotBehaviour == Global.BotBehaviour.Evade)
             {
@@ -435,14 +436,41 @@ namespace ip3d_tp
                     steering *= maxforce;
                 }
 
-                Body.Bounds.SetFront(Vector3.Normalize(Body.Bounds.Front - steering));
-
-                MoveForward();
+                Steering += steering;
+                
             }
             else
             {
                 SetIdle();
+                return;
             }
+
+            // separation from other tanks
+            float weight = 1f / 120f;
+            Vector3 repulsion = Vector3.Zero;
+
+            for (int k = 0; k < Global.Bots.Length; k++)
+            {
+
+                if (TankID != Global.Bots[k].TankID)
+                {
+
+                    // calculate repulsion to this tank
+                    Vector3 offset = Vector3.Normalize(Body.Position - Global.Bots[k].Body.Position);
+                    offset *= weight;
+
+                    repulsion += offset;
+
+                }
+                
+
+            }
+
+            Steering += repulsion;
+            
+            Body.Bounds.SetFront(Vector3.Normalize(Body.Bounds.Front - Steering));
+            MoveForward();
+
         }
 
         public void PostMotionUpdate(GameTime gameTime, Camera camera, Plane surface)

@@ -45,6 +45,12 @@ namespace ip3d_tp
             Evade
         }
 
+        // bot population number
+        public static int nBots = 4;
+
+        // bots list
+        public static Tank[] Bots = new Tank[nBots];
+
     }
 
     public class Game1 : Game
@@ -78,12 +84,9 @@ namespace ip3d_tp
         // texture to be applied to the terrain
         Texture2D terrainHeightMap;
         
-        // the tank
+        // the player tank
         Tank tank1;
         
-        // the second tank
-        Tank tank2;
-        Tank tank3;
 
         /*
          * cameras
@@ -117,6 +120,8 @@ namespace ip3d_tp
 
         // the intensity of said light
         public float LightIntensity = 1.0f;
+
+        Random rnd = new Random(10);
 
         Stopwatch stopwatch;
 
@@ -193,19 +198,41 @@ namespace ip3d_tp
             tank1.Body.X = 4f;  // offset a bit so the two don't overlap
             tank1.TankID = Global.PlayerID;
 
-            tank2 = new Tank(this);
-            tank2.Body.X = -40f;
-            tank2.Body.Z =  40f;
-            tank2.TankID = 1;  // identify this tank as ID 1, used for the controls
-            tank2.BotBehaviour = Global.BotBehaviour.Pursuit;
-            tank2.TargetBody = tank1.Body;
+            //tank2 = new Tank(this);
+            //tank2.Body.X = -40f;
+            //tank2.Body.Z =  40f;
+            //tank2.TankID = 1;  // identify this tank as ID 1, used for the controls
+            //tank2.BotBehaviour = Global.BotBehaviour.Pursuit;
+            //tank2.TargetBody = tank1.Body;
 
-            tank3 = new Tank(this);
-            tank3.Body.X = 40f;
-            tank3.Body.Z = -40f;
-            tank3.TankID = 2;  // identify this tank as ID 1, used for the controls
-            tank3.BotBehaviour = Global.BotBehaviour.Pursuit;
-            tank3.TargetBody = tank2.Body;
+            //tank3 = new Tank(this);
+            //tank3.Body.X = 40f;
+            //tank3.Body.Z = -40f;
+            //tank3.TankID = 2;  // identify this tank as ID 1, used for the controls
+            //tank3.BotBehaviour = Global.BotBehaviour.Pursuit;
+            //tank3.TargetBody = tank2.Body;
+
+            for(int i = 0; i < Global.nBots; i++)
+            {
+                Tank b = new Tank(this);
+
+                b.Body.X = (float)Utils.RandomBetween(rnd, -60, 60);
+                b.Body.Y = (float)Utils.RandomBetween(rnd, -60, 60);
+                b.TankID = (short)(i + 1);
+                //b.BotBehaviour = (Global.BotBehaviour)(Utils.RandomBetween(rnd, 1.0, 5.0));
+                b.BotBehaviour = Global.BotBehaviour.Pursuit;
+
+                Global.Bots[i] = b;
+                
+
+            }
+            for (int i = 0; i < Global.nBots; i++)
+            {
+                Global.Bots[i].TargetBody = tank1.Body;
+
+            }
+
+
 
             /*
              * cameras
@@ -215,7 +242,7 @@ namespace ip3d_tp
             // create the various cameras
             ThirdPersonCamera1 = new ThirdPersonCamera(this, tank1, plane, 20f);  // see definition for an understanding
 
-            ThirdPersonCamera2 = new ThirdPersonCamera(this, tank2, plane, 20f);
+            //ThirdPersonCamera2 = new ThirdPersonCamera(this, tank2, plane, 20f);
             
             freeCamera = new FreeCamera(this, 45f);
             freeCamera.AccelerationValue = 1f;
@@ -337,8 +364,13 @@ namespace ip3d_tp
             //       I hope in the future of this project to develop our own
             //       node based object structure. Let's see how that goes. If I have the time.
             tank1.Update(gameTime, currentCamera, plane);
-            tank2.Update(gameTime, currentCamera, plane);
-            tank3.Update(gameTime, currentCamera, plane);
+            //tank2.Update(gameTime, currentCamera, plane);
+            //tank3.Update(gameTime, currentCamera, plane);
+
+            for(int i = 0; i < Global.Bots.Length; i++)
+            {
+                Global.Bots[i].Update(gameTime, currentCamera, plane);
+            }
 
             // collision needs to run on a fairly high speed in order
             // to be accurate. The implication of this is the
@@ -362,23 +394,61 @@ namespace ip3d_tp
                 //};
                 //Physics.SATCollide(tank2.Body, tank1.Body);
 
-                Physics.SATCollide(tank1.Body, tank2.Body);
-                Physics.SATCollide(tank1.Body, tank3.Body);
-                Physics.SATCollide(tank2.Body, tank3.Body);
+                for(int j = 0; j < Global.Bots.Length; j++)
+                {
+
+                    Physics.SATCollide(tank1.Body, Global.Bots[j].Body);
+
+                }
+
+                //for (int j = 0; j < Global.Bots.Length - 1; j++)
+                //{
+
+                //    for (int k = j; k < Global.Bots.Length - 1; k++)
+                //    {
+
+                //        if(Global.Bots[j].TankID != Global.Bots[k].TankID)
+                //        {
+
+                //            Physics.SATCollide(Global.Bots[j].Body, Global.Bots[k].Body);
+
+                //        }
+
+
+                //    }
+
+                //}
+
+
+                //Physics.SATCollide(tank1.Body, tank2.Body);
+                //Physics.SATCollide(tank1.Body, tank3.Body);
+                //Physics.SATCollide(tank2.Body, tank3.Body);
 
                 tank1.PostMotionUpdate(gameTime, currentCamera, plane);
-                tank2.PostMotionUpdate(gameTime, currentCamera, plane);
-                tank3.PostMotionUpdate(gameTime, currentCamera, plane);
+                for (int j = 0; j < Global.Bots.Length; j++)
+                {
+
+                    Global.Bots[j].PostMotionUpdate(gameTime, currentCamera, plane);
+
+                }
             }
 
 
             tank1.UpdateProjectiles(gameTime, plane, currentCamera);
-            tank2.UpdateProjectiles(gameTime, plane, currentCamera);
-            tank3.UpdateProjectiles(gameTime, plane, currentCamera);
+            for (int j = 0; j < Global.Bots.Length; j++)
+            {
+
+                Global.Bots[j].UpdateProjectiles(gameTime, plane, currentCamera);
+
+            }
 
             tank1.CalculateAnimations(gameTime, currentCamera, plane);
-            tank2.CalculateAnimations(gameTime, currentCamera, plane);
-            tank3.CalculateAnimations(gameTime, currentCamera, plane);
+            for (int j = 0; j < Global.Bots.Length; j++)
+            {
+
+                Global.Bots[j].CalculateAnimations(gameTime, currentCamera, plane);
+
+            }
 
             // here we update the object shader(effect) matrices
             // so it can perform the space calculations on the vertices
@@ -416,8 +486,12 @@ namespace ip3d_tp
 
             // draw the tanks with the light created
             tank1.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
-            tank2.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
-            tank3.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
+            for (int j = 0; j < Global.Bots.Length; j++)
+            {
+
+                Global.Bots[j].Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
+
+            }
 
             //foreach(ParticleEmitter e in Global.ParticleEmitters)
             //{
