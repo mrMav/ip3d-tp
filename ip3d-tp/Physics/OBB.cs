@@ -341,6 +341,7 @@ namespace ip3d_tp.Physics3D
             // Up vector must be already updated
             _up = up;
             _front = Vector3.Normalize(velocity);
+
             _right = Vector3.Normalize(Vector3.Cross(_up, _front));
             _front = Vector3.Normalize(Vector3.Cross(_up, _right));
 

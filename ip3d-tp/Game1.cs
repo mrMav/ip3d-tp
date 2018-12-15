@@ -46,7 +46,7 @@ namespace ip3d_tp
         }
 
         // bot population number
-        public static int nBots = 4;
+        public static int nBots = 10;
 
         // bots list
         public static Tank[] Bots = new Tank[nBots];
@@ -171,6 +171,9 @@ namespace ip3d_tp
 
         protected override void LoadContent()
         {
+
+            ParticleManager.Game = this;
+
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
@@ -378,7 +381,7 @@ namespace ip3d_tp
             // the tanks are glued to the ground, and fetch the new height
             // every frame. This leads to 'teleporting' and oder glitchs when 
             // applying the collision resolution.
-            for (int i = 0; i < 4; i++)   // sampling 4 times for acuracy 
+            for (int i = 0; i < 1; i++)   // sampling 4 times for acuracy 
             {
 
                 //if (Physics.SATCollide(tank1.Body, tank2.Body))
@@ -425,9 +428,11 @@ namespace ip3d_tp
                 //Physics.SATCollide(tank2.Body, tank3.Body);
 
                 tank1.PostMotionUpdate(gameTime, currentCamera, plane);
+                tank1.PostMotionUpdate(gameTime, currentCamera, plane);
                 for (int j = 0; j < Global.Bots.Length; j++)
                 {
 
+                    Global.Bots[j].PostMotionUpdate(gameTime, currentCamera, plane);
                     Global.Bots[j].PostMotionUpdate(gameTime, currentCamera, plane);
 
                 }

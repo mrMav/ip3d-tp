@@ -233,12 +233,12 @@ namespace ip3d_tp
             ParticleManager.AddParticleEmitter(SmokeParticlesRight);
 
             // init particles
-            DustParticles = new QuadParticleEmitter(Game, Body.Position, 0.5f, 0.5f, "Textures/dust_particle", 5f, 500, TankID + 4);
+            DustParticles = new QuadParticleEmitter(Game, Body.Position, 0.5f, 0.5f, "Textures/dust_particle", 5f, 100, TankID + 4);
             DustParticles.MakeParticles(1f, Color.White);
             DustParticles.ParticleVelocity = new Vector3(0f, 1.5f, -2f);
             DustParticles.SpawnRate = 20f;
             DustParticles.Burst = false;
-            DustParticles.ParticlesPerBurst = 6;
+            DustParticles.ParticlesPerBurst = 3;
             DustParticles.XVelocityVariationRange = new Vector2(-300f, 300f);
             DustParticles.YVelocityVariationRange = new Vector2(0f, 200f);
             DustParticles.ZVelocityVariationRange = new Vector2(-300f, 50f);
@@ -280,6 +280,10 @@ namespace ip3d_tp
 
             // moves the body
             Body.UpdateMotion(gameTime);
+
+
+            // keep the tank in the surface
+            ConstrainToPlane(surface);
 
             //UpdateDirectionVectors(surface);
             UpdateMatrices(surface);
@@ -375,12 +379,16 @@ namespace ip3d_tp
             // behaviour based on steering behaviours by Craig W.Reynolds
             // http://www.red3d.com/cwr/steer/gdc99/
 
+            float repulsionWeight = 120f;
+
             if(BotBehaviour == Global.BotBehaviour.Seek)
             {
                 Vector3 desiredVelocity = Vector3.Normalize(Body.Position - target.Position) * Body.MaxVelocity;
                 Vector3 steering = desiredVelocity - Body.Velocity;
 
-                Steering += steering;
+                Steering -= steering;
+
+                repulsionWeight = 20f;
 
 
             } else if(BotBehaviour == Global.BotBehaviour.Flee)
@@ -390,13 +398,16 @@ namespace ip3d_tp
 
                 Steering -= steering;
 
+                repulsionWeight = 20f;
 
-            } else if(BotBehaviour == Global.BotBehaviour.Pursuit)
+
+            }
+            else if(BotBehaviour == Global.BotBehaviour.Pursuit)
             {
 
                 // estimate prediction interval based on distance
                 float dist = Body.Position.Length() - target.Position.Length();
-                float c = MathHelper.ToRadians(60f);
+                float c = MathHelper.ToRadians(20f);
                 float t = dist * c;
 
                 Vector3 predictedPosition = target.Position + (target.Bounds.Front * target.Speed * (dt * t));
@@ -414,13 +425,16 @@ namespace ip3d_tp
 
                 Steering -= steering;
 
+                repulsionWeight = 120f;
+
+
             }
             else if (BotBehaviour == Global.BotBehaviour.Evade)
             {
 
                 // estimate prediction interval based on distance
                 float dist = Body.Position.Length() - target.Position.Length();
-                float c = MathHelper.ToRadians(60f);
+                float c = MathHelper.ToRadians(20f);
                 float t = dist * c;
 
                 Vector3 predictedPosition = target.Position + (target.Bounds.Front * target.Speed * (dt * t));
@@ -437,7 +451,8 @@ namespace ip3d_tp
                 }
 
                 Steering += steering;
-                
+
+                repulsionWeight = 120f;
             }
             else
             {
@@ -446,7 +461,7 @@ namespace ip3d_tp
             }
 
             // separation from other tanks
-            float weight = 1f / 120f;
+            float weight = 1f / repulsionWeight;
             Vector3 repulsion = Vector3.Zero;
 
             for (int k = 0; k < Global.Bots.Length; k++)
@@ -469,7 +484,9 @@ namespace ip3d_tp
             Steering += repulsion;
             
             Body.Bounds.SetFront(Vector3.Normalize(Body.Bounds.Front - Steering));
+
             MoveForward();
+
 
         }
 
@@ -481,6 +498,7 @@ namespace ip3d_tp
 
             // adjust height from the terrain surface
             SetHeightFromSurface(surface);
+            
 
             // update the orientation vectors of the tank
             //UpdateDirectionVectors(surface);
@@ -759,28 +777,30 @@ namespace ip3d_tp
             float halfSurfaceWidth = surface.Width / 2;
             float halfSurfaceDepth = surface.Depth / 2;
 
+            float offset = 2f;
+
             // because we know that the plane origin is at its center
             // we will have to calculate the bounds with that in mind, and add 
             // te width and depth divided by 2
-            if (Body.X < -halfSurfaceWidth + surface.SubWidth)
+            if (Body.X + offset < -halfSurfaceWidth + surface.SubWidth)
             {
 
                 Body.X = -halfSurfaceWidth + surface.SubWidth;
 
             }
-            if (Body.X > halfSurfaceWidth - surface.SubWidth)
+            if (Body.X - offset > halfSurfaceWidth - surface.SubWidth)
             {
 
                 Body.X = halfSurfaceWidth - surface.SubWidth;
 
             }
-            if (Body.Z < -halfSurfaceDepth + surface.SubHeight)
+            if (Body.Z + offset < -halfSurfaceDepth + surface.SubHeight)
             {
 
                 Body.Z = -halfSurfaceDepth + surface.SubHeight;
 
             }
-            if (Body.Z > halfSurfaceDepth - surface.SubHeight)
+            if (Body.Z - offset > halfSurfaceDepth - surface.SubHeight)
             {
 
                 Body.Z = halfSurfaceDepth - surface.SubHeight;

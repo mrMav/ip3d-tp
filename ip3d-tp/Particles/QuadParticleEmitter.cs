@@ -17,9 +17,9 @@ namespace ip3d_tp.Particles
 
         BasicEffect ColorShaderEffect;
 
-        VertexBuffer VertexBuffer;
+        public VertexBuffer VertexBuffer;
 
-        IndexBuffer IndexBuffer;
+        public IndexBuffer IndexBuffer;
         
         /// <summary>
         /// Creates a particle system that emmits textured quads facing the camera.
@@ -60,9 +60,9 @@ namespace ip3d_tp.Particles
             if (p.Alive)
             {
 
-                Game.GraphicsDevice.SetVertexBuffer(VertexBuffer);
-                Game.GraphicsDevice.Indices = IndexBuffer;
-                Game.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
+                //Game.GraphicsDevice.SetVertexBuffer(VertexBuffer);
+                //Game.GraphicsDevice.Indices = IndexBuffer;
+                //Game.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
 
                 // create a matrix to always face the camera
                 Matrix world = Matrix.CreateWorld(p.Position, Vector3.Normalize(camera.Position - p.Position), camera.ViewTransform.Up);
