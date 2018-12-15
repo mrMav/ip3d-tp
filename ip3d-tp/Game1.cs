@@ -16,7 +16,7 @@ namespace ip3d_tp
     {
 
         // toggle for debug
-        public static bool ShowHelp = true;
+        public static bool ShowHelp = false;
 
         // aim mode
         public enum PlayerAimMode
@@ -49,7 +49,7 @@ namespace ip3d_tp
         }
 
         // bot population number
-        public static int nBots = 4;
+        public static int nBots = 2;
 
         // bots list
         public static Tank[] Bots = new Tank[nBots];
@@ -564,11 +564,14 @@ namespace ip3d_tp
             {
 
                 spriteBatch.DrawString(font, $"{Math.Round(FrameRate.AverageFramesPerSecond)}", new Vector2(10f, 10f), new Color(0f, 1f, 0f));
-                spriteBatch.DrawString(font, $"Help (H, Toogle): {Global.ShowHelp}\nWireframe (F, Toogle): {plane.ShowWireframe}\nNormals (N, Toogle): {plane.ShowNormals}", new Vector2(10f, 26f), new Color(0f, 1f, 0f));
+                spriteBatch.DrawString(font, $"Debug Info (H, Toogle): {Global.ShowHelp}\nWireframe (F, Toogle): {plane.ShowWireframe}\nNormals (N, Toogle): {plane.ShowNormals}", new Vector2(10f, 26f), new Color(0f, 1f, 0f));
                 spriteBatch.DrawString(font, tank1.Body.GetDebugString(), new Vector2(10f, graphics.PreferredBackBufferHeight - 5 * 26f), new Color(0f, 1f, 0f));
                 spriteBatch.DrawString(font, tank1.GetDebugInfo(), new Vector2(10f, graphics.PreferredBackBufferHeight - 7 * 26f), new Color(0f, 1f, 0f));
                 spriteBatch.DrawString(font, $"Cycle between cameras in F1-F12\nAbout the camera:\n{currentCamera.About()}", new Vector2(graphics.PreferredBackBufferWidth / 2, 10f), new Color(0f, 1f, 0f));
 
+            } else
+            {
+                spriteBatch.DrawString(font, $"Debug Info (H, Toogle): {Global.ShowHelp}\nCapture/Release Mouse (R, Toogle): {IsMouseVisible}\nCameras (F1, F2, F3)", new Vector2(10f, 10f), new Color(0f, 1f, 0f));
             }
 
             spriteBatch.End();
