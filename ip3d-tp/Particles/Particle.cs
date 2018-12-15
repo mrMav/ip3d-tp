@@ -58,6 +58,8 @@ namespace ip3d_tp.Particles
 
             Scale = scale;
 
+            Tint = color;
+
             // make sure it is dead by default
             Kill();
 

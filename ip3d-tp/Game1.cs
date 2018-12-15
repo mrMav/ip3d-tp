@@ -49,7 +49,7 @@ namespace ip3d_tp
         }
 
         // bot population number
-        public static int nBots = 3;
+        public static int nBots = 4;
 
         // bots list
         public static Tank[] Bots = new Tank[nBots];
@@ -89,7 +89,9 @@ namespace ip3d_tp
         
         // the player tank
         Tank tank1;
-        
+
+        // a particle system to feedback hits
+        QuadParticleEmitter HitEmitter;
 
         /*
          * cameras
@@ -100,10 +102,7 @@ namespace ip3d_tp
          
         // the cameras that will be attached to the first tank
         ThirdPersonCamera ThirdPersonCamera1;
-
-        // the camera that will be attached to the second tank
-        ThirdPersonCamera ThirdPersonCamera2;
-        
+                
         // acts as a free camera, meaning it is possible to fly around
         FreeCamera freeCamera;
 
@@ -224,6 +223,7 @@ namespace ip3d_tp
 
                 b.Body.X = (float)Utils.RandomBetween(rnd, -60, 60);
                 b.Body.Y = (float)Utils.RandomBetween(rnd, -60, 60);
+                b.Body.MaxVelocity = 0.2f;
                 b.TankID = (short)(i + 1);
                 //b.BotBehaviour = (Global.BotBehaviour)(Utils.RandomBetween(rnd, 1.0, 5.0));
                 b.BotBehaviour = Global.BotBehaviour.Pursuit;
@@ -238,7 +238,24 @@ namespace ip3d_tp
 
             }
 
-
+            // hit emitter
+            HitEmitter = new QuadParticleEmitter(this, Vector3.Zero, 0.5f, 0.5f, "Textures/white_particle", 0.5f, 200, 3);
+            HitEmitter.ParticleTint = Color.Yellow;
+            HitEmitter.MakeParticles(1f, Color.White);
+            HitEmitter.ParticleVelocity = new Vector3(0f, 5f, 0f);
+            HitEmitter.SpawnRate = 0f;
+            HitEmitter.Burst = true;
+            HitEmitter.ParticlesPerBurst = 50;
+            HitEmitter.XVelocityVariationRange = new Vector2(-1000f, 1000f);
+            HitEmitter.YVelocityVariationRange = new Vector2(-20f, 1000f);
+            HitEmitter.ZVelocityVariationRange = new Vector2(-1000f, 1000f);
+            HitEmitter.ParticleLifespanMilliseconds = 1000f;
+            HitEmitter.ParticleLifespanVariationMilliseconds = 200f;
+            HitEmitter.Activated = false;
+            HitEmitter.InitialScale = 5f;
+            HitEmitter.FinalScale = 0.01f;
+            ParticleManager.AddParticleEmitter(HitEmitter);
+            
 
             /*
              * cameras
@@ -435,13 +452,47 @@ namespace ip3d_tp
             }
 
 
-            tank1.UpdateProjectiles(gameTime, plane, currentCamera);
             //for (int j = 0; j < Global.Bots.Length; j++)
             //{
 
             //    Global.Bots[j].UpdateProjectiles(gameTime, plane, currentCamera);
 
             //}
+
+            // tet projectile collision
+            for(int i = 0; i < tank1.Bullets.Count; i++)
+            {
+                Projectile p = tank1.Bullets[i];
+
+                if(p.Alive)
+                {
+                    for(int j = 0; j < Global.nBots; j++)
+                    {
+                        Body b = Global.Bots[j].Body;
+
+                        if(Physics.SATIntersect(p.Body, b))
+                        {
+                            Console.WriteLine("hit");
+
+                            p.Kill();
+
+                            // fx
+
+                            HitEmitter.Position = p.Body.Position;
+                            HitEmitter.UpdateMatrices(Matrix.CreateTranslation(p.Body.Position));
+                            HitEmitter.Activated = true;
+
+
+                        }
+
+                    }
+
+                }
+
+            }
+            tank1.UpdateProjectiles(gameTime, plane, currentCamera);
+            HitEmitter.Update(gameTime);
+
 
             tank1.CalculateAnimations(gameTime, currentCamera, plane);
             for (int j = 0; j < Global.Bots.Length; j++)
@@ -470,9 +521,9 @@ namespace ip3d_tp
             maxMills = stopwatch.Elapsed.TotalMilliseconds > maxMills && tickCount > 20 ? stopwatch.Elapsed.TotalMilliseconds : maxMills;
             minMills = stopwatch.Elapsed.TotalMilliseconds < minMills && tickCount > 20 ? stopwatch.Elapsed.TotalMilliseconds : minMills;
 
-            Console.WriteLine(
-                $"RealTime: {stopwatch.Elapsed.TotalMilliseconds:0.0000}, Avg: {averageMilliseconds:0.0000}, Min: {minMills}, Max: {maxMills} "
-            );
+            //Console.WriteLine(
+            //    $"RealTime: {stopwatch.Elapsed.TotalMilliseconds:0.0000}, Avg: {averageMilliseconds:0.0000}, Min: {minMills}, Max: {maxMills} "
+            //);
 
         }
 
