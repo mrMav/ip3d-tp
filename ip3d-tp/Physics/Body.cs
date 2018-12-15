@@ -180,6 +180,48 @@ namespace ip3d_tp.Physics3D
         }
 
         /// <summary>
+        /// Call this method after all the variables are regarding movement
+        /// are updated
+        /// </summary>
+        /// <param name="gameTime"></param>
+        public void UpdateBotMotion(GameTime gameTime, Vector3 steering)
+        {
+
+            // delta for time based calcs
+            float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+
+            // cap the velocity so we don't move faster than we should
+            float steeringforce = 0.4f;
+            if (steering.Length() > steeringforce)
+            {
+                steering.Normalize();
+                steering *= steeringforce;
+            }
+
+            //Acceleration = steering / Mass;
+
+            // apply speed to velocity
+            Velocity += steering * dt;
+
+            // cap the velocity so we don't move faster than we should
+            if (Velocity.Length() > MaxVelocity)
+            {
+                Velocity.Normalize();
+                Velocity *= MaxVelocity;
+            }
+
+            // apply the velocity to the position
+            SetPosition(Position + Velocity);
+
+            // add some sexy drag
+            Velocity *= Drag;
+
+            Update(gameTime);
+        }
+
+
+        /// <summary>
         /// Same as UpdateMotion but instead of being based in the front vector,
         /// it uses the acceleration variable to calculate motion.
         /// </summary>

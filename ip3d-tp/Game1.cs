@@ -35,6 +35,15 @@ namespace ip3d_tp
         // define the player tank id
         public static int PlayerID = 0;
 
+        // bot behaviour 
+        public enum BotBehaviour
+        {
+            None,
+            Seek,
+            Flee,
+            Pursuit
+        }
+
     }
 
     public class Game1 : Game
@@ -182,9 +191,10 @@ namespace ip3d_tp
             tank1.Body.X = 4f;  // offset a bit so the two don't overlap
 
             tank2 = new Tank(this);
-            tank2.Body.X = -4f;
+            tank2.Body.X = -40f;
+            tank2.Body.Z =  40f;
             tank2.TankID = 1;  // identify this tank as ID 1, used for the controls
-
+            tank2.BotBehaviour = Global.BotBehaviour.Pursuit;
             tank2.TargetBody = tank1.Body;
 
             /*

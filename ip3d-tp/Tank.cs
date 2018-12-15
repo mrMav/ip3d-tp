@@ -22,6 +22,11 @@ namespace ip3d_tp
 
         // define a target Body, used for Bot control
         public Body TargetBody;
+        public Vector3 Steering;
+
+        // type of autonomous movement
+        public Global.BotBehaviour BotBehaviour = Global.BotBehaviour.None;
+
         
         public Matrix WorldTransform
         {
@@ -265,14 +270,14 @@ namespace ip3d_tp
                 UpdatePlayerControlled(dt);
             } else
             {
-                UpdateAutonomousMovement(TargetBody);
+                UpdateAutonomousMovement(dt, TargetBody);
             }
 
             // update the orientation vectors of the tank
             //UpdateDirectionVectors(surface);
 
             // moves the body
-            Body.UpdateMotion(gameTime);  // same for player and bot
+            Body.UpdateMotion(gameTime);
 
             //UpdateDirectionVectors(surface);
             UpdateMatrices(surface);
@@ -363,19 +368,56 @@ namespace ip3d_tp
             }
         }
 
-        public void UpdateAutonomousMovement(Body target)
+        public void UpdateAutonomousMovement(float dt, Body target)
         {
             // behaviour based on steering behaviours by Craig W.Reynolds
             // http://www.red3d.com/cwr/steer/gdc99/
 
-            // Seek Update 
-            Vector3 desiredVelocity = Vector3.Normalize(Body.Position - target.Position) * Body.MaxVelocity;
-            Vector3 steering = desiredVelocity - Body.Velocity;
+            if(BotBehaviour == Global.BotBehaviour.Seek)
+            {
+                Vector3 desiredVelocity = Vector3.Normalize(Body.Position - target.Position) * Body.MaxVelocity;
+                Vector3 steering = desiredVelocity - Body.Velocity;
 
-            Body.Bounds.SetFront(Vector3.Normalize(steering));
+                Body.Bounds.SetFront(Vector3.Normalize(steering));
+                MoveForward();
 
-            MoveForward();
+            } else if(BotBehaviour == Global.BotBehaviour.Flee)
+            {
+                Vector3 desiredVelocity = Vector3.Normalize(target.Position - Body.Position) * Body.MaxVelocity;
+                Vector3 steering = desiredVelocity - Body.Velocity;
 
+                Body.Bounds.SetFront(Vector3.Normalize(steering));
+                MoveForward();
+
+            } else if(BotBehaviour == Global.BotBehaviour.Pursuit)
+            {
+
+                // estimate prediction interval based on distance
+                float dist = Body.Position.Length() - target.Position.Length();
+                float c = MathHelper.ToRadians(60f);
+                float t = dist * c;
+
+                Vector3 predictedPosition = target.Position + (target.Bounds.Front * target.Speed * (dt * t));
+
+                Vector3 desiredVelocity = Vector3.Normalize(Body.Position - predictedPosition) * Body.MaxVelocity;
+                Vector3 steering = desiredVelocity - Body.Velocity;
+                
+                // limit steering
+                float maxforce = 0.1f;  // steering force towards target
+                if (steering.Length() > maxforce)
+                {
+                    steering.Normalize();
+                    steering *= maxforce;
+                }
+
+                Body.Bounds.SetFront(Vector3.Normalize(Body.Bounds.Front + steering));
+
+                MoveForward();
+            }
+            else
+            {
+                SetIdle();
+            }
         }
 
         public void PostMotionUpdate(GameTime gameTime, Camera camera, Plane surface)
