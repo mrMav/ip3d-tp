@@ -270,8 +270,8 @@ namespace ip3d_tp
             freeCamera = new FreeCamera(this, 45f);
             freeCamera.AccelerationValue = 1f;
             freeCamera.Position.X = 0;
-            freeCamera.Position.Y = 5;
-            freeCamera.Position.Z = 5;
+            freeCamera.Position.Y = 50;
+            freeCamera.Position.Z = 20;
             freeCamera.Yaw = -60f;
             freeCamera.Pitch = -60f;
 
