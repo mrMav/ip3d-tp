@@ -414,6 +414,31 @@ namespace ip3d_tp
 
                 MoveForward();
             }
+            else if (BotBehaviour == Global.BotBehaviour.Evade)
+            {
+
+                // estimate prediction interval based on distance
+                float dist = Body.Position.Length() - target.Position.Length();
+                float c = MathHelper.ToRadians(60f);
+                float t = dist * c;
+
+                Vector3 predictedPosition = target.Position + (target.Bounds.Front * target.Speed * (dt * t));
+
+                Vector3 desiredVelocity = Vector3.Normalize(Body.Position - predictedPosition) * Body.MaxVelocity;
+                Vector3 steering = desiredVelocity - Body.Velocity;
+
+                // limit steering
+                float maxforce = 0.6f;  // steering force towards target
+                if (steering.Length() > maxforce)
+                {
+                    steering.Normalize();
+                    steering *= maxforce;
+                }
+
+                Body.Bounds.SetFront(Vector3.Normalize(Body.Bounds.Front - steering));
+
+                MoveForward();
+            }
             else
             {
                 SetIdle();

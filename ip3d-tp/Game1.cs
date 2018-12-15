@@ -33,7 +33,7 @@ namespace ip3d_tp
         public static int AliveParticles = 0;
 
         // define the player tank id
-        public static int PlayerID = 0;
+        public static short PlayerID = 0;
 
         // bot behaviour 
         public enum BotBehaviour
@@ -41,7 +41,8 @@ namespace ip3d_tp
             None,
             Seek,
             Flee,
-            Pursuit
+            Pursuit,
+            Evade
         }
 
     }
@@ -82,6 +83,7 @@ namespace ip3d_tp
         
         // the second tank
         Tank tank2;
+        Tank tank3;
 
         /*
          * cameras
@@ -189,6 +191,7 @@ namespace ip3d_tp
             tank1.Body.Mass = 8.5f;
             tank1.Body.MaxVelocity = 0.58f;
             tank1.Body.X = 4f;  // offset a bit so the two don't overlap
+            tank1.TankID = Global.PlayerID;
 
             tank2 = new Tank(this);
             tank2.Body.X = -40f;
@@ -196,6 +199,13 @@ namespace ip3d_tp
             tank2.TankID = 1;  // identify this tank as ID 1, used for the controls
             tank2.BotBehaviour = Global.BotBehaviour.Pursuit;
             tank2.TargetBody = tank1.Body;
+
+            tank3 = new Tank(this);
+            tank3.Body.X = 40f;
+            tank3.Body.Z = -40f;
+            tank3.TankID = 2;  // identify this tank as ID 1, used for the controls
+            tank3.BotBehaviour = Global.BotBehaviour.Pursuit;
+            tank3.TargetBody = tank2.Body;
 
             /*
              * cameras
@@ -328,7 +338,8 @@ namespace ip3d_tp
             //       node based object structure. Let's see how that goes. If I have the time.
             tank1.Update(gameTime, currentCamera, plane);
             tank2.Update(gameTime, currentCamera, plane);
-            
+            tank3.Update(gameTime, currentCamera, plane);
+
             // collision needs to run on a fairly high speed in order
             // to be accurate. The implication of this is the
             // method that we are defining the tanks height.
@@ -336,31 +347,38 @@ namespace ip3d_tp
             // every frame. This leads to 'teleporting' and oder glitchs when 
             // applying the collision resolution.
             for (int i = 0; i < 4; i++)   // sampling 4 times for acuracy 
-            { 
+            {
 
-                if (Physics.SATCollide(tank1.Body, tank2.Body))
-                {
+                //if (Physics.SATCollide(tank1.Body, tank2.Body))
+                //{
 
-                    tank1.BodyDebug.MaterialColor = Color.Red;
+                //    tank1.BodyDebug.MaterialColor = Color.Red;
 
-                }
-                else
-                {
-                    tank1.BodyDebug.MaterialColor = Color.Blue;
+                //}
+                //else
+                //{
+                //    tank1.BodyDebug.MaterialColor = Color.Blue;
 
-                };
+                //};
                 //Physics.SATCollide(tank2.Body, tank1.Body);
+
+                Physics.SATCollide(tank1.Body, tank2.Body);
+                Physics.SATCollide(tank1.Body, tank3.Body);
+                Physics.SATCollide(tank2.Body, tank3.Body);
 
                 tank1.PostMotionUpdate(gameTime, currentCamera, plane);
                 tank2.PostMotionUpdate(gameTime, currentCamera, plane);
+                tank3.PostMotionUpdate(gameTime, currentCamera, plane);
             }
 
 
             tank1.UpdateProjectiles(gameTime, plane, currentCamera);
             tank2.UpdateProjectiles(gameTime, plane, currentCamera);
+            tank3.UpdateProjectiles(gameTime, plane, currentCamera);
 
             tank1.CalculateAnimations(gameTime, currentCamera, plane);
             tank2.CalculateAnimations(gameTime, currentCamera, plane);
+            tank3.CalculateAnimations(gameTime, currentCamera, plane);
 
             // here we update the object shader(effect) matrices
             // so it can perform the space calculations on the vertices
@@ -399,6 +417,7 @@ namespace ip3d_tp
             // draw the tanks with the light created
             tank1.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
             tank2.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
+            tank3.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
 
             //foreach(ParticleEmitter e in Global.ParticleEmitters)
             //{
