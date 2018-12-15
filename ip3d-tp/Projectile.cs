@@ -85,18 +85,20 @@ namespace ip3d_tp
             BlendState.AlphaBlendFunction = BlendFunction.Add;
 
             // smoke trail
-            SmokeParticles = new QuadParticleEmitter(Game, Body.Position, 0.5f, 0.5f, "Textures/white_particle", 0.5f, 100, 3);
+            SmokeParticles = new QuadParticleEmitter(Game, Body.Position, 0.5f, 0.5f, "Textures/white_particle", 0.5f, 300, 3);
             SmokeParticles.MakeParticles(1f, Color.White);
             SmokeParticles.ParticleVelocity = new Vector3(0f, 0f, 0f);
             SmokeParticles.SpawnRate = 0f;
+            SmokeParticles.Burst = true;
+            SmokeParticles.ParticlesPerBurst = 10;
             SmokeParticles.XVelocityVariationRange = new Vector2(-50f, 50f);
-            SmokeParticles.YVelocityVariationRange = new Vector2(0f, 50f);
+            SmokeParticles.YVelocityVariationRange = new Vector2(-50f, 50f);
             SmokeParticles.ZVelocityVariationRange = new Vector2(-50f, 50f);
             SmokeParticles.ParticleLifespanMilliseconds = 2000f;
             SmokeParticles.ParticleLifespanVariationMilliseconds = 1500f;
             SmokeParticles.Activated = true;
-            SmokeParticles.InitialScale = 0.1f;
-            SmokeParticles.FinalScale = 3f;
+            SmokeParticles.InitialScale = 1f;
+            SmokeParticles.FinalScale = 5f;
             ParticleManager.AddParticleEmitter(SmokeParticles);
 
 

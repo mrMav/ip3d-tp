@@ -354,7 +354,7 @@ namespace ip3d_tp
             Axis.UpdateShaderMatrices(camera.ViewTransform, camera.ProjectionTransform);
         }
 
-        public void UpdateProjectiles(GameTime gameTime, Plane surface)
+        public void UpdateProjectiles(GameTime gameTime, Plane surface, Camera camera)
         {
             // user input
             if (TankID == 0 && Controls.CurrMouseState.LeftButton == ButtonState.Pressed)
@@ -416,6 +416,8 @@ namespace ip3d_tp
 
                         b.Body.Velocity = Vector3.Transform(b.Body.Velocity, WorldTransform.Rotation);
 
+                        // shaky shaky
+                        camera.ActivateShake(gameTime, 300f, 0.8f, 0.02f);
 
                     }
                 }

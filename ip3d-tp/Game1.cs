@@ -71,10 +71,6 @@ namespace ip3d_tp
         // the second tank
         Tank tank2;
 
-        Projectile shell;
-
-        QuadParticleEmitter Particles;
-
         /*
          * cameras
          */
@@ -184,19 +180,7 @@ namespace ip3d_tp
             tank2 = new Tank(this);
             tank2.Body.X = -4f;
             tank2.TankID = 1;  // identify this tank as ID 1, used for the controls
-
-            shell = new Projectile(this, 0f);
-
-            Particles = new QuadParticleEmitter(this, new Vector3(0f, 10f, 0f), 0.5f, 0.5f, "Textures/smoke_particle", 0.5f);
-            Particles.MakeParticles(1f, Color.White);
-            Particles.ParticleVelocity = new Vector3(0f, 5f, 0f);
-            Particles.SpawnRate = 0f;
-            Particles.YVelocityVariationRange = new Vector2(-2f, 2f);
-            Particles.ParticleLifespanMilliseconds = 2000f;
-            Particles.ParticleLifespanVariationMilliseconds = 1500f;
-            Particles.Activated = true;
-            ParticleManager.AddParticleEmitter(Particles);
-
+            
             /*
              * cameras
              * 
@@ -301,7 +285,6 @@ namespace ip3d_tp
             if (Controls.IsKeyPressed(Keys.H))
             {
                 Global.ShowHelp = !Global.ShowHelp;
-                shell = new Projectile(this, 5f);
             }
 
             #endregion
@@ -329,9 +312,7 @@ namespace ip3d_tp
             //       node based object structure. Let's see how that goes. If I have the time.
             tank1.Update(gameTime, currentCamera, plane);
             tank2.Update(gameTime, currentCamera, plane);
-
-            shell.Update(gameTime, plane);
-
+            
             // collision needs to run on a fairly high speed in order
             // to be accurate. The implication of this is the
             // method that we are defining the tanks height.
@@ -359,8 +340,8 @@ namespace ip3d_tp
             }
 
 
-            tank1.UpdateProjectiles(gameTime, plane);
-            tank2.UpdateProjectiles(gameTime, plane);
+            tank1.UpdateProjectiles(gameTime, plane, currentCamera);
+            tank2.UpdateProjectiles(gameTime, plane, currentCamera);
 
             tank1.CalculateAnimations(gameTime, currentCamera, plane);
             tank2.CalculateAnimations(gameTime, currentCamera, plane);
@@ -369,10 +350,7 @@ namespace ip3d_tp
             // so it can perform the space calculations on the vertices
             plane.UpdateShaderMatrices(currentCamera.ViewTransform, currentCamera.ProjectionTransform);
             worldAxis.UpdateShaderMatrices(currentCamera.ViewTransform, currentCamera.ProjectionTransform);
-
-            Particles.SetWorldTransform(Matrix.CreateTranslation(Particles.Position));
-            Particles.Update(gameTime);
-
+            
             // update the last keyboard state
             Controls.UpdateLastStates();
 
@@ -395,8 +373,8 @@ namespace ip3d_tp
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(new Color(0.20f, 0.20f, 0.20f));
-            //GraphicsDevice.Clear(Color.White);
+            //GraphicsDevice.Clear(new Color(0.20f, 0.20f, 0.20f));
+            GraphicsDevice.Clear(Color.DeepSkyBlue);
 
             // we need to call the draw manually for the plane
             // it extends component, and not drawable
@@ -405,7 +383,6 @@ namespace ip3d_tp
             // draw the tanks with the light created
             tank1.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
             tank2.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
-            shell.Draw(gameTime, currentCamera, LightDirection, LightColor, LightIntensity);
 
             //foreach(ParticleEmitter e in Global.ParticleEmitters)
             //{

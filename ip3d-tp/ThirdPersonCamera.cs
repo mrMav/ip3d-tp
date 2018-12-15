@@ -118,7 +118,7 @@ namespace ip3d_tp
             //Console.WriteLine("Calcs pos: " + Position);
 
             // get the minimum height acceptable in the new position
-            float terrainHeight = Surface.GetHeightFromSurface(Position);  
+            float terrainHeight = Surface.GetHeightFromSurface(Position);
             float height = terrainHeight + 0.5f;  // this is the minimum possible height, at this point
             DistanceToTerrrain = Position.Y - terrainHeight;
 
@@ -219,10 +219,10 @@ namespace ip3d_tp
 
             // finally, update view transform            
             //ViewTransform = Matrix.CreateLookAt(Position, Target, Vector3.Up);
-            ViewTransform = Matrix.CreateLookAt(Position, Target, Vector3.Up);
 
             base.Update(gameTime);
 
+            ViewTransform = Matrix.CreateLookAt(Position, Target, Vector3.Up);
         }
 
         public void ConstrainToPlane()
@@ -233,31 +233,34 @@ namespace ip3d_tp
             float halfSurfaceWidth = Surface.Width / 2;
             float halfSurfaceDepth = Surface.Depth / 2;
 
+            // offset position in
+            float offset = 2f;
+
             // because we know that the plane origin is at its center
             // we will have to calculate the bounds with that in mind, and add 
             // te width and depth divided by 2
-            if (Position.X < -halfSurfaceWidth + Surface.SubWidth)
+            if (Position.X + offset < -halfSurfaceWidth + Surface.SubWidth)
             {
 
                 Position.X = -halfSurfaceWidth + Surface.SubWidth;
                 Yaw = LastYaw;
 
             }
-            if (Position.X > halfSurfaceWidth - Surface.SubWidth)
+            if (Position.X - offset > halfSurfaceWidth - Surface.SubWidth)
             {
 
                 Position.X = halfSurfaceWidth - Surface.SubWidth;
                 Yaw = LastYaw;
 
             }
-            if (Position.Z < -halfSurfaceDepth + Surface.SubHeight)
+            if (Position.Z + offset < -halfSurfaceDepth + Surface.SubHeight)
             {
 
                 Position.Z = -halfSurfaceDepth + Surface.SubHeight;
                 Yaw = LastYaw;
 
             }
-            if (Position.Z > halfSurfaceDepth - Surface.SubHeight)
+            if (Position.Z - offset > halfSurfaceDepth - Surface.SubHeight)
             {
 
                 Position.Z = halfSurfaceDepth - Surface.SubHeight;
